@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ArtVibeCamer — Site et back-office
 
-## Getting Started
+Interface publique de l'evenement ArtVibeCamer et back-office de
+l'organisation.
 
-First, run the development server:
+Next.js 16 (App Router) · TypeScript · Tailwind CSS 4
+
+## Demarrage
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+L'API Laravel doit tourner en parallele (`http://localhost:8000` par defaut).
+Voir [../backend/README.md](../backend/README.md).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variables d'environnement
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Role |
+| --- | --- |
+| `NEXT_PUBLIC_API_URL` | Base de l'API Laravel, avec le prefixe `/api/v1` |
+| `NEXT_PUBLIC_SITE_NAME` | Nom affiche avant le chargement des reglages |
+| `NEXT_PUBLIC_SITE_URL` | URL publique, pour les metadonnees et le partage |
 
-## Learn More
+## Conventions
 
-To learn more about Next.js, take a look at the following resources:
+- Tous les appels API passent par `src/lib/api.ts`. Pas de `fetch` disperse
+  dans les composants, sinon la gestion des erreurs et du jeton se duplique.
+- Types derives de [../docs/API.md](../docs/API.md).
+- Composants serveur par defaut ; `"use client"` seulement pour les
+  formulaires, l'etat local et le suivi des paiements.
+- Montants affiches avec un espace separateur de milliers : `15 000 FCFA`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Parcours de paiement
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Les trois flux payants (inscription, votes, billets) suivent la meme
+sequence :
 
-## Deploy on Vercel
+1. `POST` de creation, qui renvoie une `transaction.reference` et un objet
+   `payment`
+2. afficher `payment.instructions`, ou rediriger vers `payment.redirect_url`
+   s'il est present
+3. interroger `GET /payments/{reference}` toutes les 3 a 5 secondes jusqu'a
+   `is_final: true`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+A ecrire une seule fois en composant partage.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Etat d'avancement
+
+Voir [../docs/JOURNAL.md](../docs/JOURNAL.md).
