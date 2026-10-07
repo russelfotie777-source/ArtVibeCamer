@@ -1,7 +1,6 @@
 <?php
 
-use App\Services\Payments\Drivers\CampayGateway;
-use App\Services\Payments\Drivers\CinetPayGateway;
+use App\Services\Payments\Drivers\ElgiopayGateway;
 use App\Services\Payments\Drivers\FakeGateway;
 
 return [
@@ -41,20 +40,35 @@ return [
             'failing_phone_suffix' => '0',
         ],
 
-        'campay' => [
-            'class' => CampayGateway::class,
-            'base_url' => env('CAMPAY_BASE_URL', 'https://demo.campay.net'),
-            'username' => env('CAMPAY_APP_USERNAME'),
-            'password' => env('CAMPAY_APP_PASSWORD'),
-            'webhook_key' => env('CAMPAY_WEBHOOK_KEY'),
-        ],
+        /*
+         * Elgiopay — collecte MTN MoMo et Orange Money.
+         *
+         * Le parcours est asynchrone : on declenche la collecte, l'operateur
+         * envoie une demande de code au payeur, et Elgiopay notifie le
+         * resultat sur notre webhook. La transaction reste donc `processing`
+         * quelques dizaines de secondes.
+         *
+         * L'URL de notification se configure dans le tableau de bord
+         * Elgiopay, et non par requete :
+         *   https://<domaine>/api/v1/webhooks/payments/elgiopay
+         */
+        'elgiopay' => [
+            'class' => ElgiopayGateway::class,
 
-        'cinetpay' => [
-            'class' => CinetPayGateway::class,
-            'base_url' => env('CINETPAY_BASE_URL', 'https://api-checkout.cinetpay.com'),
-            'site_id' => env('CINETPAY_SITE_ID'),
-            'api_key' => env('CINETPAY_API_KEY'),
-            'secret_key' => env('CINETPAY_SECRET_KEY'),
+            // sandbox-api.elgiopay.com pour les tests, api.elgiopay.com en
+            // production. L'API refuse tout autre sous-domaine.
+            'base_url' => env('ELGIOPAY_BASE_URL', 'https://sandbox-api.elgiopay.com'),
+
+            // pk_test_... en bac a sable, pk_live_... en production.
+            'api_key' => env('ELGIOPAY_API_KEY'),
+
+            // whsec_... Affiche une seule fois a la creation et a chaque
+            // rotation : sans lui, aucune notification n'est acceptee.
+            'webhook_secret' => env('ELGIOPAY_WEBHOOK_SECRET'),
+
+            // Tolerance sur l'horodatage de signature, en secondes.
+            // Au-dela, la notification est traitee comme un rejeu.
+            'signature_tolerance' => (int) env('ELGIOPAY_SIGNATURE_TOLERANCE', 300),
         ],
 
     ],

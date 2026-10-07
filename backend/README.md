@@ -72,11 +72,20 @@ php artisan counters:recalculate --dry-run   # Controler les compteurs de votes
 
 ## Passerelle de paiement
 
-`PAYMENT_DRIVER` : `fake` (developpement, aucun debit, refuse en production),
-`campay` (MoMo et Orange Money en USSD direct), `cinetpay` (page hebergee).
+`PAYMENT_DRIVER` :
 
-Avec `fake`, tout numero finissant par `0` simule un paiement refuse, ce qui
-permet de tester le parcours d'echec.
+- `fake` — developpement hors ligne, aucun debit. Tout numero finissant par
+  `0` simule un refus. **Refuse en production.**
+- `elgiopay` — la passerelle reelle, MTN Mobile Money et Orange Money.
+
+Pour Elgiopay, renseigner `ELGIOPAY_API_KEY`, `ELGIOPAY_WEBHOOK_SECRET` et
+`ELGIOPAY_BASE_URL` (`sandbox-api.elgiopay.com` en test).
+
+L'URL de notification se declare **dans le tableau de bord Elgiopay** :
+`https://<domaine>/api/v1/webhooks/payments/elgiopay`.
+
+Les numeros de test du bac a sable sont listes dans
+[../docs/JOURNAL.md](../docs/JOURNAL.md).
 
 ## Documentation
 

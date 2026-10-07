@@ -130,7 +130,7 @@ Journal unique des trois flux d'encaissement.
 | `type` | `registration`, `vote`, `ticket` |
 | `payable_type` / `payable_id` | Polymorphe vers `Candidate`, `Vote` ou `TicketOrder` |
 | `status` | `pending`, `processing`, `succeeded`, `failed`, `cancelled`, `expired`, `refunded` |
-| `provider` | `fake`, `campay`, `cinetpay`, `manual` |
+| `provider` | `fake`, `elgiopay`, `manual` |
 | `provider_reference` | Identifiant cote operateur. Indexe : sert a retrouver la transaction depuis un webhook |
 | `idempotency_key` | Unique. Empeche le double encaissement si le formulaire est re-soumis |
 | `expires_at` | Delai de validation par le payeur (`PAYMENT_TIMEOUT_MINUTES`) |

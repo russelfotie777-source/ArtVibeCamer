@@ -62,7 +62,7 @@ Couche metier organisee en services :
 | --- | --- |
 | `Services/Payments/PaymentProcessor.php` | **Coeur du systeme.** Seul chemin de changement d'etat d'un paiement. Idempotent, atomique, verrouille |
 | `Services/Payments/Fulfilment/*.php` | Delivrance des contreparties : numero de candidat, voix, billets |
-| `Services/Payments/Drivers/*.php` | `fake`, `campay`, `cinetpay` derriere l'interface `PaymentGateway` |
+| `Services/Payments/Drivers/*.php` | `fake` (hors ligne) et `elgiopay` (reel), derriere l'interface `PaymentGateway` |
 | `Services/Registration/RegistrationService.php` | Creation du dossier + encaissement des frais |
 | `Services/Voting/VoteService.php` | Achat et annulation de lots de voix |
 | `Services/Ticketing/TicketingService.php` | Commande, reservation de jauge |
@@ -163,10 +163,17 @@ lots de votes suspects, ecran de reglages. Les routes existent toutes.
 
 ### 3. Avant la mise en production — non negociable
 
-- [ ] **Credentials Mobile Money.** Reverifier les chemins et les champs des
-      drivers `campay` et `cinetpay` sur la documentation en vigueur, et
-      tester sur leur environnement de demo. Les implementations suivent la
-      structure habituelle de ces API mais n'ont jamais vu un compte reel.
+- [ ] **Credentials Elgiopay.** Renseigner `ELGIOPAY_API_KEY` (`pk_live_…`),
+      `ELGIOPAY_WEBHOOK_SECRET` (`whsec_…`) et basculer `ELGIOPAY_BASE_URL`
+      sur `https://api.elgiopay.com`. Le code est ecrit d'apres leur
+      documentation et couvert par des tests, mais **n'a pas encore tourne
+      contre un compte reel** : derouler d'abord le bac a sable.
+- [ ] **Declarer l'URL de notification dans le tableau de bord Elgiopay** :
+      `https://<domaine>/api/v1/webhooks/payments/elgiopay`. Elle ne se
+      transmet pas par requete. Sans elle, aucun paiement ne se confirme tout
+      seul — il faudrait passer par le bouton « Vérifier » du back-office.
+- [ ] **Noter le secret de signature a sa creation.** Il n'est affiche
+      qu'une fois, a la creation et apres chaque rotation.
 - [ ] **`PAYMENT_DRIVER` ne doit pas valoir `fake`.** `PaymentManager` leve
       une exception si `APP_ENV=production`, mais verifier quand meme.
 - [ ] **Sauvegardes automatiques de la base.** Rien n'est en place. Une base
@@ -297,11 +304,43 @@ Le tarif n'est jamais lu dans la requete : `Category::feeFor()` le calcule a
 partir de la categorie et de la formule. Un montant envoye par le navigateur
 est ignore, et un test le verifie.
 
-### Simulation d'un echec de paiement
+### Deux facons de tester un paiement
 
-Avec `PAYMENT_DRIVER=fake`, tout numero **finissant par 0** declenche un
-refus. Pratique pour tester le parcours d'echec ; a savoir pour ne pas croire
-a un bug quand un test echoue avec un numero en `...0`.
+**Hors ligne**, avec `PAYMENT_DRIVER=fake` : tout numero **finissant par 0**
+declenche un refus, les autres aboutissent immediatement. Pratique sans
+connexion ; a savoir pour ne pas croire a un bug quand un test echoue avec un
+numero en `...0`.
+
+**Contre le bac a sable Elgiopay**, avec `PAYMENT_DRIVER=elgiopay`, une cle
+`pk_test_…` et `ELGIOPAY_BASE_URL=https://sandbox-api.elgiopay.com`. Le
+resultat depend du numero du payeur :
+
+| Numero Orange / MTN | Resultat |
+| --- | --- |
+| `699000000` / `677000000` | Paye immediatement |
+| `699000010` / `677000010` | Paye apres 10 secondes |
+| `699000030` / `677000030` | Paye apres 30 secondes |
+| `699000060` / `677000060` | Paye apres 1 minute |
+| `699000120` / `677000120` | Paye apres 2 minutes |
+| `699000201` / `677000201` | Refus du payeur sur son telephone |
+| `699000202` / `677000202` | Solde insuffisant |
+| `699000203` / `677000203` | Pas valide a temps |
+| `699000204` / `677000204` | Echec generique |
+
+Tout autre numero aboutit immediatement.
+
+**Les numeros a delai sont les plus utiles** : ils renvoient d'abord
+`pending`, ce qui permet de verifier pour de vrai l'ecran d'attente du
+candidat, l'interrogation du statut, et l'arrivee de la notification.
+
+### Les notifications ne se configurent pas par requete
+
+L'URL de webhook se declare **dans le tableau de bord Elgiopay**, pas dans
+l'appel `POST /payments`. Si les paiements restent bloques en « en cours »
+alors que l'argent est debite, c'est la premiere chose a verifier.
+
+Pour tester en local, exposer le poste avec un tunnel (`ngrok`, `cloudflared`)
+et declarer l'URL publique obtenue.
 
 ---
 

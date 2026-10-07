@@ -20,8 +20,8 @@ par l'organisation.
 - **Backend** — Laravel 13 (API REST), PHP 8.4, authentification par jetons Sanctum
 - **Base de donnees** — MySQL / MariaDB
 - **Frontend** — Next.js 16 (App Router), TypeScript, Tailwind CSS 4
-- **Paiement** — Mobile Money Cameroun (MTN MoMo, Orange Money) derriere une
-  interface de passerelle interchangeable
+- **Paiement** — Elgiopay (MTN MoMo, Orange Money), derriere une interface de
+  passerelle interchangeable
 
 Les deux applications sont independantes et communiquent uniquement par l'API
 documentee dans [docs/API.md](docs/API.md). Chacun peut donc avancer de son
@@ -110,10 +110,14 @@ php artisan counters:recalculate --dry-run   # Controler les compteurs de votes
 
 Le driver actif est choisi par `PAYMENT_DRIVER` :
 
-- `fake` — simulation locale, aucun appel reseau, aucun debit. Refuse en
-  production.
-- `campay` — collecte MTN MoMo et Orange Money par USSD direct.
-- `cinetpay` — page de paiement hebergee (MoMo, Orange Money, carte).
+- `fake` — simulation locale, aucun appel reseau, aucun debit. Permet de
+  developper et de tester l'integralite des parcours sans connexion. Refuse
+  en production.
+- `elgiopay` — la passerelle reelle : MTN Mobile Money et Orange Money.
 
-Tant que les credentials de l'operateur ne sont pas disponibles, le driver
-`fake` permet de developper et de tester l'integralite des parcours.
+Elgiopay offre un bac a sable dont le resultat depend du numero du payeur
+(succes immediat, succes differe, refus, solde insuffisant). Les numeros sont
+listes dans [docs/JOURNAL.md](docs/JOURNAL.md).
+
+L'URL de notification se declare dans leur tableau de bord :
+`https://<domaine>/api/v1/webhooks/payments/elgiopay`.

@@ -99,26 +99,60 @@ verifie l'etat courant avant d'agir (`candidate_number !== null`,
 
 ## 6. Les passerelles de paiement derriere une interface
 
-`PaymentGateway` definit le contrat ; trois implementations existent :
+`PaymentGateway` definit le contrat ; deux implementations existent :
 
 | Driver | Usage |
 | --- | --- |
-| `fake` | Developpement et tests. Aucun appel reseau, aucun debit. Encaisse immediatement, sauf numero finissant par `0` pour tester le refus. **Refuse en production par `PaymentManager`.** |
-| `campay` | MTN MoMo et Orange Money par USSD direct. La transaction reste `processing` le temps que le payeur valide. |
-| `cinetpay` | Page de paiement hebergee. L'authenticite d'une notification vient d'un rappel serveur a serveur de `/payment/check`, pas du contenu recu. |
+| `fake` | Developpement hors ligne. Aucun appel reseau, aucun debit. Encaisse immediatement, sauf numero finissant par `0` pour exercer le parcours d'echec. **Refuse en production par `PaymentManager`.** |
+| `elgiopay` | **La passerelle reelle.** MTN Mobile Money et Orange Money. |
 
-**Pourquoi** : les credentials de l'operateur n'etaient pas disponibles au
-demarrage du projet. Sans cette abstraction, tout le developpement des
-parcours payants aurait ete bloque. Changer d'operateur ne touche ni les
-controleurs ni les services metier.
+**Pourquoi l'interface** : les credentials n'etaient pas disponibles au
+demarrage du projet. Sans elle, tout le developpement des parcours payants
+aurait ete bloque. Elle sert toujours : ajouter un second operateur ne touche
+ni les controleurs ni les services metier.
 
-> **A faire avant la mise en production** : reverifier les chemins et les noms
-> de champs des drivers `campay` et `cinetpay` sur la documentation en vigueur
-> de chaque operateur, et tester d'abord sur leur environnement de demo. Les
-> implementations actuelles suivent la structure habituelle de ces API mais
-> n'ont pas ete confrontees a un compte reel.
+> Deux drivers speculatifs (Campay, CinetPay) ont existe le temps d'attendre
+> le choix de l'operateur. Ils ont ete retires a l'arrivee d'Elgiopay : du
+> code jamais confronte a un compte reel induit en erreur plus qu'il n'aide.
 
----
+### Elgiopay
+
+Parcours asynchrone : on declenche la collecte, l'operateur envoie une demande
+de code sur le telephone du payeur, et Elgiopay notifie le resultat. La
+transaction reste `processing` entre les deux.
+
+| Point | Detail |
+| --- | --- |
+| Hotes | `sandbox-api.elgiopay.com` en test, `api.elgiopay.com` en production. L'API refuse tout autre sous-domaine |
+| Cles | `pk_test_…` / `pk_live_…`, en jeton Bearer |
+| Lancement | `POST /api/v1/payments` avec `payment_method` deduit du prefixe du numero |
+| Lecture | `GET /api/v1/payments/{id}` — Elgiopay interroge lui-meme l'operateur quand la transaction est en cours |
+| Notification | Configuree **dans leur tableau de bord**, pas par requete : `https://<domaine>/api/v1/webhooks/payments/elgiopay` |
+
+### Authenticite des notifications
+
+Trois verifications, dans cet ordre, avant de toucher a quoi que ce soit :
+
+1. **Signature.** HMAC-SHA256 de `"{t}.{corps brut}"` avec le secret
+   `whsec_…`. Le corps est lu **tel qu'il est arrive** : le reserialiser, ne
+   serait-ce qu'en changeant un espace, invalide la signature.
+2. **Fenetre temporelle.** Au-dela de 5 minutes d'ecart, la notification est
+   refusee. Sans cela, une notification authentique capturee puis renvoyee
+   plus tard pourrait recrediter un paiement.
+3. **Comparaison a temps constant** (`hash_equals`). Une comparaison naive
+   laisserait deviner la signature octet par octet.
+
+La deduplication se fait ensuite sur l'identifiant d'evenement, Elgiopay
+rejouant jusqu'a huit fois sur environ 45 heures tant qu'il n'obtient pas de
+2xx.
+
+Tous les evenements ne changent pas l'etat d'un paiement : les versements
+(`payout.*`) et la mise a disposition d'un code prepaye
+(`payment.pin_available`) sont acquittes sans effet metier, pour qu'ils ne
+soient pas rejoues indefiniment.
+
+Ces regles sont couvertes par `tests/Feature/ElgiopayTest.php` : signature
+invalide, horodatage perime, rejeu du meme evenement, echec notifie.
 
 ## 7. Compteurs denormalises, et comment on les tient
 

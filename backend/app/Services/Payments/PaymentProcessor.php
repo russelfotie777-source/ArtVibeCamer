@@ -204,6 +204,18 @@ class PaymentProcessor
             return $record;
         }
 
+        /*
+         * Toutes les notifications ne changent pas l'etat d'un paiement : une
+         * passerelle annonce aussi ses versements, ou la mise a disposition
+         * d'un code prepaye. On les acquitte pour qu'elles ne soient pas
+         * rejouees, sans rien toucher au metier.
+         */
+        if ($event->status === null) {
+            $record->markProcessed();
+
+            return $record;
+        }
+
         $transaction = $this->locateTransaction($event);
 
         if ($transaction === null) {
