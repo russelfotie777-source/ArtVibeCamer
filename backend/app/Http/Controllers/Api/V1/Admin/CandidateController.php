@@ -16,7 +16,10 @@ class CandidateController extends Controller
     public function index(Request $request)
     {
         $candidates = Candidate::query()
-            ->with(['category:id,name,slug'])
+            // Relation complete : CandidateResource imbrique CategoryResource,
+            // qui lit les tarifs et les fenetres d'ouverture. Une selection
+            // partielle de colonnes les ferait sortir a null.
+            ->with('category')
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
             ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->integer('category_id')))
             ->when($request->boolean('unpaid'), fn ($q) => $q->whereNull('candidate_number'))
@@ -62,7 +65,7 @@ class CandidateController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Fiche mise a jour.',
+            'message' => 'Fiche mise à jour.',
             'candidate' => CandidateResource::make($candidate->fresh(['category'])),
         ]);
     }
@@ -73,7 +76,7 @@ class CandidateController extends Controller
         abort_if(
             $candidate->candidate_number === null,
             422,
-            'Les frais d\'inscription de ce candidat ne sont pas encore encaisses.'
+            'Les frais d\'inscription de ce candidat ne sont pas encore encaissés.'
         );
 
         $candidate->update([
@@ -86,7 +89,7 @@ class CandidateController extends Controller
         Audit::log('candidate.approved', $candidate, "{$candidate->display_name} valide");
 
         return response()->json([
-            'message' => 'Candidat valide.',
+            'message' => 'Candidat validé.',
             'candidate' => CandidateResource::make($candidate->fresh(['category'])),
         ]);
     }
@@ -107,7 +110,7 @@ class CandidateController extends Controller
         Audit::log('candidate.rejected', $candidate, "{$candidate->display_name} rejete", $data);
 
         return response()->json([
-            'message' => 'Candidat rejete.',
+            'message' => 'Candidat rejeté.',
             'candidate' => CandidateResource::make($candidate->fresh(['category'])),
         ]);
     }
@@ -121,13 +124,13 @@ class CandidateController extends Controller
         abort_if(
             $candidate->votes_count > 0,
             422,
-            'Ce candidat a recu des votes payants et ne peut pas etre supprime. Utilisez le statut « retire ».'
+            'Ce candidat a reçu des votes payants et ne peut pas être supprimé. Utilisez le statut « retiré ».'
         );
 
         $candidate->delete();
 
         Audit::log('candidate.deleted', $candidate, "{$candidate->display_name} supprime");
 
-        return response()->json(['message' => 'Candidat supprime.']);
+        return response()->json(['message' => 'Candidat supprimé.']);
     }
 }

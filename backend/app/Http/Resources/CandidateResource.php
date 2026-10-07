@@ -50,6 +50,10 @@ class CandidateResource extends JsonResource
                 'reviewed_at' => $this->reviewed_at?->toIso8601String(),
                 'ip_address' => $this->ip_address,
                 'created_at' => $this->created_at?->toIso8601String(),
+                'reviewer' => $this->whenLoaded('reviewer', fn () => $this->reviewer?->name),
+                'registration_transaction' => new TransactionResource(
+                    $this->whenLoaded('registrationTransaction')
+                ),
             ]),
         ];
     }

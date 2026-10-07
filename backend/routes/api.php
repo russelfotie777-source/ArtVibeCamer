@@ -51,6 +51,10 @@ Route::prefix('v1')->group(function () {
     Route::post('registrations', [Site\RegistrationController::class, 'store'])
         ->middleware('throttle:registration');
 
+    // Relance d'un encaissement echoue, sans ressaisie du formulaire.
+    Route::post('registrations/{transaction}/retry', [Site\RegistrationController::class, 'retry'])
+        ->middleware('throttle:checkout');
+
     Route::post('candidates/{candidate}/votes', [Site\VoteController::class, 'store'])
         ->middleware('throttle:checkout');
 

@@ -131,4 +131,52 @@ class RegistrationTest extends TestCase
             'accepts_terms' => true,
         ])->assertStatus(422);
     }
+
+    public function test_un_paiement_echoue_peut_etre_relance_sans_ressaisie(): void
+    {
+        $category = $this->makeCategory();
+
+        // Numero finissant par 0 : la simulation refuse le paiement.
+        $echec = $this->postJson('/api/v1/registrations', [
+            'category_id' => $category->id,
+            'first_name' => 'Paul',
+            'last_name' => 'Essomba',
+            'email' => 'paul@example.cm',
+            'phone' => '671234560',
+            'accepts_terms' => true,
+        ])->assertCreated();
+
+        $reference = $echec->json('transaction.reference');
+        $this->assertNull(Candidate::firstOrFail()->candidate_number);
+
+        // Relance avec un numero qui aboutit, sans renvoyer le formulaire.
+        $this->postJson("/api/v1/registrations/{$reference}/retry", [
+            'payer_phone' => '671234567',
+        ])->assertCreated();
+
+        $candidate = Candidate::firstOrFail();
+
+        $this->assertSame('AVC-MUS-001', $candidate->candidate_number);
+        $this->assertSame(CandidateStatus::PendingReview, $candidate->status);
+
+        // Le dossier n'a pas ete duplique.
+        $this->assertDatabaseCount('candidates', 1);
+    }
+
+    public function test_une_inscription_deja_payee_ne_peut_pas_etre_relancee(): void
+    {
+        $category = $this->makeCategory();
+
+        $ok = $this->postJson('/api/v1/registrations', [
+            'category_id' => $category->id,
+            'first_name' => 'Arnaud',
+            'last_name' => 'Nkolo',
+            'email' => 'arnaud@example.cm',
+            'phone' => '671234567',
+            'accepts_terms' => true,
+        ])->assertCreated();
+
+        $this->postJson("/api/v1/registrations/{$ok->json('transaction.reference')}/retry")
+            ->assertStatus(422);
+    }
 }
