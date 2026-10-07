@@ -74,7 +74,7 @@ class ReconcilePayments extends Command
                 if ($fresh->expires_at !== null && $fresh->expires_at->lt(now()->subMinutes($grace))) {
                     $payments->applyStatus($fresh, new PaymentStatus(
                         status: TransactionStatus::Expired,
-                        failureReason: 'Delai de paiement depasse.',
+                        failureReason: 'Délai de paiement dépassé.',
                     ));
 
                     $expired++;

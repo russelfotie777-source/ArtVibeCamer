@@ -23,7 +23,7 @@ class AuthController extends Controller
         // recettes et aux donnees personnelles ne doit pas etre brute-forcable.
         if (RateLimiter::tooManyAttempts($key, 5)) {
             throw ValidationException::withMessages([
-                'email' => 'Trop de tentatives. Reessayez dans '
+                'email' => 'Trop de tentatives. Réessayez dans '
                     .RateLimiter::availableIn($key).' secondes.',
             ]);
         }
@@ -41,7 +41,7 @@ class AuthController extends Controller
 
         if (! $user->is_active) {
             throw ValidationException::withMessages([
-                'email' => 'Ce compte est desactive.',
+                'email' => 'Ce compte est désactivé.',
             ]);
         }
 
@@ -67,7 +67,7 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Deconnecte.']);
+        return response()->json(['message' => 'Déconnecté.']);
     }
 
     public function me(Request $request): JsonResponse

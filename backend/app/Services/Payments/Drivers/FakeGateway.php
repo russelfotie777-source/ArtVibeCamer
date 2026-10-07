@@ -52,7 +52,7 @@ class FakeGateway implements PaymentGateway
         return new PaymentIntent(
             status: TransactionStatus::Succeeded,
             providerReference: $providerReference,
-            instructions: 'Paiement simule : aucun debit reel.',
+            instructions: 'Paiement simulé : aucun débit réel.',
             raw: ['simulated' => true],
         );
     }

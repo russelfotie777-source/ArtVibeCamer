@@ -13,9 +13,9 @@ enum VoteStatus: string
     {
         return match ($this) {
             self::Pending => 'En attente de paiement',
-            self::Confirmed => 'Confirme',
-            self::Failed => 'Echoue',
-            self::Cancelled => 'Annule',
+            self::Confirmed => 'Confirmé',
+            self::Failed => 'Échoué',
+            self::Cancelled => 'Annulé',
         };
     }
 

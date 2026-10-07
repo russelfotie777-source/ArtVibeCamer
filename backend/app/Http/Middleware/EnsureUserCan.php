@@ -17,8 +17,8 @@ class EnsureUserCan
         $user = $request->user();
 
         abort_if($user === null, 401, 'Authentification requise.');
-        abort_unless($user->is_active, 403, 'Ce compte est desactive.');
-        abort_unless($user->hasCapability($capability), 403, 'Vous n\'avez pas les droits necessaires.');
+        abort_unless($user->is_active, 403, 'Ce compte est désactivé.');
+        abort_unless($user->hasCapability($capability), 403, 'Vous n\'avez pas les droits nécessaires.');
 
         return $next($request);
     }

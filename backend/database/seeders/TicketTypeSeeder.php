@@ -13,21 +13,21 @@ class TicketTypeSeeder extends Seeder
         $types = [
             [
                 'name' => 'Standard',
-                'description' => 'Acces a la salle, placement libre.',
+                'description' => 'Accès à la salle, placement libre.',
                 'price' => 5000,
                 'quantity_total' => 1000,
                 'max_per_order' => 10,
             ],
             [
                 'name' => 'VIP',
-                'description' => 'Placement reserve pres de la scene et collation.',
+                'description' => 'Placement réservé près de la scène et collation.',
                 'price' => 15000,
                 'quantity_total' => 200,
                 'max_per_order' => 6,
             ],
             [
                 'name' => 'VVIP',
-                'description' => 'Table nominative, service dedie et acces au cocktail d\'apres-spectacle.',
+                'description' => 'Table nominative, service dédié et accès au cocktail d\'après-spectacle.',
                 'price' => 50000,
                 'quantity_total' => 40,
                 'max_per_order' => 4,

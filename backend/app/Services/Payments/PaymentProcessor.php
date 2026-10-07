@@ -63,7 +63,7 @@ class PaymentProcessor
             // l'encaissement a peut-etre abouti cote operateur.
             return new PaymentIntent(
                 status: TransactionStatus::Processing,
-                failureReason: 'Paiement en cours de verification.',
+                failureReason: 'Paiement en cours de vérification.',
             );
         }
 

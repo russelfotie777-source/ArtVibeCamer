@@ -25,7 +25,7 @@ class CategoryController extends Controller
         Audit::log('category.created', $category, "Categorie « {$category->name} » creee", $data);
 
         return response()->json([
-            'message' => 'Categorie creee.',
+            'message' => 'Catégorie créée.',
             'category' => CategoryResource::make($category),
         ], 201);
     }
@@ -45,7 +45,7 @@ class CategoryController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Categorie mise a jour.',
+            'message' => 'Catégorie mise à jour.',
             'category' => CategoryResource::make($category->fresh()),
         ]);
     }
@@ -55,13 +55,13 @@ class CategoryController extends Controller
         abort_if(
             $category->candidates()->exists(),
             422,
-            'Cette categorie contient des candidats. Desactivez-la plutot que de la supprimer.'
+            'Cette catégorie contient des candidats. Désactivez-la plutôt que de la supprimer.'
         );
 
         $category->delete();
         Audit::log('category.deleted', $category, "Categorie « {$category->name} » supprimee");
 
-        return response()->json(['message' => 'Categorie supprimee.']);
+        return response()->json(['message' => 'Catégorie supprimée.']);
     }
 
     private function validateData(Request $request, ?Category $category = null): array

@@ -30,8 +30,8 @@ class RegistrationService
         if (! $category->isRegistrationOpen()) {
             throw ValidationException::withMessages([
                 'category' => $category->isFull()
-                    ? 'Cette categorie a atteint son nombre maximum de candidats.'
-                    : 'Les inscriptions ne sont pas ouvertes pour cette categorie.',
+                    ? 'Cette catégorie a atteint son nombre maximum de candidats.'
+                    : 'Les inscriptions ne sont pas ouvertes pour cette catégorie.',
             ]);
         }
 
@@ -84,7 +84,7 @@ class RegistrationService
     {
         if ($candidate->candidate_number !== null) {
             throw ValidationException::withMessages([
-                'candidate' => 'Cette inscription est deja payee.',
+                'candidate' => 'Cette inscription est déjà payée.',
             ]);
         }
 

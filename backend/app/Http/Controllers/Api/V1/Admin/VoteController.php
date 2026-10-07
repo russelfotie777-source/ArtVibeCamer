@@ -82,7 +82,7 @@ class VoteController extends Controller
         ]);
 
         return response()->json([
-            'message' => "{$cancelled->quantity} vote(s) annule(s) et retire(s) du compteur.",
+            'message' => "{$cancelled->quantity} vote(s) annulé(s) et retiré(s) du compteur.",
             'vote' => VoteResource::make($cancelled->load('candidate')),
         ]);
     }

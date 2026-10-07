@@ -57,7 +57,7 @@ class TransactionController extends Controller
         return response()->json([
             'message' => $before === $fresh->status
                 ? 'Aucun changement : '.$fresh->status->label().'.'
-                : 'Statut mis a jour : '.$fresh->status->label().'.',
+                : 'Statut mis à jour : '.$fresh->status->label().'.',
             'transaction' => TransactionResource::make($fresh),
         ]);
     }

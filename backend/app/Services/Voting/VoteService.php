@@ -42,7 +42,7 @@ class VoteService
 
         if (! $category->isVotingOpen()) {
             throw ValidationException::withMessages([
-                'candidate' => 'Les votes ne sont pas ouverts pour cette categorie.',
+                'candidate' => 'Les votes ne sont pas ouverts pour cette catégorie.',
             ]);
         }
 
@@ -52,7 +52,7 @@ class VoteService
 
         if ($quantity < $min || $quantity > $max) {
             throw ValidationException::withMessages([
-                'quantity' => "Le nombre de votes doit etre compris entre {$min} et {$max}.",
+                'quantity' => "Le nombre de votes doit être compris entre {$min} et {$max}.",
             ]);
         }
 
@@ -119,7 +119,7 @@ class VoteService
 
             if ($fresh->status !== VoteStatus::Confirmed) {
                 throw ValidationException::withMessages([
-                    'vote' => 'Seul un lot de votes confirme peut etre annule.',
+                    'vote' => 'Seul un lot de votes confirmé peut être annulé.',
                 ]);
             }
 
@@ -156,7 +156,7 @@ class VoteService
         if ($amount < (int) config('payments.min_amount')
             || $amount > (int) config('payments.max_amount')) {
             throw ValidationException::withMessages([
-                'quantity' => 'Le montant total depasse les limites autorisees.',
+                'quantity' => 'Le montant total dépasse les limites autorisées.',
             ]);
         }
     }

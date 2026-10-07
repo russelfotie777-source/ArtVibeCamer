@@ -62,7 +62,7 @@ class SettingController extends Controller
         return response()->json([
             'message' => $changed === []
                 ? 'Aucun changement.'
-                : count($changed).' reglage(s) mis a jour.',
+                : count($changed).' réglage(s) mis à jour.',
             'changed' => array_keys($changed),
             'data' => Setting::query()->orderBy('group')->orderBy('key')->get(['key', 'value', 'type', 'group', 'label', 'is_public']),
         ]);

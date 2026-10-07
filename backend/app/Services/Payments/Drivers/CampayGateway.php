@@ -69,8 +69,8 @@ class CampayGateway implements PaymentGateway
             status: TransactionStatus::Processing,
             providerReference: $data['reference'] ?? null,
             instructions: isset($data['ussd_code'])
-                ? "Composez {$data['ussd_code']} sur votre telephone pour valider le paiement."
-                : 'Validez la demande de paiement recue sur votre telephone.',
+                ? "Composez {$data['ussd_code']} sur votre téléphone pour valider le paiement."
+                : 'Validez la demande de paiement reçue sur votre téléphone.',
             raw: $this->scrub($data ?? []),
         );
     }
@@ -80,7 +80,7 @@ class CampayGateway implements PaymentGateway
         if (blank($transaction->provider_reference)) {
             return new PaymentStatus(
                 status: $transaction->status,
-                failureReason: 'Aucune reference passerelle enregistree.',
+                failureReason: 'Aucune référence passerelle enregistrée.',
             );
         }
 
@@ -206,7 +206,7 @@ class CampayGateway implements PaymentGateway
     {
         return $body['message']
             ?? $body['detail']
-            ?? 'Le paiement n\'a pas pu etre lance. Reessayez dans un instant.';
+            ?? 'Le paiement n\'a pas pu être lancé. Réessayez dans un instant.';
     }
 
     /** Ne jamais persister de credentials dans transactions.metadata. */

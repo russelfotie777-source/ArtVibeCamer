@@ -13,7 +13,7 @@ enum TransactionType: string
         return match ($this) {
             self::Registration => 'Frais d\'inscription',
             self::Vote => 'Achat de votes',
-            self::Ticket => 'Achat de tickets',
+            self::Ticket => 'Achat de billets',
         };
     }
 

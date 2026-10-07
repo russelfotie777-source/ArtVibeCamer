@@ -17,11 +17,11 @@ enum CandidateStatus: string
         return match ($this) {
             self::Draft => 'Brouillon',
             self::AwaitingPayment => 'En attente de paiement',
-            self::PendingReview => 'A valider',
-            self::Active => 'Valide',
-            self::Rejected => 'Rejete',
-            self::Withdrawn => 'Retire',
-            self::Eliminated => 'Elimine',
+            self::PendingReview => 'À valider',
+            self::Active => 'Validé',
+            self::Rejected => 'Rejeté',
+            self::Withdrawn => 'Retiré',
+            self::Eliminated => 'Éliminé',
         };
     }
 

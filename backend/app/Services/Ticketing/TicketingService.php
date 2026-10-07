@@ -34,7 +34,7 @@ class TicketingService
     {
         if ($items === []) {
             throw ValidationException::withMessages([
-                'items' => 'Selectionnez au moins un billet.',
+                'items' => 'Sélectionnez au moins un billet.',
             ]);
         }
 
@@ -60,7 +60,7 @@ class TicketingService
 
                 if ($type === null) {
                     throw ValidationException::withMessages([
-                        'items' => 'Categorie de billet inconnue.',
+                        'items' => 'Catégorie de billet inconnue.',
                     ]);
                 }
 
@@ -79,7 +79,7 @@ class TicketingService
                 if ($available !== null && $wanted > $available) {
                     throw ValidationException::withMessages([
                         'items' => $available === 0
-                            ? "Les billets « {$type->name} » sont epuises."
+                            ? "Les billets « {$type->name} » sont épuisés."
                             : "Il ne reste que {$available} billet(s) « {$type->name} ».",
                     ]);
                 }
@@ -107,7 +107,7 @@ class TicketingService
 
             if ($lines === []) {
                 throw ValidationException::withMessages([
-                    'items' => 'Selectionnez au moins un billet.',
+                    'items' => 'Sélectionnez au moins un billet.',
                 ]);
             }
 
@@ -164,7 +164,7 @@ class TicketingService
         if ($amount < (int) config('payments.min_amount')
             || $amount > (int) config('payments.max_amount')) {
             throw ValidationException::withMessages([
-                'items' => 'Le montant total depasse les limites autorisees.',
+                'items' => 'Le montant total dépasse les limites autorisées.',
             ]);
         }
     }

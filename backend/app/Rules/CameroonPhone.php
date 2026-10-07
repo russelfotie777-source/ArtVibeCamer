@@ -21,14 +21,14 @@ class CameroonPhone implements ValidationRule
         $local = str_starts_with($digits, '237') ? substr($digits, 3) : $digits;
 
         if (strlen($local) !== 9) {
-            $fail('Le numero doit comporter 9 chiffres, par exemple 671 23 45 67.');
+            $fail('Le numéro doit comporter 9 chiffres, par exemple 671 23 45 67.');
 
             return;
         }
 
         // Mobile : 6 suivi de 5x (MTN/Orange), 7x (MTN), 8x, 9x (Orange).
         if (! preg_match('/^6(5|6|7|8|9)\d{7}$/', $local)) {
-            $fail('Ce numero ne correspond pas a un mobile camerounais.');
+            $fail('Ce numéro ne correspond pas à un mobile camerounais.');
         }
     }
 

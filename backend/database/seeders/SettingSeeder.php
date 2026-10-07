@@ -20,14 +20,14 @@ class SettingSeeder extends Seeder
     {
         return [
             // --- Identite de l'evenement (exposee au front) ---
-            ['key' => 'event_name', 'value' => 'ArtVibeCamer', 'type' => 'string', 'group' => 'event', 'label' => 'Nom de l\'evenement', 'is_public' => true],
-            ['key' => 'event_tagline', 'value' => 'La culture, les talents et l\'art camerounais sur une seule scene', 'type' => 'string', 'group' => 'event', 'label' => 'Accroche', 'is_public' => true],
-            ['key' => 'event_date', 'value' => null, 'type' => 'datetime', 'group' => 'event', 'label' => 'Date de l\'evenement', 'is_public' => true],
+            ['key' => 'event_name', 'value' => 'ArtVibeCamer', 'type' => 'string', 'group' => 'event', 'label' => 'Nom de l\'événement', 'is_public' => true],
+            ['key' => 'event_tagline', 'value' => 'La culture, les talents et l\'art camerounais sur une seule scène.', 'type' => 'string', 'group' => 'event', 'label' => 'Accroche', 'is_public' => true],
+            ['key' => 'event_date', 'value' => null, 'type' => 'datetime', 'group' => 'event', 'label' => 'Date de l\'événement', 'is_public' => true],
             ['key' => 'event_venue', 'value' => null, 'type' => 'string', 'group' => 'event', 'label' => 'Lieu', 'is_public' => true],
             ['key' => 'event_city', 'value' => 'Douala', 'type' => 'string', 'group' => 'event', 'label' => 'Ville', 'is_public' => true],
 
             // --- Contact ---
-            ['key' => 'contact_phone', 'value' => null, 'type' => 'string', 'group' => 'contact', 'label' => 'Telephone', 'is_public' => true],
+            ['key' => 'contact_phone', 'value' => null, 'type' => 'string', 'group' => 'contact', 'label' => 'Téléphone', 'is_public' => true],
             ['key' => 'contact_whatsapp', 'value' => null, 'type' => 'string', 'group' => 'contact', 'label' => 'WhatsApp', 'is_public' => true],
             ['key' => 'contact_email', 'value' => null, 'type' => 'string', 'group' => 'contact', 'label' => 'Email', 'is_public' => true],
 
@@ -46,7 +46,7 @@ class SettingSeeder extends Seeder
              * L'organisation peut masquer les scores pendant la competition
              * pour ne pas influencer les votes, sans fermer le site.
              */
-            ['key' => 'results_public', 'value' => '1', 'type' => 'boolean', 'group' => 'results', 'label' => 'Resultats accessibles', 'is_public' => true],
+            ['key' => 'results_public', 'value' => '1', 'type' => 'boolean', 'group' => 'results', 'label' => 'Résultats accessibles', 'is_public' => true],
             ['key' => 'show_vote_counts', 'value' => '1', 'type' => 'boolean', 'group' => 'results', 'label' => 'Afficher le nombre de voix', 'is_public' => true],
 
             /*

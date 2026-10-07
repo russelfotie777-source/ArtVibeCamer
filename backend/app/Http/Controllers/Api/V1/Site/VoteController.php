@@ -23,7 +23,7 @@ class VoteController extends Controller
         $result = $this->votes->purchase($candidate, $request->validated(), $request);
 
         return response()->json([
-            'message' => 'Votes reserves. Validez le paiement sur votre telephone pour qu\'ils soient comptabilises.',
+            'message' => 'Votes réservés. Validez le paiement sur votre téléphone pour qu\'ils soient comptabilisés.',
             'vote' => VoteResource::make($result->subject),
             'transaction' => TransactionResource::make($result->transaction),
             'payment' => [

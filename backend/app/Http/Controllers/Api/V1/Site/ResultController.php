@@ -19,7 +19,7 @@ class ResultController extends Controller
      */
     public function index(Request $request)
     {
-        abort_unless(Setting::get('results_public', true), 403, 'Les resultats ne sont pas encore publies.');
+        abort_unless(Setting::get('results_public', true), 403, 'Les résultats ne sont pas encore publiés.');
 
         $showTally = Setting::get('show_vote_counts', true);
 

@@ -18,7 +18,7 @@ enum PaymentMethod: string
             self::OrangeMoney => 'Orange Money',
             self::Card => 'Carte bancaire',
             self::Bank => 'Virement bancaire',
-            self::Cash => 'Especes',
+            self::Cash => 'Espèces',
             self::Manual => 'Saisie manuelle',
         };
     }

@@ -14,8 +14,8 @@ enum UserRole: string
         return match ($this) {
             self::SuperAdmin => 'Super administrateur',
             self::Admin => 'Administrateur',
-            self::Moderator => 'Moderateur',
-            self::Scanner => 'Agent de controle',
+            self::Moderator => 'Modérateur',
+            self::Scanner => 'Agent de contrôle',
         };
     }
 

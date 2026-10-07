@@ -58,9 +58,9 @@ class StoreRegistrationRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.unique' => 'Une inscription existe deja avec cette adresse email.',
-            'phone.unique' => 'Une inscription existe deja avec ce numero de telephone.',
-            'accepts_terms.accepted' => 'Vous devez accepter le reglement du concours.',
+            'email.unique' => 'Une inscription existe déjà avec cette adresse email.',
+            'phone.unique' => 'Une inscription existe déjà avec ce numéro de téléphone.',
+            'accepts_terms.accepted' => 'Vous devez accepter le règlement du concours.',
         ];
     }
 

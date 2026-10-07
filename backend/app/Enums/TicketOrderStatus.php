@@ -14,10 +14,10 @@ enum TicketOrderStatus: string
     {
         return match ($this) {
             self::Pending => 'En attente de paiement',
-            self::Paid => 'Payee',
-            self::Cancelled => 'Annulee',
-            self::Expired => 'Expiree',
-            self::Refunded => 'Remboursee',
+            self::Paid => 'Payée',
+            self::Cancelled => 'Annulée',
+            self::Expired => 'Expirée',
+            self::Refunded => 'Remboursée',
         };
     }
 

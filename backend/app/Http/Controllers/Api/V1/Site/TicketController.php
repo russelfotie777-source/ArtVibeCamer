@@ -33,7 +33,7 @@ class TicketController extends Controller
         );
 
         return response()->json([
-            'message' => 'Commande enregistree. Validez le paiement sur votre telephone pour recevoir vos billets.',
+            'message' => 'Commande enregistrée. Validez le paiement sur votre téléphone pour recevoir vos billets.',
             'order' => TicketOrderResource::make($result->subject),
             'transaction' => TransactionResource::make($result->transaction),
             'payment' => [

@@ -70,7 +70,7 @@ class CinetPayGateway implements PaymentGateway
 
             return new PaymentIntent(
                 status: TransactionStatus::Failed,
-                failureReason: $body['message'] ?? 'Le paiement n\'a pas pu etre lance.',
+                failureReason: $body['message'] ?? 'Le paiement n\'a pas pu être lancé.',
                 raw: $this->scrub($body),
             );
         }

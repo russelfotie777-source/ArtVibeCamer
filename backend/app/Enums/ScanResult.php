@@ -13,11 +13,11 @@ enum ScanResult: string
     public function label(): string
     {
         return match ($this) {
-            self::Accepted => 'Entree autorisee',
-            self::AlreadyUsed => 'Billet deja utilise',
+            self::Accepted => 'Entrée autorisée',
+            self::AlreadyUsed => 'Billet déjà utilisé',
             self::NotFound => 'Billet inconnu',
-            self::Cancelled => 'Billet annule',
-            self::OrderUnpaid => 'Commande non payee',
+            self::Cancelled => 'Billet annulé',
+            self::OrderUnpaid => 'Commande non payée',
         };
     }
 

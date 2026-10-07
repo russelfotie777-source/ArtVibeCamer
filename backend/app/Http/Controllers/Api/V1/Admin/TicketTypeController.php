@@ -24,7 +24,7 @@ class TicketTypeController extends Controller
         Audit::log('ticket_type.created', $type, "Categorie de billet « {$type->name} » creee");
 
         return response()->json([
-            'message' => 'Categorie de billet creee.',
+            'message' => 'Catégorie de billet créée.',
             'ticket_type' => TicketTypeResource::make($type),
         ], 201);
     }
@@ -41,7 +41,7 @@ class TicketTypeController extends Controller
             abort_if(
                 $data['quantity_total'] < $engaged,
                 422,
-                "Impossible : {$engaged} billet(s) sont deja vendus ou en cours de paiement."
+                "Impossible : {$engaged} billet(s) sont déjà vendus ou en cours de paiement."
             );
         }
 
@@ -54,7 +54,7 @@ class TicketTypeController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Categorie de billet mise a jour.',
+            'message' => 'Catégorie de billet mise à jour.',
             'ticket_type' => TicketTypeResource::make($ticketType->fresh()),
         ]);
     }
@@ -64,13 +64,13 @@ class TicketTypeController extends Controller
         abort_if(
             $ticketType->tickets()->exists(),
             422,
-            'Des billets de cette categorie ont deja ete emis. Desactivez-la plutot que de la supprimer.'
+            'Des billets de cette catégorie ont déjà été émis. Désactivez-la plutôt que de la supprimer.'
         );
 
         $ticketType->delete();
         Audit::log('ticket_type.deleted', $ticketType, "Categorie « {$ticketType->name} » supprimee");
 
-        return response()->json(['message' => 'Categorie de billet supprimee.']);
+        return response()->json(['message' => 'Catégorie de billet supprimée.']);
     }
 
     private function validateData(Request $request, ?TicketType $type = null): array

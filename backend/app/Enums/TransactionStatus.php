@@ -17,11 +17,11 @@ enum TransactionStatus: string
         return match ($this) {
             self::Pending => 'En attente',
             self::Processing => 'Paiement en cours',
-            self::Succeeded => 'Paye',
-            self::Failed => 'Echoue',
-            self::Cancelled => 'Annule',
-            self::Expired => 'Expire',
-            self::Refunded => 'Rembourse',
+            self::Succeeded => 'Payé',
+            self::Failed => 'Échoué',
+            self::Cancelled => 'Annulé',
+            self::Expired => 'Expiré',
+            self::Refunded => 'Remboursé',
         };
     }
 

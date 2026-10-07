@@ -12,8 +12,8 @@ enum TicketStatus: string
     {
         return match ($this) {
             self::Valid => 'Valide',
-            self::Used => 'Deja utilise',
-            self::Cancelled => 'Annule',
+            self::Used => 'Déjà utilisé',
+            self::Cancelled => 'Annulé',
         };
     }
 }

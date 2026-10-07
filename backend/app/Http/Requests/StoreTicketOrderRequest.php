@@ -37,8 +37,8 @@ class StoreTicketOrderRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'items.required' => 'Selectionnez au moins un billet.',
-            'buyer_phone.required' => 'Le numero Mobile Money est necessaire pour encaisser la commande.',
+            'items.required' => 'Sélectionnez au moins un billet.',
+            'buyer_phone.required' => 'Le numéro Mobile Money est nécessaire pour encaisser la commande.',
         ];
     }
 }

@@ -33,12 +33,12 @@ class UserSeeder extends Seeder
 
         if ($user->wasRecentlyCreated) {
             $this->command->newLine();
-            $this->command->info('Compte super administrateur cree');
+            $this->command->info('Compte super administrateur créé');
             $this->command->line('  Email    : '.$user->email);
             $this->command->line('  Mot de passe : '.$password);
 
             if (! $isLocal) {
-                $this->command->warn('  Notez-le maintenant : il ne sera plus affiche.');
+                $this->command->warn('  Notez-le maintenant : il ne sera plus affiché.');
             }
             $this->command->newLine();
         }

@@ -35,8 +35,8 @@ class StoreVoteRequest extends FormRequest
     {
         return [
             'quantity.min' => 'Vous devez acheter au moins un vote.',
-            'quantity.max' => 'Le nombre de votes par achat est limite a :max.',
-            'voter_phone.required' => 'Le numero Mobile Money est necessaire pour encaisser le vote.',
+            'quantity.max' => 'Le nombre de votes par achat est limité à :max.',
+            'voter_phone.required' => 'Le numéro Mobile Money est nécessaire pour encaisser le vote.',
         ];
     }
 }
