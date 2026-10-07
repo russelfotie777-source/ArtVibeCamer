@@ -17,6 +17,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        /*
+         * Le front Next.js rend une partie des pages cote serveur : sans cette
+         * declaration, Laravel verrait l'adresse du serveur Next pour tous les
+         * visiteurs, et les limites de debit par IP bloqueraient l'ensemble du
+         * public des les premiers appels.
+         *
+         * TRUSTED_PROXIES doit lister les adresses du front, et elles seules :
+         * faire confiance a X-Forwarded-For venant de n'importe qui permettrait
+         * a un client de se declarer une autre IP pour contourner les plafonds.
+         */
+        $middleware->trustProxies(
+            at: array_filter(explode(',', (string) env('TRUSTED_PROXIES', ''))),
+        );
+
         // Plafond global de l'API. Les limiteurs nommes (checkout, login,
         // scan...) sont definis dans AppServiceProvider.
         $middleware->throttleApi();
