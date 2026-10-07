@@ -35,17 +35,23 @@ class ElgiopayDiagnostic extends Command
      * facon identique, on couvre donc un numero de chaque operateur sur le
      * succes immediat, puis MTN seul pour les autres cas.
      *
-     * @var array<int, array{numero: string, attendu: string, delai: int, libelle: string}>
+     * `bloquant` distingue ce qui empeche une mise en production de ce qui
+     * revele seulement une lacune de leur simulateur. Au 7 octobre 2026, les
+     * quatre motifs d'echec ne sont pas implementes cote bac a sable : ils
+     * aboutissent tous. Notre traitement de l'echec est couvert par
+     * tests/Feature/ElgiopayTest.php, avec des reponses forgees.
+     *
+     * @var array<int, array{numero: string, attendu: string, delai: int, libelle: string, bloquant: bool}>
      */
     private const SCENARIOS = [
-        ['numero' => '677000000', 'attendu' => 'succeeded', 'delai' => 0, 'libelle' => 'MTN — succès immédiat'],
-        ['numero' => '699000000', 'attendu' => 'succeeded', 'delai' => 0, 'libelle' => 'Orange — succès immédiat'],
-        ['numero' => '677000010', 'attendu' => 'succeeded', 'delai' => 10, 'libelle' => 'MTN — succès après 10 s'],
-        ['numero' => '699000060', 'attendu' => 'succeeded', 'delai' => 60, 'libelle' => 'Orange — succès après 1 min'],
-        ['numero' => '677000201', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Refus du payeur (9201)'],
-        ['numero' => '677000202', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Solde insuffisant (9202)'],
-        ['numero' => '677000203', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Pas validé à temps (9203)'],
-        ['numero' => '677000204', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Échec générique (9204)'],
+        ['numero' => '677000000', 'attendu' => 'succeeded', 'delai' => 0, 'libelle' => 'MTN — succès immédiat', 'bloquant' => true],
+        ['numero' => '699000000', 'attendu' => 'succeeded', 'delai' => 0, 'libelle' => 'Orange — succès immédiat', 'bloquant' => true],
+        ['numero' => '677000010', 'attendu' => 'succeeded', 'delai' => 10, 'libelle' => 'MTN — succès après 10 s', 'bloquant' => true],
+        ['numero' => '699000060', 'attendu' => 'succeeded', 'delai' => 60, 'libelle' => 'Orange — succès après 1 min', 'bloquant' => true],
+        ['numero' => '677000201', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Refus du payeur (9201)', 'bloquant' => false],
+        ['numero' => '677000202', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Solde insuffisant (9202)', 'bloquant' => false],
+        ['numero' => '677000203', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Pas validé à temps (9203)', 'bloquant' => false],
+        ['numero' => '677000204', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Échec générique (9204)', 'bloquant' => false],
     ];
 
     public function handle(): int
@@ -109,6 +115,7 @@ class ElgiopayDiagnostic extends Command
         $attenteMax = (int) $this->option('attente');
         $lignes = [];
         $echecs = 0;
+        $nonSimules = 0;
 
         foreach (self::SCENARIOS as $scenario) {
             if ($this->option('rapide') && $scenario['delai'] > 0) {
@@ -117,7 +124,16 @@ class ElgiopayDiagnostic extends Command
 
             [$ligne, $conforme] = $this->jouer($passerelle, $scenario, $attenteMax);
             $lignes[] = $ligne;
-            $echecs += $conforme ? 0 : 1;
+
+            if ($conforme) {
+                continue;
+            }
+
+            if ($scenario['bloquant']) {
+                $echecs++;
+            } else {
+                $nonSimules++;
+            }
         }
 
         $this->newLine();
@@ -128,18 +144,28 @@ class ElgiopayDiagnostic extends Command
 
         $this->newLine();
 
-        if ($echecs === 0) {
-            $this->components->info('Tous les scénarios se comportent comme annoncé.');
-            $this->line('  Reste à valider le webhook : il demande une URL publique');
-            $this->line('  (tunnel ngrok ou cloudflared) déclarée dans le tableau de bord Elgiopay.');
-
-            return self::SUCCESS;
+        if ($nonSimules > 0) {
+            $this->components->warn(
+                "{$nonSimules} motif(s) d'échec ne sont pas simulés par le bac à sable : ils aboutissent."
+            );
+            $this->line('  Ce n\'est pas un défaut de notre côté — notre traitement de l\'échec');
+            $this->line('  est couvert par tests/Feature/ElgiopayTest.php. À signaler à Elgiopay,');
+            $this->line('  et à ne pas considérer comme validé tant qu\'ils ne l\'ont pas corrigé.');
+            $this->newLine();
         }
 
-        $this->components->error("{$echecs} scénario(s) ne correspondent pas à la documentation.");
-        $this->line('  Vérifiez la clé, l\'hôte, puis signalez l\'écart à Elgiopay.');
+        if ($echecs > 0) {
+            $this->components->error("{$echecs} encaissement(s) n'aboutissent pas.");
+            $this->line('  Vérifiez la clé et l\'hôte avant toute mise en service.');
 
-        return self::FAILURE;
+            return self::FAILURE;
+        }
+
+        $this->components->info('Les encaissements aboutissent sur les deux opérateurs.');
+        $this->line('  Reste à valider le webhook : il demande une URL publique');
+        $this->line('  (tunnel ngrok ou cloudflared) déclarée dans le tableau de bord Elgiopay.');
+
+        return self::SUCCESS;
     }
 
     /** @return array{0: array<int, string>, 1: bool} */

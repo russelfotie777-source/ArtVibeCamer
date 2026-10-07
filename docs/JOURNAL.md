@@ -348,6 +348,42 @@ ne pas gonfler les recettes du tableau de bord avec des essais.
 `pending`, ce qui permet de verifier pour de vrai l'ecran d'attente du
 candidat, l'interrogation du statut, et l'arrivee de la notification.
 
+### Ecarts constates entre la documentation Elgiopay et leur API
+
+Releves le **7 octobre 2026** sur `sandbox-api.elgiopay.com`, avec une cle
+`pk_test_`. A reverifier avant la mise en service, et a signaler a Elgiopay.
+
+| Point | Documentation | Comportement reel |
+| --- | --- | --- |
+| `GET /balance` | Objet enveloppe dans `data`, champs `pending_balance` et `total_balance`, valeurs numeriques | Champs **au premier niveau**, nommes `reserved_balance` et `balance`, valeurs en **chaines decimales** (« 78400.00 ») |
+| Numeros d'echec `…201` a `…204` | `status: failed` avec un `error_code` en 9200 | **Aboutissent tous** en `completed` |
+| Numeros a delai `…010`, `…060` | `pending` puis bascule apres 10 s / 1 min | **Aboutissent en une seconde** |
+
+`ElgiopayGateway::balance()` lit les deux formes, pour ne pas casser le jour
+ou ils les alignent.
+
+Les deux dernieres lignes signifient qu'**on ne peut pas valider le parcours
+d'echec contre leur bac a sable**. Notre traitement est couvert par
+`tests/Feature/ElgiopayTest.php`, avec des reponses forgees — mais tant
+qu'Elgiopay n'a pas corrige son simulateur, le comportement reel face a un
+refus d'operateur reste a confirmer.
+
+### Commission et tresorerie
+
+Observe sur une transaction reelle du bac a sable : **8 000 FCFA encaisses,
+160 FCFA de frais, 7 840 FCFA nets — soit 2 %.** A confirmer aupres
+d'Elgiopay : le taux est-il identique sur MTN et Orange, et s'applique-t-il
+aussi au retrait ?
+
+L'argent ne part pas sur un compte Mobile Money : il s'accumule sur le solde
+Elgiopay jusqu'a un retrait explicite (`POST /payouts` ou leur tableau de
+bord).
+
+> **Le tableau de bord additionne aujourd'hui le brut** (`SUM(amount)`), pas
+> le net. `fees` et `net_amount` existent dans chaque reponse Elgiopay mais
+> ne sont pas stockes. Pour rendre des comptes a l'organisateur et aux
+> sponsors, c'est un ecart a combler.
+
 ### Les notifications ne se configurent pas par requete
 
 L'URL de webhook se declare **dans le tableau de bord Elgiopay**, pas dans

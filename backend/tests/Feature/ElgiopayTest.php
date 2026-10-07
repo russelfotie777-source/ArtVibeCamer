@@ -285,6 +285,34 @@ class ElgiopayTest extends TestCase
         );
     }
 
+    public function test_le_solde_est_lu_dans_la_forme_reellement_renvoyee(): void
+    {
+        /*
+         * Leur documentation annonce un objet enveloppe dans `data`, avec
+         * `pending_balance` et `total_balance` en nombres. L'API renvoie en
+         * fait les champs au premier niveau, sous `reserved_balance` et
+         * `balance`, et en chaines decimales. Constate le 7 octobre 2026.
+         */
+        Http::fake([
+            '*/api/v1/balance*' => Http::response([
+                'balance' => '78400.00',
+                'currency' => 'XAF',
+                'available_balance' => '78400.00',
+                'reserved_balance' => '0.00',
+            ]),
+        ]);
+
+        $solde = (new ElgiopayGateway(
+            config('payments.drivers.elgiopay')
+        ))->balance('XAF');
+
+        // Le franc CFA n'a pas de sous-unite : les decimales sont ramenees.
+        $this->assertSame(
+            ['currency' => 'XAF', 'available' => 78400, 'pending' => 0, 'total' => 78400],
+            $solde,
+        );
+    }
+
     public function test_une_cle_refusee_rend_le_solde_illisible(): void
     {
         // Le diagnostic s'appuie dessus pour distinguer une cle invalide d'un

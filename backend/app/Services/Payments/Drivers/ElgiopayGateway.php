@@ -161,13 +161,26 @@ class ElgiopayGateway implements PaymentGateway
             return null;
         }
 
-        $donnees = $reponse->json('data') ?? [];
+        /*
+         * Deux formes coexistent. La documentation annonce un objet enveloppe
+         * dans `data`, avec `pending_balance` et `total_balance` en nombres.
+         * L'API renvoie en fait les champs au premier niveau, sous les noms
+         * `reserved_balance` et `balance`, et en chaines decimales
+         * (« 124500.00 »). Constate le 7 octobre 2026 sur le bac a sable.
+         *
+         * On lit les deux, pour ne pas casser le jour ou ils alignent l'un
+         * sur l'autre.
+         */
+        $donnees = $reponse->json('data') ?? $reponse->json() ?? [];
+
+        // Le franc CFA n'a pas de sous-unite : on ramene a l'entier.
+        $entier = fn (mixed $v): int => (int) round((float) ($v ?? 0));
 
         return [
             'currency' => $donnees['currency'] ?? $devise,
-            'available' => (int) ($donnees['available_balance'] ?? 0),
-            'pending' => (int) ($donnees['pending_balance'] ?? 0),
-            'total' => (int) ($donnees['total_balance'] ?? 0),
+            'available' => $entier($donnees['available_balance'] ?? null),
+            'pending' => $entier($donnees['pending_balance'] ?? $donnees['reserved_balance'] ?? null),
+            'total' => $entier($donnees['total_balance'] ?? $donnees['balance'] ?? null),
         ];
     }
 
