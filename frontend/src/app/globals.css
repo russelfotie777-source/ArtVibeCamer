@@ -1,26 +1,158 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * ArtVibeCamer — systeme de design
+ *
+ * Reference visuelle : les textiles de l'Ouest camerounais. Le fond indigo
+ * vient du ndop, tissu teint a l'indigo des royaumes bamileke ; l'accent
+ * laiton vient de la broderie du toghu, porte lors des ceremonies. On evite
+ * deliberement les bandes vert-rouge-jaune du drapeau, qui signeraient une
+ * plateforme institutionnelle plutot qu'un evenement culturel.
+ *
+ * Deux terrains opposes, un seul jeu de jetons :
+ *   - site public : fond indigo, registre de soiree
+ *   - back-office : fond papier, registre de travail diurne
+ */
+
+@theme {
+  /* --- Indigo ndop --- */
+  --color-ink: #171b34;
+  --color-ink-raised: #232a4c;
+  --color-ink-line: #343c63;
+  --color-ink-soft: #9ba3c4;
+
+  /* --- Laiton toghu --- */
+  --color-brass: #c08a2e;
+  --color-brass-lift: #e0a838;
+  --color-brass-wash: #2a2a3d;
+
+  /* --- Papier --- */
+  --color-paper: #f3f4f7;
+  --color-paper-raised: #ffffff;
+  --color-rule: #d8dbe4;
+  --color-paper-soft: #5c6480;
+
+  /* --- Etats --- */
+  --color-sage: #3d6b51;
+  --color-sage-wash: #e8f0ea;
+  /* Le vert profond devient illisible sur l'indigo : variante eclaircie
+     reservee aux fonds sombres. */
+  --color-sage-clair: #7cbe97;
+  --color-oxblood: #8c2f23;
+  --color-oxblood-wash: #f8eae8;
+  --color-amber: #8a6410;
+  --color-amber-wash: #fbf1dc;
+
+  /* --- Familles --- */
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Echelle typographique --- */
+  --text-2xs: 0.75rem;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.4375rem;
+  --text-2xl: 1.75rem;
+
+  --text-display-sm: 2.125rem;
+  --text-display: clamp(2.5rem, 6vw, 4.25rem);
+  --text-display-lg: clamp(3.25rem, 11vw, 8.5rem);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+  }
+
+  /*
+   * Les titres portent la personnalite de la page : grotesque etroit, suivi
+   * resserre, graisse haute. Jamais de capitales pour un simple libelle.
+   */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+    text-wrap: balance;
+  }
+
+  /* Les montants sont la decision : ils se lisent dans la fonte de titre. */
+  .montant {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .chiffre {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Longueur de ligne : en dessous de 72 caracteres pour le corps de texte. */
+  .prose-etroit {
+    max-width: 34rem;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brass-lift);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-brass);
+    color: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /*
+   * Rayon de bordure porteur de sens : nul sur les panneaux structurels,
+   * faible sur les controles manipulables. Pas de rayon uniforme partout.
+   */
+  .panneau {
+    border-radius: 0;
+  }
+
+  .controle {
+    border-radius: 3px;
+  }
+
+  /* Attente d'un paiement : la seule animation non declenchee du site. */
+  @keyframes battement {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  .en-attente {
+    animation: battement 1.6s ease-in-out infinite;
+  }
 }
