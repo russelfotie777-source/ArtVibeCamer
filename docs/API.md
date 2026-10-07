@@ -142,6 +142,24 @@ Suite du parcours : afficher `payment.instructions`, ou rediriger vers
 
 `candidate_number` reste `null` tant que le paiement n'est pas confirme.
 
+## Relancer un paiement d'inscription echoue
+
+```http
+POST /registrations/{reference}/retry
+{ "payer_phone": "677112233" }
+```
+
+`{reference}` est la reference de la transaction echouee. `payer_phone` est
+facultatif : sans lui, le numero precedent est reutilise.
+
+La route est indexee sur la reference de transaction et non sur le candidat :
+cette reference est aleatoire et connue du seul candidat, alors qu'un slug est
+devinable. Un tiers ne peut donc pas declencher de demandes de paiement sur
+des dossiers qui ne sont pas les siens.
+
+Repond **201** avec la meme structure que `POST /registrations`, pour une
+nouvelle transaction. **422** si les frais sont deja encaisses.
+
 ## Achat de votes
 
 ```http
@@ -234,6 +252,13 @@ A interroger pendant que l'utilisateur valide sur son telephone.
 | `is_final` | `true` = arreter d'interroger |
 | `is_awaiting_payer` | `true` = le payeur peut encore valider |
 | `failure_reason` | Motif a afficher en cas d'echec |
+
+Pour une transaction d'inscription, la reponse porte en plus
+`meta.candidate` : `candidate_number`, `display_name`, `slug`, `status`,
+`status_label` et `category`. C'est ce qui permet d'annoncer son numero au
+candidat des la confirmation du paiement. Divulgation acceptable puisque la
+reference de transaction n'est connue que de lui ; aucune coordonnee
+personnelle n'y figure.
 
 Interroger toutes les 3 a 5 secondes, 2 minutes maximum. Si le webhook se
 fait attendre, cette route interroge elle-meme la passerelle.

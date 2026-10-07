@@ -6,33 +6,38 @@ session.** C'est ce fichier qui permet a quelqu'un d'autre de reprendre sans
 avoir a reconstituer le contexte.
 
 - **Echeance MVP** : 10 octobre 2026
-- **Derniere mise a jour** : 7 octobre 2026
+- **Derniere mise a jour** : 7 octobre 2026 (fin de journee)
 
 ---
 
 ## Ou on en est
 
-**Le backend est fonctionnel de bout en bout.** Les trois parcours payants
-(inscription, votes, billets) tournent, le controle a l'entree fonctionne, le
-tableau de bord renvoie ses chiffres. 27 tests automatises passent.
+**Le backend est complet et teste.** **Le parcours d'inscription avec paiement
+et le suivi par l'organisation sont utilisables de bout en bout**, du
+formulaire public jusqu'a la validation du dossier dans le back-office.
 
-**Le frontend n'est pas commence.** Le squelette Next.js existe avec ses
-dependances installees, rien de plus.
+Les votes et la billetterie existent cote API mais n'ont pas encore
+d'interface : c'est le prochain chantier, decide avec l'organisation pour
+tenir l'echeance.
 
-| Module | Backend | Frontend |
+| Module | Backend | Interface |
 | --- | --- | --- |
 | Architecture, base de donnees | Fait | — |
-| Categories et candidats | Fait | A faire |
-| Inscription + paiement | Fait | A faire |
+| Inscription + paiement | Fait | **Fait** |
+| Suivi du paiement par le candidat | Fait | **Fait** |
+| Relance d'un paiement echoue | Fait | **Fait** |
+| Connexion back-office | Fait | **Fait** |
+| Tableau de bord, statistiques | Fait | **Fait** |
+| Liste et fiche des candidats | Fait | **Fait** |
+| Validation / rejet des dossiers | Fait | **Fait** |
+| Suivi des paiements, verification | Fait | **Fait** |
+| Exports CSV | Fait | Lien pose |
+| Categories et candidats (pages publiques) | Fait | A faire |
 | Votes payants | Fait | A faire |
 | Billetterie + QR | Fait | A faire |
 | Controle a l'entree | Fait | A faire |
-| Tableau de bord, statistiques | Fait | A faire |
-| Exports CSV | Fait | — |
-| Interface publique | — | A faire |
-| Back-office | — | A faire |
-
----
+| Gestion des categories et tarifs | Fait | A faire |
+| Reglages de l'evenement | Fait | A faire |
 
 ## Ce qui est fait, en detail
 
@@ -96,61 +101,63 @@ tableau de bord affichant 50 000 FCFA de recettes.
 
 ## Point d'arret precis
 
-Dernier etat : backend termine et teste, **frontend non commence**.
+Dernier etat : inscription payante et suivi par l'organisation termines et
+verifies a l'ecran. **Rien n'a ete commence sur les votes, la billetterie et
+le controle a l'entree cote interface.**
 
-Le serveur de developpement tournait sur `http://127.0.0.1:8000`.
-La base `artvibecamer` contient des donnees de test (1 candidat, 1 lot de
-votes, 1 commande de billets). Pour repartir propre :
+Pour repartir d'une base propre :
 
 ```bash
 cd backend && php artisan migrate:fresh --seed
+cd ../frontend && npm run dev
 ```
 
----
+Compte de travail en local : `admin@artvibecamer.cm` / `password`.
+
+### Ce que l'interface couvre deja
+
+| Page | Chemin |
+| --- | --- |
+| Accueil, disciplines et tarifs | `/` |
+| Formulaire d'inscription | `/inscription` |
+| Suivi du paiement, relance en cas d'echec | `/paiement/[reference]` |
+| Connexion de l'equipe | `/connexion` |
+| Tableau de bord | `/admin` |
+| Liste des candidats, filtres, recherche | `/admin/candidats` |
+| Fiche candidat, validation et rejet | `/admin/candidats/[id]` |
+| Suivi des paiements, verification | `/admin/paiements` |
 
 ## Suite a donner, par ordre de priorite
 
-### 1. Frontend public — le plus urgent
+### 1. Votes payants — prochain chantier
 
-Rien n'existe. C'est le chemin critique vers l'echeance.
+L'API est prete (`POST /candidates/{slug}/votes`). Il manque les pages :
 
-Ordre suggere, du plus structurant au moins :
+1. **Liste publique des candidats** (`GET /candidates`), avec filtre par
+   categorie et recherche.
+2. **Page d'un candidat** (`GET /candidates/{slug}`) : photo, numero,
+   presentation, nombre de voix, bouton « Voter ».
+3. **Achat de voix** : choix de la quantite, numero Mobile Money. N'envoyer
+   que `quantity` et `voter_phone`, jamais de montant.
+4. **Page resultats** (`GET /results`) : gerer le `403` quand les resultats
+   ne sont pas publies, et `votes_count: null` quand les scores sont masques.
 
-1. **Client API et types TypeScript** (`src/lib/api.ts`). Point d'entree
-   unique vers le backend, types derives de [API.md](API.md). Tout le reste en
-   depend.
-2. **Page d'accueil** : nom et accroche de l'evenement depuis
-   `GET /settings`, liste des categories, appels a l'action vers inscription /
-   vote / billetterie.
-3. **Liste et fiche candidat** : `GET /candidates`, `GET /candidates/{slug}`.
-   La fiche porte le bouton « Voter ».
-4. **Parcours de paiement reutilisable.** Les trois flux suivent exactement la
-   meme sequence : `POST` de creation → afficher `payment.instructions` ou
-   rediriger vers `payment.redirect_url` → interroger
-   `GET /payments/{reference}` toutes les 3 a 5 secondes jusqu'a
-   `is_final: true`. **A ecrire une fois en composant partage**, pas trois
-   fois.
-5. **Formulaire d'inscription** : `multipart/form-data` a cause de la photo.
-6. **Achat de votes** : n'envoyer que `quantity` et `voter_phone`.
-7. **Billetterie** : panier, `POST /ticket-orders`, puis page de recuperation
-   des billets a `/billets/{reference}` qui encode `qr_token` en QR code.
-8. **Page resultats** : `GET /results`. Gerer les deux cas — `403` si les
-   resultats ne sont pas publies, `votes_count: null` si les scores sont
-   masques.
+Le composant `SuiviPaiement` se reutilise tel quel pour l'encaissement : les
+trois flux partagent la meme sequence.
 
-### 2. Back-office
+### 2. Billetterie et controle a l'entree
 
-1. Connexion (`POST /admin/login`), jeton stocke cote client.
-2. Tableau de bord : les six blocs de `GET /admin/dashboard` sont deja
-   calcules, il n'y a qu'a les afficher. Mettre `alerts` en evidence.
-3. Liste des candidats avec filtres, boutons valider / rejeter.
-4. Gestion des categories et des tarifs.
-5. Suivi des paiements, avec le bouton « verifier » (`POST
-   /admin/transactions/{reference}/verify`).
-6. Ecran de scan : camera, appel a `POST /admin/scan`, verdict en grand et
-   lisible. **Cet ecran sera utilise debout, dans le bruit, sur un telephone**
-   — gros caracteres, couleur franche, retour sonore.
-7. Reglages : les interrupteurs de `PUT /admin/settings`.
+1. Liste des categories de billets, panier, commande.
+2. Page de recuperation des billets (`/billets/{reference}`) qui encode
+   `qr_token` en QR code.
+3. **Ecran de scan** pour l'entree : camera, `POST /admin/scan`, verdict en
+   grand. Il sera utilise debout, dans le bruit, sur un telephone — gros
+   caracteres, couleur franche, retour sonore.
+
+### 2 bis. Back-office, ce qui reste
+
+Gestion des categories et des tarifs, categories de billets, annulation de
+lots de votes suspects, ecran de reglages. Les routes existent toutes.
 
 ### 3. Avant la mise en production — non negociable
 
@@ -241,6 +248,41 @@ Les modeles exposes au public se resolvent par `slug` ou `reference`. Le
 back-office travaille sur des identifiants numeriques, d'ou les
 `{candidate:id}` explicites dans la partie admin de `routes/api.php`. Oublier
 le `:id` donne un 404 silencieux.
+
+### Installation des dependances du front
+
+Sur une connexion instable, `npm install` abandonne en cours de route et
+laisse des fichiers **tronques** dans `node_modules`. Cela se manifeste plus
+tard par des erreurs incomprehensibles : une erreur de syntaxe dans
+`csstype`, ou un « Bus error » au build quand c'est un binaire natif
+(`@next/swc-linux-x64-gnu`) qui est atteint.
+
+Un `.npmrc` est versionne avec des delais etendus et `maxsockets=3`. En cas de
+doute sur l'integrite d'une dependance native :
+
+```bash
+node -e "require('@next/swc-linux-x64-gnu')"   # plante = binaire corrompu
+```
+
+### next/headers ne franchit pas la frontiere client
+
+`src/lib/api.ts` importe `next/headers` et porte `import "server-only"` : il
+ne peut etre importe que depuis un composant serveur. L'URL publique de l'API
+vit donc dans `src/lib/config.ts`, que les composants client utilisent.
+Importer `api.ts` depuis un composant client casse le build.
+
+### Limites de debit et rendu serveur
+
+Les pages publiques sont rendues cote serveur. Sans precaution, Laravel verrait
+l'adresse du serveur Next pour **tous** les visiteurs et ses plafonds par IP
+bloqueraient l'ensemble du public. Le front transmet donc `X-Forwarded-For`,
+et Laravel ne lui fait confiance que pour les adresses listees dans
+`TRUSTED_PROXIES`. Cette variable doit etre renseignee en production, et ne
+doit jamais valoir `*`.
+
+Corollaire : les ecritures declenchees par le visiteur (inscription, relance
+de paiement, suivi) partent **directement du navigateur** vers l'API, pour que
+l'adresse vue soit la sienne sans dependre de cette configuration.
 
 ### Simulation d'un echec de paiement
 
