@@ -26,7 +26,7 @@ class ReconcilePayments extends Command
 {
     protected $signature = 'payments:reconcile
                             {--grace=10 : Minutes de marge au-dela de l\'expiration avant abandon}
-                            {--limit=200 : Nombre maximum de transactions traitees}';
+                            {--limit=60 : Nombre maximum de transactions traitees par passage}';
 
     protected $description = 'Verifie aupres des passerelles les paiements restes en attente';
 
@@ -35,6 +35,12 @@ class ReconcilePayments extends Command
         $grace = (int) $this->option('grace');
         $limit = (int) $this->option('limit');
 
+        /*
+         * Lot volontairement modeste. Chaque transaction vaut un appel a la
+         * passerelle ; la cadence sortante les espace deja, mais un lot trop
+         * large ferait durer le passage au-dela de l'intervalle de
+         * planification et se chevaucherait avec le suivant.
+         */
         $pending = Transaction::query()
             ->whereIn('status', [
                 TransactionStatus::Pending->value,

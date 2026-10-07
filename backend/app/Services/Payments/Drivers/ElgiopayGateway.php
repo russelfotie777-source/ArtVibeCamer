@@ -5,11 +5,13 @@ namespace App\Services\Payments\Drivers;
 use App\Enums\PaymentMethod;
 use App\Enums\TransactionStatus;
 use App\Models\Transaction;
+use App\Services\Payments\CadenceSortante;
 use App\Services\Payments\PaymentGateway;
 use App\Services\Payments\PaymentIntent;
 use App\Services\Payments\PaymentStatus;
 use App\Services\Payments\WebhookEvent;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -364,13 +366,37 @@ class ElgiopayGateway implements PaymentGateway
 
     private function client(): PendingRequest
     {
+        // Attend son tour avant chaque appel : la passerelle est un service
+        // partage, la saturer degrade le service de tous ses clients.
+        $this->cadence()->attendreSonTour();
+
         return Http::baseUrl(rtrim((string) $this->config['base_url'], '/'))
             ->withToken((string) $this->config['api_key'])
             ->acceptJson()
             ->timeout(30)
-            // Une coupure passagere ne doit pas faire echouer un encaissement :
-            // on retente sans lever, et l'appelant decide.
-            ->retry(2, 500, throw: false);
+            /*
+             * On ne reessaie que ce qui a une chance d'aboutir : coupure
+             * reseau, panne passagere, ou plafond atteint chez eux. Rejouer
+             * une cle refusee ou une requete malformee triple la charge sans
+             * jamais changer le resultat.
+             */
+            ->retry(2, 1000, function (\Throwable $e) {
+                if (! $e instanceof RequestException) {
+                    return true; // coupure reseau
+                }
+
+                $statut = $e->response->status();
+
+                return $statut === 429 || $statut >= 500;
+            }, throw: false);
+    }
+
+    private function cadence(): CadenceSortante
+    {
+        return new CadenceSortante(
+            'elgiopay',
+            (int) ($this->config['requetes_par_seconde'] ?? 4),
+        );
     }
 
     /** Elgiopay attend un numero au format international. */

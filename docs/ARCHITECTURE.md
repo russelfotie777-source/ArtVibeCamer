@@ -129,6 +129,45 @@ transaction reste `processing` entre les deux.
 | Lecture | `GET /api/v1/payments/{id}` — Elgiopay interroge lui-meme l'operateur quand la transaction est en cours |
 | Notification | Configuree **dans leur tableau de bord**, pas par requete : `https://<domaine>/api/v1/webhooks/payments/elgiopay` |
 
+### Charge imposee a la passerelle
+
+Une passerelle de paiement est un service partage : la saturer degrade le
+service de ses autres clients et finit par nous faire bloquer — ce qui, un
+jour d'ouverture des inscriptions, revient a fermer la billetterie.
+
+Trois garde-fous, du plus important au moins :
+
+**1. Une verification par transaction et par intervalle.** L'ecran d'attente
+du candidat interroge notre API toutes les quelques secondes. Chacune de ces
+interrogations repercutait l'appel sur la passerelle : cent candidats devant
+leur telephone produisaient des dizaines d'appels par seconde chez elle, pour
+une information qui ne change qu'une fois.
+
+`PaymentProcessor::refreshIfStale()` n'appelle la passerelle qu'une fois par
+`verification_interval_seconds` et par transaction. `Cache::add` etant
+atomique, plusieurs interrogations simultanees ne produisent qu'un seul
+appel. **La notification reste le mecanisme principal ; cette verification
+n'est qu'un filet quand elle se perd.**
+
+**2. Une cadence degressive cote candidat.** Les premieres secondes sont
+celles ou le payeur saisit son code : on interroge souvent pour que la
+confirmation paraisse instantanee. Passe ce moment, la probabilite qu'il
+valide a cet instant precis s'effondre, et l'intervalle s'allonge — 4 s, puis
+8 s, puis 15 s.
+
+**3. Un plafond global d'appels sortants.** `CadenceSortante` compte les
+appels dans le cache, donc tous processus confondus : un compteur en memoire
+ne verrait que son propre worker et laisserait passer autant de fois la
+limite qu'il y a de workers. Au-dela du plafond on attend la seconde
+suivante plutot que d'echouer — un encaissement differe d'une seconde reste
+un encaissement, un encaissement abandonne est un candidat perdu.
+
+On ne rejoue par ailleurs que ce qui a une chance d'aboutir : coupure reseau,
+panne passagere, ou plafond atteint chez eux. Rejouer une cle refusee ou une
+requete malformee triple la charge sans jamais changer le resultat.
+
+Ces regles sont couvertes par `tests/Feature/CadenceTest.php`.
+
 ### Authenticite des notifications
 
 Trois verifications, dans cet ordre, avant de toucher a quoi que ce soit :

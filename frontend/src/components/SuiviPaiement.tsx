@@ -26,8 +26,22 @@ type ResumeCandidat = {
 
 type Reponse = { data: Transaction; meta?: { candidate: ResumeCandidat | null } };
 
-const INTERVALLE = 4000;
 const DUREE_MAX = 3 * 60 * 1000;
+
+/**
+ * Cadence degressive.
+ *
+ * Les premieres secondes sont celles ou le payeur saisit son code : on
+ * interroge souvent pour que la confirmation paraisse instantanee. Passe ce
+ * moment, la probabilite qu'il valide a cet instant precis s'effondre, et
+ * continuer au meme rythme ne fait que charger nos serveurs et ceux de la
+ * passerelle — cent candidats en attente suffisent a saturer.
+ */
+function cadence(ecouleMs: number): number {
+  if (ecouleMs < 20_000) return 4_000;
+  if (ecouleMs < 60_000) return 8_000;
+  return 15_000;
+}
 
 export function SuiviPaiement({
   initiale,
@@ -93,15 +107,36 @@ export function SuiviPaiement({
 
     depart.current ??= Date.now();
 
-    const minuterie = setInterval(() => {
-      if (Date.now() - (depart.current ?? Date.now()) > DUREE_MAX) {
-        setAbandonne(true);
-        return;
-      }
-      void interroger();
-    }, INTERVALLE);
+    let actif = true;
+    let minuterie: ReturnType<typeof setTimeout>;
 
-    return () => clearInterval(minuterie);
+    // Chaine de setTimeout plutot qu'un setInterval : l'intervalle doit
+    // s'allonger au fil de l'attente, ce qu'un interval fixe ne permet pas.
+    const planifier = () => {
+      const ecoule = Date.now() - (depart.current ?? Date.now());
+
+      minuterie = setTimeout(async () => {
+        if (!actif) return;
+
+        if (Date.now() - (depart.current ?? Date.now()) > DUREE_MAX) {
+          setAbandonne(true);
+          return;
+        }
+
+        await interroger();
+
+        // Replanifie apres la reponse, jamais pendant : sinon une API lente
+        // verrait les requetes s'empiler.
+        if (actif) planifier();
+      }, cadence(ecoule));
+    };
+
+    planifier();
+
+    return () => {
+      actif = false;
+      clearTimeout(minuterie);
+    };
   }, [transaction.is_final, abandonne, interroger]);
 
   async function relancerPaiement(event: React.FormEvent<HTMLFormElement>) {

@@ -23,9 +23,15 @@ class PaymentController extends Controller
      */
     public function show(Transaction $transaction)
     {
+        /*
+         * Le front interroge cette route pendant que le payeur valide. On ne
+         * repercute pas chaque interrogation sur la passerelle : au plus une
+         * verification par transaction et par intervalle, et seulement une
+         * fois passe le temps de saisie du code.
+         */
         if ($transaction->status->isAwaitingPayer()
             && $transaction->processing_at?->lt(now()->subSeconds(20))) {
-            $transaction = $this->payments->refresh($transaction);
+            $transaction = $this->payments->refreshIfStale($transaction);
         }
 
         return TransactionResource::make($transaction)->additional([

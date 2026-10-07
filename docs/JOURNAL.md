@@ -405,6 +405,28 @@ Les deux colonnes sont nullables : la simulation et les encaissements hors
 ligne ne produisent pas de frais, et le net retombe alors sur le brut plutot
 que de compter zero.
 
+### Ne pas saturer la passerelle
+
+Signale par Elgiopay : notre integration generait trop d'appels par seconde.
+
+La cause n'etait pas le diagnostic mais **l'ecran d'attente du candidat** :
+il interrogeait notre API toutes les 4 secondes, et chaque interrogation
+repercutait un appel chez eux. A cent inscriptions simultanees, cela faisait
+une vingtaine d'appels par seconde pour une information qui ne change
+qu'une fois.
+
+Trois reglages encadrent desormais la charge :
+
+| Reglage | Defaut | Role |
+| --- | --- | --- |
+| `PAYMENT_VERIFICATION_INTERVAL` | 25 s | Intervalle minimal entre deux verifications d'une meme transaction |
+| `ELGIOPAY_MAX_RPS` | 4 | Plafond d'appels sortants par seconde, tous processus confondus |
+| Cadence du front | 4 s → 8 s → 15 s | S'allonge au fil de l'attente |
+
+Si Elgiopay signale a nouveau une charge excessive, **baisser
+`ELGIOPAY_MAX_RPS` avant tout le reste** : c'est le plafond dur, les deux
+autres ne font que reduire le nombre d'appels candidats.
+
 ### Les notifications ne se configurent pas par requete
 
 L'URL de webhook se declare **dans le tableau de bord Elgiopay**, pas dans

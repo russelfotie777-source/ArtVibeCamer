@@ -25,6 +25,13 @@ return [
     'payment_timeout_minutes' => (int) env('PAYMENT_TIMEOUT_MINUTES', 15),
 
     /*
+    | Intervalle minimal entre deux verifications d'une meme transaction
+    | aupres de la passerelle. L'ecran d'attente interroge notre API bien plus
+    | souvent que cela ; seule une interrogation sur N atteint la passerelle.
+    */
+    'verification_interval_seconds' => (int) env('PAYMENT_VERIFICATION_INTERVAL', 25),
+
+    /*
     | Bornes de montant, garde-fou contre une erreur de saisie ou une
     | manipulation du formulaire cote client.
     */
@@ -69,6 +76,13 @@ return [
             // Tolerance sur l'horodatage de signature, en secondes.
             // Au-dela, la notification est traitee comme un rejeu.
             'signature_tolerance' => (int) env('ELGIOPAY_SIGNATURE_TOLERANCE', 300),
+
+            /*
+             * Plafond d'appels sortants, toutes requetes confondues et tous
+             * processus confondus. La passerelle est un service partage :
+             * au-dela, on attend plutot que de la saturer.
+             */
+            'requetes_par_seconde' => (int) env('ELGIOPAY_MAX_RPS', 4),
         ],
 
     ],

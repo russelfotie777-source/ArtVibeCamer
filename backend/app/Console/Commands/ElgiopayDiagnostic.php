@@ -226,7 +226,9 @@ class ElgiopayDiagnostic extends Command
         $limite = microtime(true) + min($attenteMax, max(20, $scenario['delai'] + 45));
 
         while (! $statut->isFinal() && microtime(true) < $limite) {
-            usleep(3_000_000);
+            // Cinq secondes entre deux interrogations : un diagnostic ne doit
+            // pas peser plus lourd sur la passerelle qu'un usage reel.
+            usleep(5_000_000);
 
             $etat = $passerelle->verify($transaction);
             $statut = $etat->status;

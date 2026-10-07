@@ -11,6 +11,7 @@ use App\Services\Payments\Fulfilment\RegistrationFulfilment;
 use App\Services\Payments\Fulfilment\TicketFulfilment;
 use App\Services\Payments\Fulfilment\VoteFulfilment;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -104,6 +105,37 @@ class PaymentProcessor
         $status = $gateway->verify($transaction);
 
         return $this->applyStatus($transaction, $status);
+    }
+
+    /**
+     * Comme refresh(), mais au plus une fois par transaction et par
+     * intervalle.
+     *
+     * L'ecran d'attente du candidat interroge notre API toutes les quelques
+     * secondes. Sans ce garde-fou, chaque interrogation redemandait l'etat a
+     * la passerelle : cent candidats devant leur telephone produisaient des
+     * dizaines d'appels par seconde chez elle, pour une information qui ne
+     * change qu'une fois.
+     *
+     * La notification reste le mecanisme principal ; cette verification n'est
+     * qu'un filet quand elle se perd.
+     *
+     * Cache::add est atomique : sur plusieurs interrogations simultanees, une
+     * seule obtient la cle et appelle la passerelle.
+     */
+    public function refreshIfStale(Transaction $transaction, ?int $intervalle = null): Transaction
+    {
+        if ($transaction->status->isFinal()) {
+            return $transaction;
+        }
+
+        $intervalle ??= (int) config('payments.verification_interval_seconds', 25);
+
+        if (! Cache::add("paiement:verifie:{$transaction->id}", true, $intervalle)) {
+            return $transaction;
+        }
+
+        return $this->refresh($transaction);
     }
 
     /**
