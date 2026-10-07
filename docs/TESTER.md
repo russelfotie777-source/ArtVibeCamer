@@ -52,13 +52,19 @@ Le résultat dépend alors du numéro saisi :
 
 | Numéro | Résultat |
 | --- | --- |
-| `677000000` / `699000000` | Paiement accepté |
-| `677000202` / `699000202` | **Documenté** comme solde insuffisant |
-| `677000201`, `…203`, `…204` | **Documentés** comme refus, délai dépassé, échec |
+| `677000000` / `699000000` | Accepté immédiatement |
+| `677000010` / `699000010` | Accepté après 10 s |
+| `699000060` / `677000060` | Accepté après 1 min |
+| `677000201` / `699000201` | Refus du payeur sur son téléphone |
+| `677000202` / `699000202` | Solde insuffisant |
+| `677000203` / `699000203` | Pas validé à temps |
+| `677000204` / `699000204` | Échec générique |
 
-> **Attention** : au 7 octobre 2026, les numéros d'échec **aboutissent quand
-> même**. Leur simulateur ne les implémente pas. Pour tester un échec,
-> repassez en `fake` avec un numéro finissant par `0`.
+Tout autre numéro aboutit immédiatement.
+
+**Les numéros à délai sont les plus instructifs** : ils renvoient d'abord
+`pending`, ce qui permet de vérifier pour de vrai l'écran d'attente du
+candidat et l'arrivée de la confirmation.
 
 N'enchaînez pas les essais inutilement : chaque tentative est un appel réel
 chez eux.

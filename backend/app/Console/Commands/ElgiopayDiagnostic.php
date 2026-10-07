@@ -38,10 +38,13 @@ class ElgiopayDiagnostic extends Command
      * succes immediat, puis MTN seul pour les autres cas.
      *
      * `bloquant` distingue ce qui empeche une mise en production de ce qui
-     * revele seulement une lacune de leur simulateur. Au 7 octobre 2026, les
-     * quatre motifs d'echec ne sont pas implementes cote bac a sable : ils
-     * aboutissent tous. Notre traitement de l'echec est couvert par
-     * tests/Feature/ElgiopayTest.php, avec des reponses forgees.
+     * revele seulement une lacune de leur simulateur.
+     *
+     * Les quatre motifs d'echec et les confirmations differees ne
+     * fonctionnaient pas le 7 octobre 2026 ; signales a Elgiopay, ils ont ete
+     * corriges le 8. Tous les scenarios sont donc bloquants : chacun verifie
+     * desormais un comportement reellement simule, et un ecart signale une
+     * regression — chez eux ou chez nous.
      *
      * @var array<int, array{numero: string, attendu: string, delai: int, libelle: string, bloquant: bool}>
      */
@@ -50,10 +53,10 @@ class ElgiopayDiagnostic extends Command
         ['numero' => '699000000', 'attendu' => 'succeeded', 'delai' => 0, 'libelle' => 'Orange — succès immédiat', 'bloquant' => true],
         ['numero' => '677000010', 'attendu' => 'succeeded', 'delai' => 10, 'libelle' => 'MTN — succès après 10 s', 'bloquant' => true],
         ['numero' => '699000060', 'attendu' => 'succeeded', 'delai' => 60, 'libelle' => 'Orange — succès après 1 min', 'bloquant' => true],
-        ['numero' => '677000201', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Refus du payeur (9201)', 'bloquant' => false],
-        ['numero' => '677000202', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Solde insuffisant (9202)', 'bloquant' => false],
-        ['numero' => '677000203', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Pas validé à temps (9203)', 'bloquant' => false],
-        ['numero' => '677000204', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Échec générique (9204)', 'bloquant' => false],
+        ['numero' => '677000201', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Refus du payeur (9201)', 'bloquant' => true],
+        ['numero' => '677000202', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Solde insuffisant (9202)', 'bloquant' => true],
+        ['numero' => '677000203', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Pas validé à temps (9203)', 'bloquant' => true],
+        ['numero' => '677000204', 'attendu' => 'failed', 'delai' => 0, 'libelle' => 'Échec générique (9204)', 'bloquant' => true],
     ];
 
     public function handle(): int
@@ -186,11 +189,9 @@ class ElgiopayDiagnostic extends Command
 
         if ($nonSimules > 0) {
             $this->components->warn(
-                "{$nonSimules} motif(s) d'échec ne sont pas simulés par le bac à sable : ils aboutissent."
+                "{$nonSimules} scénario(s) ne correspondent pas à la documentation, sans bloquer la mise en service."
             );
-            $this->line('  Ce n\'est pas un défaut de notre côté — notre traitement de l\'échec');
-            $this->line('  est couvert par tests/Feature/ElgiopayTest.php. À signaler à Elgiopay,');
-            $this->line('  et à ne pas considérer comme validé tant qu\'ils ne l\'ont pas corrigé.');
+            $this->line('  À signaler à Elgiopay avec le numéro concerné et la réponse obtenue.');
             $this->newLine();
         }
 

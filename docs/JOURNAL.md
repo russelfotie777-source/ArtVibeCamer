@@ -370,36 +370,44 @@ qu'elle ne s'authentifie meme pas.
 Rien n'est ecrit en base : les transactions sont construites en memoire, pour
 ne pas gonfler les recettes du tableau de bord avec des essais.
 
+Depuis le 8 octobre, **tous ces numeros se comportent comme annonce**,
+confirmations differees comprises.
+
 **Les numeros a delai sont les plus utiles** : ils renvoient d'abord
 `pending`, ce qui permet de verifier pour de vrai l'ecran d'attente du
 candidat, l'interrogation du statut, et l'arrivee de la notification.
 
-### Ecarts constates entre la documentation Elgiopay et leur API
+### Ecarts Elgiopay : signales le 7 octobre, corriges le 8
 
-Releves le **7 octobre 2026** sur `sandbox-api.elgiopay.com`, avec une cle
-`pk_test_`. A reverifier avant la mise en service, et a signaler a Elgiopay.
+Trois ecarts avaient ete releves sur `sandbox-api.elgiopay.com` avec une cle
+`pk_test_`. Signales a Elgiopay, **les deux premiers ont ete corriges le
+lendemain** et verifies numero par numero.
 
-| Point | Documentation | Comportement reel |
+| Point | Constate le 7 octobre | Etat |
 | --- | --- | --- |
-| `GET /balance` | Objet enveloppe dans `data`, champs `pending_balance` et `total_balance`, valeurs numeriques | Champs **au premier niveau**, nommes `reserved_balance` et `balance`, valeurs en **chaines decimales** (« 78400.00 ») |
-| Numeros d'echec `…201` a `…204` | `status: failed` avec un `error_code` en 9200 | **Aboutissent tous** en `completed` |
-| Numeros a delai `…010`, `…060` | `pending` puis bascule apres 10 s / 1 min | **Aboutissent en une seconde** |
+| Numeros d'echec `…201` a `…204` | Aboutissaient tous en `completed` | **Corrige.** Renvoient `failed` avec leur code |
+| Numeros a delai `…010`, `…060` | Aboutissaient en une seconde | **Corrige.** 14 s et 1 min 4 s mesures |
+| `GET /balance` | Champs au premier niveau, nommes `reserved_balance` et `balance`, valeurs en chaines decimales | Toujours different de la documentation |
 
-`ElgiopayGateway::balance()` lit les deux formes, pour ne pas casser le jour
-ou ils les alignent.
+`ElgiopayGateway::balance()` lit les deux formes et fonctionne : le solde
+s'affiche correctement dans le diagnostic.
 
-Les deux dernieres lignes signifient qu'**on ne peut pas valider le parcours
-d'echec contre leur bac a sable**. Notre traitement est couvert par
-`tests/Feature/ElgiopayTest.php`, avec des reponses forgees — mais tant
-qu'Elgiopay n'a pas corrige son simulateur, le comportement reel face a un
-refus d'operateur reste a confirmer.
+**Consequence pour le diagnostic** : les huit scenarios sont bloquants. Chacun
+verifie un comportement reellement simule, et un ecart signale desormais une
+regression — chez eux ou chez nous — et non une lacune connue.
+
+**A retenir pour la suite** : un fournisseur corrige quand on lui envoie un
+rapport precis, avec le numero concerne, la reponse obtenue et l'identifiant
+de transaction. Le ton n'y est pour rien, la precision si.
 
 ### Commission et tresorerie
 
 Observe sur une transaction reelle du bac a sable : **8 000 FCFA encaisses,
-160 FCFA de frais, 7 840 FCFA nets — soit 2 %.** A confirmer aupres
-d'Elgiopay : le taux est-il identique sur MTN et Orange, et s'applique-t-il
-aussi au retrait ?
+160 FCFA de frais, 7 840 FCFA nets — soit 2 %.** Confirme par le solde, qui
+progresse de 7 840 XAF a chaque encaissement reussi.
+
+Reste a confirmer aupres d'Elgiopay : le taux est-il identique sur MTN et
+Orange, et s'applique-t-il aussi au retrait ?
 
 L'argent ne part pas sur un compte Mobile Money : il s'accumule sur le solde
 Elgiopay jusqu'a un retrait explicite (`POST /payouts` ou leur tableau de
