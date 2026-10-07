@@ -349,9 +349,18 @@ Tout autre numero aboutit immediatement.
 Une commande deroule toute cette table d'un coup :
 
 ```bash
-php artisan elgiopay:diagnostic           # tous les scenarios
-php artisan elgiopay:diagnostic --rapide  # sans les confirmations differees
+php artisan elgiopay:diagnostic                      # toute la batterie
+php artisan elgiopay:diagnostic --rapide             # sans les confirmations differees
+php artisan elgiopay:diagnostic --scenario=677000202 # un seul numero
 ```
+
+**Cout mesure : 17 appels sur 73 secondes**, soit environ une requete toutes
+les quatre secondes. La commande annonce son total a la fin — de quoi
+repondre precisement si le fournisseur signale une charge excessive.
+
+Utilisez `--scenario=` pour verifier un point precis. Rejouer toute la
+batterie pour un seul cas multiplie la charge par huit sans rien apprendre de
+plus.
 
 Elle verifie d'abord la cle par une lecture du solde. Sans ce controle, une
 cle refusee ferait echouer tous les appels et les scenarios qui attendent un

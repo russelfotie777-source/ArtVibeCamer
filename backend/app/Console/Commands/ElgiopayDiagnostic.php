@@ -7,6 +7,7 @@ use App\Enums\TransactionType;
 use App\Models\Transaction;
 use App\Services\Payments\Drivers\ElgiopayGateway;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -26,6 +27,7 @@ class ElgiopayDiagnostic extends Command
 {
     protected $signature = 'elgiopay:diagnostic
                             {--rapide : Ignore les numeros a confirmation differee}
+                            {--scenario= : Ne joue qu\'un numero, au lieu de la batterie}
                             {--attente=150 : Duree maximale d\'attente par scenario, en secondes}';
 
     protected $description = 'Verifie l\'integration Elgiopay contre leur bac a sable';
@@ -86,6 +88,18 @@ class ElgiopayDiagnostic extends Command
             }
         }
 
+        /*
+         * Compteur d'appels sortants. Un diagnostic doit pouvoir annoncer ce
+         * qu'il consomme : c'est la seule facon de repondre precisement a un
+         * fournisseur qui signale une charge excessive.
+         */
+        $appels = 0;
+        Http::globalRequestMiddleware(function ($requete) use (&$appels) {
+            $appels++;
+
+            return $requete;
+        });
+
         $passerelle = new ElgiopayGateway($config);
 
         /*
@@ -117,10 +131,24 @@ class ElgiopayDiagnostic extends Command
         $echecs = 0;
         $nonSimules = 0;
 
+        $choisi = $this->option('scenario');
+        $premier = true;
+
         foreach (self::SCENARIOS as $scenario) {
-            if ($this->option('rapide') && $scenario['delai'] > 0) {
+            if ($choisi !== null && $scenario['numero'] !== $choisi) {
                 continue;
             }
+
+            if ($choisi === null && $this->option('rapide') && $scenario['delai'] > 0) {
+                continue;
+            }
+
+            // Respiration entre deux scenarios : une batterie ne doit pas
+            // arriver en rafale chez le fournisseur.
+            if (! $premier) {
+                sleep(2);
+            }
+            $premier = false;
 
             [$ligne, $conforme] = $this->jouer($passerelle, $scenario, $attenteMax);
             $lignes[] = $ligne;
@@ -137,11 +165,23 @@ class ElgiopayDiagnostic extends Command
         }
 
         $this->newLine();
+
+        if ($lignes === []) {
+            $this->components->error('Aucun scénario ne correspond à --scenario.');
+
+            return self::FAILURE;
+        }
+
         $this->table(
             ['Scénario', 'Numéro', 'Attendu', 'Obtenu', 'Motif', ''],
             $lignes,
         );
 
+        $this->newLine();
+        $this->components->twoColumnDetail(
+            'Appels adressés à Elgiopay',
+            (string) $appels,
+        );
         $this->newLine();
 
         if ($nonSimules > 0) {

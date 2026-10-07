@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Transaction;
 use App\Services\Payments\CadenceSortante;
+use App\Services\Payments\Drivers\ElgiopayGateway;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -126,7 +127,7 @@ class CadenceTest extends TestCase
             '*/api/v1/balance*' => Http::response(['error' => 'Invalid API key'], 401),
         ]);
 
-        (new \App\Services\Payments\Drivers\ElgiopayGateway(
+        (new ElgiopayGateway(
             config('payments.drivers.elgiopay')
         ))->balance('XAF');
 
