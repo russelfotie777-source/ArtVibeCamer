@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { LogoEvenement } from "@/components/Marque";
 import { FormulaireConnexion } from "@/components/FormulaireConnexion";
 import { BandeMotif } from "@/components/Motif";
 import { jetonSession } from "@/lib/api";
@@ -20,12 +20,7 @@ export default async function PageConnexion() {
 
       <div className="flex flex-1 items-center justify-center px-5 py-16">
         <div className="w-full max-w-sm">
-          <Link
-            href="/"
-            className="font-display text-xl font-extrabold tracking-tight"
-          >
-            ArtVibeCamer
-          </Link>
+          <LogoEvenement hauteur={44} priorite />
 
           <h1 className="mt-10 font-display text-display-sm font-extrabold">
             Espace organisation

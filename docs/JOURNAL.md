@@ -31,6 +31,7 @@ tenir l'echeance.
 | Liste et fiche des candidats | Fait | **Fait** |
 | Validation / rejet des dossiers | Fait | **Fait** |
 | Suivi des paiements, verification | Fait | **Fait** |
+| Identite visuelle et logos | — | **Fait** |
 | Exports CSV | Fait | Lien pose |
 | Categories et candidats (pages publiques) | Fait | A faire |
 | Votes payants | Fait | A faire |

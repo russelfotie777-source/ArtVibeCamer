@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BandePartenaires, LogoEvenement } from "@/components/Marque";
 import { BandeMotif } from "@/components/Motif";
 import { lirePublic } from "@/lib/api";
 import type { Enveloppe, Reglages } from "@/lib/types";
@@ -20,7 +21,6 @@ export default async function LayoutSite({
   children: React.ReactNode;
 }) {
   const r = await reglages();
-  const nom = r?.event_name ?? process.env.NEXT_PUBLIC_SITE_NAME ?? "ArtVibeCamer";
 
   return (
     <div className="flex min-h-dvh flex-col bg-ink text-paper">
@@ -28,12 +28,7 @@ export default async function LayoutSite({
       <BandeMotif hauteur={12} />
 
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-6 sm:px-8">
-        <Link
-          href="/"
-          className="font-display text-xl font-extrabold tracking-tight text-paper"
-        >
-          {nom}
-        </Link>
+        <LogoEvenement hauteur={44} priorite />
 
         <nav className="flex items-center gap-5 text-sm">
           <Link
@@ -53,13 +48,15 @@ export default async function LayoutSite({
 
       <main className="flex-1">{children}</main>
 
+      <BandePartenaires />
+
       <footer className="border-t border-ink-line/60">
         <div className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
           <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p className="font-display text-lg font-extrabold">{nom}</p>
+              <LogoEvenement hauteur={36} href={null} />
               {r?.event_tagline ? (
-                <p className="prose-etroit mt-1 text-sm text-ink-soft">
+                <p className="prose-etroit mt-3 text-sm text-ink-soft">
                   {r.event_tagline}
                 </p>
               ) : null}

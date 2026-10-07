@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { LogoEvenement } from "@/components/Marque";
 import { BoutonDeconnexion } from "@/components/admin/BoutonDeconnexion";
 import { NavAdmin } from "@/components/admin/NavAdmin";
 import { ErreurApi, lireAdmin } from "@/lib/api";
@@ -57,9 +57,7 @@ export default async function LayoutAdmin({
           travaillant sur un fond papier, lisible de jour. */}
       <aside className="bg-ink text-paper lg:w-60 lg:shrink-0">
         <div className="flex items-center justify-between gap-4 px-5 py-5 lg:block">
-          <Link href="/admin" className="font-display text-lg font-extrabold">
-            ArtVibeCamer
-          </Link>
+          <LogoEvenement hauteur={38} href="/admin" />
           <p className="mt-0.5 hidden text-xs text-ink-soft lg:block">
             Organisation
           </p>

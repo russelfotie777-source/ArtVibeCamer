@@ -22,6 +22,10 @@ const instrument = Instrument_Sans({
 });
 
 export const metadata: Metadata = {
+  // Necessaire pour que les images de partage sortent en URL absolue.
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  ),
   title: {
     default: "ArtVibeCamer",
     template: "%s — ArtVibeCamer",
@@ -37,7 +41,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#171b34",
+  themeColor: "#0f2d1c",
 };
 
 export default function RootLayout({

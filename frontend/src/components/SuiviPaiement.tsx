@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { Bouton } from "@/components/ui/Bouton";
 import { Champ, Saisie } from "@/components/ui/Champ";
 import { BASE_PUBLIQUE } from "@/lib/config";
@@ -29,25 +36,40 @@ export function SuiviPaiement({
   initiale: Transaction;
   candidatInitial: ResumeCandidat | null;
 }) {
+  const router = useRouter();
+
   const [transaction, setTransaction] = useState(initiale);
   const [candidat, setCandidat] = useState(candidatInitial);
-  const [instructions, setInstructions] = useState<string | null>(null);
   const [abandonne, setAbandonne] = useState(false);
   const [relance, setRelance] = useState(false);
   const [erreurRelance, setErreurRelance] = useState<string | null>(null);
 
-  const depart = useRef(Date.now());
+  // Instant du premier affichage, pose au montage : Date.now() pendant le
+  // rendu produirait une valeur instable a chaque re-rendu.
+  const depart = useRef<number | null>(null);
 
-  // Les consignes de l'operateur sont produites a la creation du paiement :
-  // le formulaire les depose ici avant de naviguer vers cet ecran.
-  useEffect(() => {
-    try {
-      const stockees = sessionStorage.getItem(`avc_consignes_${initiale.reference}`);
-      if (stockees) setInstructions(stockees);
-    } catch {
-      // Navigation privee ou stockage bloque : on reste sur le texte generique.
-    }
-  }, [initiale.reference]);
+  /*
+   * Les consignes de l'operateur (code USSD par exemple) sont produites a la
+   * creation du paiement : le formulaire les depose dans sessionStorage avant
+   * de naviguer ici, cet ecran ne pouvant pas les redemander.
+   *
+   * Lecture par useSyncExternalStore plutot que par un effet : c'est l'API
+   * prevue pour lire un etat exterieur a React, elle evite un rendu en
+   * cascade, et l'instantane serveur a null empeche toute divergence
+   * d'hydratation.
+   */
+  const instructions = useSyncExternalStore(
+    () => () => {},
+    () => {
+      try {
+        return sessionStorage.getItem(`avc_consignes_${initiale.reference}`);
+      } catch {
+        // Navigation privee ou stockage bloque : texte generique.
+        return null;
+      }
+    },
+    () => null,
+  );
 
   const interroger = useCallback(async () => {
     try {
@@ -69,8 +91,10 @@ export function SuiviPaiement({
   useEffect(() => {
     if (transaction.is_final || abandonne) return;
 
+    depart.current ??= Date.now();
+
     const minuterie = setInterval(() => {
-      if (Date.now() - depart.current > DUREE_MAX) {
+      if (Date.now() - (depart.current ?? Date.now()) > DUREE_MAX) {
         setAbandonne(true);
         return;
       }
@@ -120,13 +144,14 @@ export function SuiviPaiement({
         }
       }
 
+      // Page hebergee de la passerelle : sortie hors de l'application.
       if (charge.payment?.redirect_url) {
         window.location.href = charge.payment.redirect_url;
         return;
       }
 
       // La relance cree une nouvelle transaction : on suit celle-la.
-      window.location.href = `/paiement/${charge.transaction.reference}`;
+      router.push(`/paiement/${charge.transaction.reference}`);
     } catch {
       setErreurRelance("Impossible de joindre le serveur. Réessayez.");
       setRelance(false);

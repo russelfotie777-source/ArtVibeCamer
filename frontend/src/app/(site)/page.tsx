@@ -1,3 +1,4 @@
+import { MarqueSeule } from "@/components/Marque";
 import { LienBouton } from "@/components/ui/Bouton";
 import { lirePublic } from "@/lib/api";
 import { dateCourte, fcfa, nombre } from "@/lib/format";
@@ -63,9 +64,17 @@ export default async function Accueil() {
           </div>
 
           {/*
-            Le bloc de droite porte une information fonctionnelle — l'etat reel
-            des inscriptions — et non des chiffres de vitrine.
+            Colonne de droite : l'illustration de la marque, puis l'etat reel
+            des inscriptions. Une information fonctionnelle, pas des chiffres
+            de vitrine.
           */}
+          <div className="flex flex-col gap-9">
+            <MarqueSeule
+              hauteur={380}
+              priorite
+              className="mx-auto hidden h-auto w-full max-w-[22rem] lg:block"
+            />
+
           <aside className="panneau border border-ink-line bg-ink-raised p-7">
             {erreur ? (
               <>
@@ -115,6 +124,7 @@ export default async function Accueil() {
               </>
             )}
           </aside>
+          </div>
         </div>
       </section>
 

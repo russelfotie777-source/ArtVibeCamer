@@ -271,3 +271,50 @@ indetectable.
 Corollaire : les champs qui ne doivent **jamais** etre ecrits par
 mass assignment (`candidate_number`, `votes_count`) sont volontairement hors
 `$fillable`. Les tests qui ont besoin de les poser passent par `forceFill`.
+
+---
+
+## 15. Identite visuelle et fichiers de marque
+
+Les couleurs viennent du logotype de l'evenement, pas d'un choix arbitraire :
+le vert foret profond de la typographie sert de fond, l'or de l'etoile sert
+d'accent. Le site appartient ainsi visuellement a la marque.
+
+**Choix assume** : on ne reprend pas les bandes vert-rouge-jaune du drapeau.
+Elles sont deja dans le logo, ou elles ont leur place ; repetees sur toute la
+page, elles entreraient en concurrence avec lui et donneraient une plateforme
+institutionnelle plutot qu'un evenement culturel. Le fond reste sobre et
+laisse les logos, puis les photos des candidats, porter la couleur.
+
+Les jetons sont definis dans `frontend/src/app/globals.css`, sous `@theme`.
+Deux terrains, un seul jeu de jetons : fond vert pour le site public,
+fond papier pour le back-office.
+
+### Fichiers de marque
+
+`frontend/public/marque/` contient des PNG detoures a partir des originaux
+fournis par l'organisation :
+
+| Fichier | Usage |
+| --- | --- |
+| `evenement-marque.png` | Illustration seule. En-tete, accueil, favicon |
+| `evenement-texte.png` | Lettrage d'origine, vert sombre. Fonds clairs |
+| `evenement-texte-clair.png` | Meme lettrage recolorise. **Fonds sombres** |
+| `evenement-complet.png` | Verrou complet d'origine |
+| `organisateur.png` | SAM BIAI |
+| `sponsor-zamara.png` | Zamara, premier sponsor |
+
+Le lettrage d'origine est vert sombre, donc illisible sur le fond vert sombre
+du site : d'ou la variante claire, derivee en conservant exactement la forme
+des lettres. Elle est servie par le composant `LogoEvenement` selon la
+variante demandee.
+
+### Logos partenaires
+
+Les logos de l'organisateur et des sponsors sont poses sur des **tuiles
+blanches**, et non directement sur le vert. Celui de l'organisateur comporte
+du lettrage noir qui y disparaitrait. Regle generale : un partenaire se montre
+dans ses couleurs d'origine, jamais retouche pour s'adapter au fond.
+
+Pour ajouter un sponsor, deposer son fichier dans `public/marque/` et
+l'ajouter a `BandePartenaires` dans `frontend/src/components/Marque.tsx`.
