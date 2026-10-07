@@ -42,7 +42,17 @@ ArtVibeCamer/
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Choix techniques et leurs raisons |
 | [docs/DATABASE.md](docs/DATABASE.md) | Schema de la base, table par table |
 | [docs/API.md](docs/API.md) | Contrat d'API : routes, parametres, reponses |
+| [docs/TESTER.md](docs/TESTER.md) | Dérouler les parcours à la main, et ce qu'il faut regarder |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Conventions de code, branches et commits |
+
+## Demarrage rapide
+
+```bash
+./demarrer.sh     # verifie, lance l'API et le site
+./arreter.sh      # arrete tout
+```
+
+Voir [docs/TESTER.md](docs/TESTER.md) pour les parcours a derouler.
 
 ## Installation
 
