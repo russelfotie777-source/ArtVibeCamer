@@ -136,6 +136,41 @@ class ElgiopayGateway implements PaymentGateway
         return $this->versPaymentStatus($reponse->json() ?? []);
     }
 
+    /**
+     * Solde du compte Elgiopay.
+     *
+     * L'argent encaisse ne part pas directement sur un compte Mobile Money :
+     * il s'accumule ici, commission deduite, jusqu'a un retrait explicite.
+     * `available` est ce qui est retirable maintenant, `pending` ce qui est
+     * encaisse mais pas encore libere.
+     *
+     * Hors interface PaymentGateway : c'est une information de tresorerie,
+     * pas une etape d'encaissement.
+     *
+     * @return array{currency: string, available: int, pending: int, total: int}|null
+     */
+    public function balance(string $devise = 'XAF'): ?array
+    {
+        $reponse = $this->client()->get('/api/v1/balance', ['currency' => $devise]);
+
+        if ($reponse->failed()) {
+            Log::warning('Elgiopay : solde illisible', [
+                'statut_http' => $reponse->status(),
+            ]);
+
+            return null;
+        }
+
+        $donnees = $reponse->json('data') ?? [];
+
+        return [
+            'currency' => $donnees['currency'] ?? $devise,
+            'available' => (int) ($donnees['available_balance'] ?? 0),
+            'pending' => (int) ($donnees['pending_balance'] ?? 0),
+            'total' => (int) ($donnees['total_balance'] ?? 0),
+        ];
+    }
+
     // --- Notifications -----------------------------------------------------
 
     /**

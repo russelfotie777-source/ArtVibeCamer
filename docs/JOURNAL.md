@@ -329,6 +329,21 @@ resultat depend du numero du payeur :
 
 Tout autre numero aboutit immediatement.
 
+Une commande deroule toute cette table d'un coup :
+
+```bash
+php artisan elgiopay:diagnostic           # tous les scenarios
+php artisan elgiopay:diagnostic --rapide  # sans les confirmations differees
+```
+
+Elle verifie d'abord la cle par une lecture du solde. Sans ce controle, une
+cle refusee ferait echouer tous les appels et les scenarios qui attendent un
+echec s'afficheraient « OK » — une integration donnee pour bonne alors
+qu'elle ne s'authentifie meme pas.
+
+Rien n'est ecrit en base : les transactions sont construites en memoire, pour
+ne pas gonfler les recettes du tableau de bord avec des essais.
+
 **Les numeros a delai sont les plus utiles** : ils renvoient d'abord
 `pending`, ce qui permet de verifier pour de vrai l'ecran d'attente du
 candidat, l'interrogation du statut, et l'arrivee de la notification.

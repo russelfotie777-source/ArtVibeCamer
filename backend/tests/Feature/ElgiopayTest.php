@@ -7,6 +7,7 @@ use App\Enums\VoteStatus;
 use App\Models\PaymentWebhook;
 use App\Models\Transaction;
 use App\Models\Vote;
+use App\Services\Payments\Drivers\ElgiopayGateway;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -256,5 +257,48 @@ class ElgiopayTest extends TestCase
         $this->assertTrue($trace->signature_valid);
         $this->assertNull($trace->processed_at);
         $this->assertSame('Transaction introuvable.', $trace->error);
+    }
+
+    // --- Tresorerie --------------------------------------------------------
+
+    public function test_le_solde_du_compte_est_lisible(): void
+    {
+        Http::fake([
+            '*/api/v1/balance*' => Http::response([
+                'success' => true,
+                'data' => [
+                    'currency' => 'XAF',
+                    'available_balance' => 124500,
+                    'pending_balance' => 5000,
+                    'total_balance' => 129500,
+                ],
+            ]),
+        ]);
+
+        $solde = (new ElgiopayGateway(
+            config('payments.drivers.elgiopay')
+        ))->balance('XAF');
+
+        $this->assertSame(
+            ['currency' => 'XAF', 'available' => 124500, 'pending' => 5000, 'total' => 129500],
+            $solde,
+        );
+    }
+
+    public function test_une_cle_refusee_rend_le_solde_illisible(): void
+    {
+        // Le diagnostic s'appuie dessus pour distinguer une cle invalide d'un
+        // paiement refuse, qui s'afficheraient autrement tous deux en echec.
+        Http::fake([
+            '*/api/v1/balance*' => Http::response([
+                'error' => 'API key required',
+            ], 401),
+        ]);
+
+        $this->assertNull(
+            (new ElgiopayGateway(
+                config('payments.drivers.elgiopay')
+            ))->balance('XAF'),
+        );
     }
 }
