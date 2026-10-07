@@ -47,6 +47,8 @@ class Transaction extends Model
             'status' => TransactionStatus::class,
             'payment_method' => PaymentMethod::class,
             'amount' => 'integer',
+            'fees' => 'integer',
+            'net_amount' => 'integer',
             'metadata' => 'array',
             'processing_at' => 'datetime',
             'paid_at' => 'datetime',
@@ -120,6 +122,17 @@ class Transaction extends Model
     public function isFinal(): bool
     {
         return $this->status->isFinal();
+    }
+
+    /**
+     * Montant reellement credite au compte de l'organisation.
+     *
+     * Retombe sur le montant brut quand la passerelle ne communique pas de
+     * commission — cas de la simulation et des encaissements hors ligne.
+     */
+    public function creditedAmount(): int
+    {
+        return $this->net_amount ?? $this->amount;
     }
 
     /** Montant formate pour affichage : 10 000 FCFA. */

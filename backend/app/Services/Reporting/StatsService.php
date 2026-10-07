@@ -30,6 +30,7 @@ class StatsService
     public function overview(): array
     {
         $revenue = $this->revenueByType();
+        $commission = $this->commission();
 
         return [
             'candidates' => [
@@ -53,11 +54,19 @@ class StatsService
                 'checked_in' => Ticket::where('status', 'used')->count(),
                 'pending_orders' => TicketOrder::where('status', TicketOrderStatus::Pending->value)->count(),
             ],
+            /*
+             * `total` est le brut : ce que les payeurs ont verse. `net` est ce
+             * que l'organisation touche reellement, la passerelle prelevant sa
+             * commission a l'encaissement. Afficher l'un pour l'autre fausse
+             * les comptes rendus a l'organisateur et aux sponsors.
+             */
             'revenue' => [
                 'registrations' => $revenue[TransactionType::Registration->value] ?? 0,
                 'votes' => $revenue[TransactionType::Vote->value] ?? 0,
                 'tickets' => $revenue[TransactionType::Ticket->value] ?? 0,
                 'total' => array_sum($revenue),
+                'fees' => $commission['fees'],
+                'net' => $commission['net'],
                 'currency' => config('payments.currency'),
             ],
             'payments' => [
@@ -84,6 +93,28 @@ class StatsService
             ->pluck('total', 'type')
             ->map(fn ($v) => (int) $v)
             ->all();
+    }
+
+    /**
+     * Commission prelevee et montant net, sur les encaissements confirmes.
+     *
+     * `net_amount` est nul quand la passerelle ne communique pas de frais —
+     * simulation, encaissement hors ligne. On retombe alors sur le brut
+     * plutot que de compter zero, ce qui sous-estimerait la recette.
+     *
+     * @return array{fees: int, net: int}
+     */
+    public function commission(): array
+    {
+        $ligne = Transaction::succeeded()
+            ->selectRaw('COALESCE(SUM(fees), 0) AS frais')
+            ->selectRaw('COALESCE(SUM(COALESCE(net_amount, amount)), 0) AS net')
+            ->first();
+
+        return [
+            'fees' => (int) ($ligne->frais ?? 0),
+            'net' => (int) ($ligne->net ?? 0),
+        ];
     }
 
     /** Repartition par categorie : candidats, voix et recettes de vote. */

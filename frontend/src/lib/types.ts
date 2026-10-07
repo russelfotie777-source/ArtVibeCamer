@@ -191,7 +191,12 @@ export type TableauDeBord = {
       registrations: number;
       votes: number;
       tickets: number;
+      /** Brut : ce que les payeurs ont verse. */
       total: number;
+      /** Commission prelevee par la passerelle. */
+      fees: number;
+      /** Net : ce que l'organisation touche reellement. */
+      net: number;
       currency: string;
     };
     payments: { succeeded: number; pending: number; failed: number };

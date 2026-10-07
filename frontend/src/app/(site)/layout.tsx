@@ -32,6 +32,12 @@ export default async function LayoutSite({
 
         <nav className="flex items-center gap-5 text-sm">
           <Link
+            href="/candidats"
+            className="text-ink-soft transition-colors hover:text-brass"
+          >
+            Candidats
+          </Link>
+          <Link
             href="/inscription"
             className="text-ink-soft transition-colors hover:text-brass"
           >

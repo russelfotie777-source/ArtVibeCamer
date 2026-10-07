@@ -79,6 +79,8 @@ class PaymentProcessor
             $this->applyStatus($transaction, new PaymentStatus(
                 status: $intent->status,
                 providerReference: $intent->providerReference,
+                fees: $intent->fees,
+                netAmount: $intent->netAmount,
                 failureReason: $intent->failureReason,
                 raw: $intent->raw,
             ));
@@ -137,6 +139,15 @@ class PaymentProcessor
 
             if ($status->status === TransactionStatus::Succeeded) {
                 $fresh->paid_at = now();
+
+                /*
+                 * Commission de la passerelle. Conservee a l'encaissement :
+                 * la relire plus tard supposerait que la passerelle garde
+                 * l'historique de ses tarifs, ce qu'aucune ne garantit.
+                 */
+                $fresh->fees = $status->fees;
+                $fresh->net_amount = $status->netAmount
+                    ?? ($status->fees !== null ? $fresh->amount - $status->fees : null);
             } else {
                 $fresh->failed_at = now();
             }

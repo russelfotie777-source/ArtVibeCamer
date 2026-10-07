@@ -44,8 +44,9 @@ class SettingSeeder extends Seeder
              * isVotingOpen() et TicketType::isOnSale().
              */
             ['key' => 'registration_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'switches', 'label' => 'Inscriptions ouvertes', 'is_public' => true],
-            ['key' => 'voting_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'switches', 'label' => 'Votes ouverts', 'is_public' => true],
-            ['key' => 'ticketing_enabled', 'value' => '1', 'type' => 'boolean', 'group' => 'switches', 'label' => 'Billetterie ouverte', 'is_public' => true],
+            // Ferme au demarrage : les votes n'ouvrent qu'apres les castings.
+            ['key' => 'voting_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'switches', 'label' => 'Votes ouverts', 'is_public' => true],
+            ['key' => 'ticketing_enabled', 'value' => '0', 'type' => 'boolean', 'group' => 'switches', 'label' => 'Billetterie ouverte', 'is_public' => true],
 
             /*
              * --- Affichage des resultats ---

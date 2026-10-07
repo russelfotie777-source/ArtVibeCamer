@@ -20,6 +20,13 @@ final readonly class PaymentIntent
         public ?string $providerReference = null,
         public ?string $redirectUrl = null,
         public ?string $instructions = null,
+        /*
+         * Renseignes seulement si la passerelle tranche des le lancement et
+         * communique sa commission. Dans le parcours Mobile Money habituel,
+         * ils arrivent plus tard, par la notification ou la verification.
+         */
+        public ?int $fees = null,
+        public ?int $netAmount = null,
         public ?string $failureReason = null,
         public array $raw = [],
     ) {}

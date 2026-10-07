@@ -82,22 +82,54 @@ export default async function PageTableauDeBord() {
       </section>
 
       <section className="mt-10">
-        <h2 className="font-display text-xl font-extrabold">Recettes</h2>
-        <dl className="mt-4 grid gap-px border border-rule bg-rule sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 className="font-display text-xl font-extrabold">Recettes</h2>
+          <p className="text-xs text-paper-soft">
+            La passerelle prélève sa commission à l&apos;encaissement.
+          </p>
+        </div>
+
+        {/*
+          Le net passe en premier et en grand : c'est ce que l'organisation
+          touche, et donc le chiffre qu'elle communique à l'organisateur et
+          aux sponsors. Le brut reste visible pour la réconciliation.
+        */}
+        <dl className="mt-4 grid gap-px border border-rule bg-rule sm:grid-cols-3">
           <div className="bg-ink px-5 py-5 text-paper">
-            <dt className="text-sm text-ink-soft">Total encaissé</dt>
+            <dt className="text-sm text-ink-soft">Net reçu</dt>
             <dd className="montant mt-1 text-3xl text-brass">
-              {fcfa(revenue.total)}
+              {fcfa(revenue.net)}
             </dd>
           </div>
+          <div className="bg-paper-raised px-5 py-5">
+            <dt className="text-sm text-paper-soft">Encaissé (brut)</dt>
+            <dd className="montant mt-1 text-2xl">{fcfa(revenue.total)}</dd>
+          </div>
+          <div className="bg-paper-raised px-5 py-5">
+            <dt className="text-sm text-paper-soft">Commission</dt>
+            <dd className="montant mt-1 text-2xl">
+              {revenue.fees > 0 ? `− ${fcfa(revenue.fees)}` : fcfa(0)}
+            </dd>
+            {revenue.total > 0 && revenue.fees > 0 ? (
+              <dd className="chiffre mt-1 text-xs text-paper-soft">
+                soit {((revenue.fees / revenue.total) * 100).toFixed(1)} %
+              </dd>
+            ) : null}
+          </div>
+        </dl>
+
+        <h3 className="mt-8 text-sm font-medium text-paper-soft">
+          Détail par flux, en brut
+        </h3>
+        <dl className="mt-3 grid gap-px border border-rule bg-rule sm:grid-cols-3">
           {[
             { terme: "Inscriptions", valeur: revenue.registrations },
             { terme: "Votes", valeur: revenue.votes },
             { terme: "Billets", valeur: revenue.tickets },
           ].map((item) => (
-            <div key={item.terme} className="bg-paper-raised px-5 py-5">
+            <div key={item.terme} className="bg-paper-raised px-5 py-4">
               <dt className="text-sm text-paper-soft">{item.terme}</dt>
-              <dd className="montant mt-1 text-2xl">{fcfa(item.valeur)}</dd>
+              <dd className="montant mt-1 text-xl">{fcfa(item.valeur)}</dd>
             </div>
           ))}
         </dl>

@@ -32,6 +32,8 @@ tenir l'echeance.
 | Liste et fiche des candidats | Fait | **Fait** |
 | Validation / rejet des dossiers | Fait | **Fait** |
 | Suivi des paiements, verification | Fait | **Fait** |
+| Recettes brut / commission / net | Fait | **Fait** |
+| Liste et fiche publiques des candidats | Fait | **Fait** |
 | Identite visuelle et logos | — | **Fait** |
 | Exports CSV | Fait | Lien pose |
 | Categories et candidats (pages publiques) | Fait | A faire |
@@ -130,6 +132,21 @@ Compte de travail en local : `admin@artvibecamer.cm` / `password`.
 | Suivi des paiements, verification | `/admin/paiements` |
 
 ## Suite a donner, par ordre de priorite
+
+### 0. Mise en ligne — l'echeance du 10 octobre
+
+Les inscriptions ouvrent le 10 octobre. Le parcours est termine et valide :
+**ce qui reste n'est pas du code, c'est un deploiement.**
+
+- [ ] Identifiants Elgiopay de production (`pk_live_`, `whsec_`)
+- [ ] Hebergement et domaine, en HTTPS
+- [ ] Entree cron pour `schedule:run` — sans elle, `payments:reconcile` ne
+      tourne pas et les paiements dont la notification se perd restent bloques
+- [ ] Sauvegardes automatiques de la base
+- [ ] Comptes nominatifs pour l'equipe, et suppression du compte du seeder
+- [ ] **Un paiement reel de bout en bout avant l'ouverture.** Le bac a sable
+      ne simule pas les echecs : le premier vrai refus d'operateur sera
+      decouvert en production.
 
 ### 1. Votes payants — prochain chantier
 
@@ -379,10 +396,14 @@ L'argent ne part pas sur un compte Mobile Money : il s'accumule sur le solde
 Elgiopay jusqu'a un retrait explicite (`POST /payouts` ou leur tableau de
 bord).
 
-> **Le tableau de bord additionne aujourd'hui le brut** (`SUM(amount)`), pas
-> le net. `fees` et `net_amount` existent dans chaque reponse Elgiopay mais
-> ne sont pas stockes. Pour rendre des comptes a l'organisateur et aux
-> sponsors, c'est un ecart a combler.
+La commission est desormais conservee sur chaque transaction (`fees`,
+`net_amount`) et le tableau de bord distingue les trois chiffres : net recu,
+encaisse brut, commission. Le net passe en premier, c'est celui qu'on
+communique a l'organisateur et aux sponsors.
+
+Les deux colonnes sont nullables : la simulation et les encaissements hors
+ligne ne produisent pas de frais, et le net retombe alors sur le brut plutot
+que de compter zero.
 
 ### Les notifications ne se configurent pas par requete
 

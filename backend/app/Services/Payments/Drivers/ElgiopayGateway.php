@@ -91,12 +91,17 @@ class ElgiopayGateway implements PaymentGateway
             );
         }
 
+        $frais = $corps['amount']['fees'] ?? null;
+        $net = $corps['amount']['net_amount'] ?? null;
+
         return new PaymentIntent(
             status: $this->versStatut($corps['status'] ?? 'pending'),
             providerReference: $corps['transaction_id'] ?? null,
             // Non nul pour les parcours par page hebergee (carte).
             redirectUrl: $corps['payment_url'] ?? null,
             instructions: $this->consignes($methode),
+            fees: $frais !== null ? (int) round((float) $frais) : null,
+            netAmount: $net !== null ? (int) round((float) $net) : null,
             raw: $this->nettoyer($corps),
         );
     }
@@ -279,6 +284,8 @@ class ElgiopayGateway implements PaymentGateway
     private function versPaymentStatus(array $donnees): PaymentStatus
     {
         $montant = $donnees['amount']['total'] ?? null;
+        $frais = $donnees['amount']['fees'] ?? null;
+        $net = $donnees['amount']['net_amount'] ?? null;
         $methode = $donnees['payment']['method'] ?? null;
 
         return new PaymentStatus(
@@ -292,6 +299,8 @@ class ElgiopayGateway implements PaymentGateway
             },
             payerPhone: $donnees['customer']['phone'] ?? null,
             amount: $montant !== null ? (int) $montant : null,
+            fees: $frais !== null ? (int) round((float) $frais) : null,
+            netAmount: $net !== null ? (int) round((float) $net) : null,
             failureReason: $this->motifEchec($donnees),
             raw: $this->nettoyer($donnees),
         );

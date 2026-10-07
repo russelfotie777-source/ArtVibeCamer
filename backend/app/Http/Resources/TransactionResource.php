@@ -37,6 +37,8 @@ class TransactionResource extends JsonResource
                 'payer_phone' => $this->payer_phone,
                 'payer_email' => $this->payer_email,
                 'ip_address' => $this->ip_address,
+                'fees' => $this->fees,
+                'net_amount' => $this->net_amount,
             ]),
         ];
     }
