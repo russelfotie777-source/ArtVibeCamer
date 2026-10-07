@@ -3,18 +3,28 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Bouton } from "@/components/ui/Bouton";
-import { Champ, Groupe, Liste, Saisie, Zone } from "@/components/ui/Champ";
+import {
+  Champ,
+  ChampFichier,
+  Groupe,
+  Liste,
+  Saisie,
+  Zone,
+} from "@/components/ui/Champ";
 import { BASE_PUBLIQUE } from "@/lib/config";
 import { fcfa } from "@/lib/format";
-import type { Categorie, ReponseInscription } from "@/lib/types";
+import type { Categorie, ReponseInscription, TypeInscription } from "@/lib/types";
 
 type Erreurs = Record<string, string[]>;
+type Membre = { nom: string; photo: string | null };
+
+const MEMBRES_PAR_DEFAUT = 3;
 
 /*
  * Le formulaire est envoye directement du navigateur vers l'API, et non via
  * une Server Action. Deux raisons : l'API voit alors l'adresse reelle du
  * candidat, dont dependent ses plafonds anti-abus, et le navigateur construit
- * lui-meme le multipart de la photo.
+ * lui-meme le multipart des photos.
  */
 export function FormulaireInscription({
   categories,
@@ -37,13 +47,48 @@ export function FormulaireInscription({
     return String(choisie?.id ?? ouvertes[0]?.id ?? "");
   });
 
+  const [formule, setFormule] = useState<TypeInscription>("solo");
+  const [membres, setMembres] = useState<Membre[]>(
+    Array.from({ length: MEMBRES_PAR_DEFAUT }, () => ({ nom: "", photo: null })),
+  );
+
   const [envoi, setEnvoi] = useState(false);
   const [erreurs, setErreurs] = useState<Erreurs>({});
   const [message, setMessage] = useState<string | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
 
   const categorie = ouvertes.find((c) => String(c.id) === categorieId);
+
+  // Une categorie sans tarif groupe ne se presente qu'en individuel.
+  const enGroupe = formule === "group" && categorie?.allows_group === true;
+  const montant = categorie
+    ? enGroupe
+      ? (categorie.group_fee ?? categorie.registration_fee)
+      : categorie.registration_fee
+    : null;
+
   const err = (nom: string) => erreurs[nom]?.[0];
+
+  function changerCategorie(valeur: string) {
+    setCategorieId(valeur);
+    const suivante = ouvertes.find((c) => String(c.id) === valeur);
+    if (!suivante?.allows_group) setFormule("solo");
+  }
+
+  function changerNombre(nombre: number) {
+    setMembres((actuels) =>
+      Array.from(
+        { length: nombre },
+        (_, i) => actuels[i] ?? { nom: "", photo: null },
+      ),
+    );
+  }
+
+  function majMembre(index: number, champ: keyof Membre, valeur: string | null) {
+    setMembres((actuels) =>
+      actuels.map((m, i) => (i === index ? { ...m, [champ]: valeur } : m)),
+    );
+  }
 
   async function envoyer(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -82,7 +127,6 @@ export function FormulaireInscription({
         }
 
         setEnvoi(false);
-        // Ramene le candidat sur le premier message d'erreur.
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
@@ -105,7 +149,6 @@ export function FormulaireInscription({
         }
       }
 
-      // Le paiement se poursuit sur son propre ecran, qui suit la transaction.
       if (resultat.payment.redirect_url) {
         window.location.href = resultat.payment.redirect_url;
         return;
@@ -148,7 +191,7 @@ export function FormulaireInscription({
 
         <Groupe
           titre="Votre discipline"
-          description="Les frais d'inscription dépendent de la catégorie choisie."
+          description="Les frais dépendent de la catégorie et de la formule choisie."
         >
           <Champ
             etiquette="Catégorie"
@@ -160,20 +203,190 @@ export function FormulaireInscription({
               id="category_id"
               name="category_id"
               value={categorieId}
-              onChange={(e) => setCategorieId(e.target.value)}
+              onChange={(e) => changerCategorie(e.target.value)}
               erreur={err("category_id")}
               required
             >
               {ouvertes.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name} — {fcfa(c.registration_fee)}
+                  {c.name}
                 </option>
               ))}
             </Liste>
           </Champ>
+
+          {/*
+            La formule est un choix de tarif : elle se presente comme deux
+            options comparables, prix affiche, et non comme une case a cocher
+            dont on decouvrirait le cout plus tard.
+          */}
+          <fieldset>
+            <legend className="text-sm font-medium text-ink">
+              Formule
+              <span className="ml-1 text-oxblood" aria-hidden="true">
+                *
+              </span>
+            </legend>
+
+            <input type="hidden" name="registration_type" value={enGroupe ? "group" : "solo"} />
+
+            <div className="mt-2 grid gap-3 sm:grid-cols-2">
+              {(
+                [
+                  {
+                    valeur: "solo" as const,
+                    titre: "Individuel",
+                    detail: "Vous vous présentez seul",
+                    prix: categorie?.registration_fee ?? null,
+                    possible: true,
+                  },
+                  {
+                    valeur: "group" as const,
+                    titre: "En groupe",
+                    detail: categorie?.allows_group
+                      ? `Jusqu'à ${categorie.max_group_members} membres`
+                      : "Non proposé dans cette catégorie",
+                    prix: categorie?.group_fee ?? null,
+                    possible: categorie?.allows_group === true,
+                  },
+                ]
+              ).map((option) => {
+                const actif = (option.valeur === "group") === enGroupe;
+
+                return (
+                  <label
+                    key={option.valeur}
+                    className={`controle flex cursor-pointer flex-col gap-1 border p-4 transition-colors ${
+                      !option.possible
+                        ? "cursor-not-allowed border-rule bg-paper opacity-55"
+                        : actif
+                          ? "border-ink bg-ink/5"
+                          : "border-rule bg-paper-raised hover:border-ink/40"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="formule"
+                        value={option.valeur}
+                        checked={actif}
+                        disabled={!option.possible}
+                        onChange={() => setFormule(option.valeur)}
+                        className="size-4 accent-brass"
+                      />
+                      <span className="font-medium">{option.titre}</span>
+                    </span>
+                    <span className="montant text-xl">
+                      {option.prix !== null ? fcfa(option.prix) : "—"}
+                    </span>
+                    <span className="text-xs text-paper-soft">
+                      {option.detail}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+
+            {err("registration_type") ? (
+              <p className="mt-1.5 text-sm text-oxblood">
+                {err("registration_type")}
+              </p>
+            ) : null}
+          </fieldset>
         </Groupe>
 
-        <Groupe titre="Votre identité">
+        {/* --- Composition du groupe --------------------------------- */}
+        {enGroupe && categorie ? (
+          <Groupe
+            titre="Votre groupe"
+            description="La liste des membres sert au contrôle le jour du casting."
+          >
+            <Champ
+              etiquette="Nom du groupe"
+              pour="group_name"
+              obligatoire
+              erreur={err("group_name")}
+              aide="C'est ce nom qui sera affiché au public."
+            >
+              <Saisie
+                id="group_name"
+                name="group_name"
+                required
+                erreur={err("group_name")}
+              />
+            </Champ>
+
+            <Champ
+              etiquette="Nombre de membres"
+              pour="nb_membres"
+              obligatoire
+              erreur={err("members")}
+            >
+              <Liste
+                id="nb_membres"
+                value={membres.length}
+                onChange={(e) => changerNombre(Number(e.target.value))}
+                erreur={err("members")}
+              >
+                {Array.from(
+                  { length: Math.max(0, categorie.max_group_members - 1) },
+                  (_, i) => i + 2,
+                ).map((n) => (
+                  <option key={n} value={n}>
+                    {n} membres
+                  </option>
+                ))}
+              </Liste>
+            </Champ>
+
+            <div className="grid gap-4">
+              {membres.map((membre, i) => (
+                <div
+                  key={i}
+                  className="grid gap-3 border-t border-rule pt-4 sm:grid-cols-[1fr_auto] sm:items-end"
+                >
+                  <Champ
+                    etiquette={`Membre ${i + 1}`}
+                    pour={`membre-${i}`}
+                    obligatoire
+                    erreur={err(`members.${i}.full_name`)}
+                  >
+                    <Saisie
+                      id={`membre-${i}`}
+                      name={`members[${i}][full_name]`}
+                      value={membre.nom}
+                      onChange={(e) => majMembre(i, "nom", e.target.value)}
+                      placeholder="Nom et prénom"
+                      required
+                      erreur={err(`members.${i}.full_name`)}
+                    />
+                  </Champ>
+
+                  <div className="sm:pb-0.5">
+                    <ChampFichier
+                      id={`membre-photo-${i}`}
+                      name={`members[${i}][photo]`}
+                      fichier={membre.photo}
+                      onFichier={(nom) => majMembre(i, "photo", nom)}
+                      libelle="Photo"
+                      vide="Facultative"
+                      compact
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Groupe>
+        ) : null}
+
+        <Groupe
+          titre={enGroupe ? "Responsable du groupe" : "Votre identité"}
+          description={
+            enGroupe
+              ? "La personne que l'organisation contactera, et dont le numéro sera débité."
+              : undefined
+          }
+        >
           <div className="grid gap-5 sm:grid-cols-2">
             <Champ
               etiquette="Prénom"
@@ -206,18 +419,20 @@ export function FormulaireInscription({
             </Champ>
           </div>
 
-          <Champ
-            etiquette="Nom de scène"
-            pour="stage_name"
-            erreur={err("stage_name")}
-            aide="C'est ce nom qui sera affiché au public. Sans nom de scène, votre prénom et nom seront utilisés."
-          >
-            <Saisie
-              id="stage_name"
-              name="stage_name"
+          {!enGroupe ? (
+            <Champ
+              etiquette="Nom de scène"
+              pour="stage_name"
               erreur={err("stage_name")}
-            />
-          </Champ>
+              aide="C'est ce nom qui sera affiché au public. Sans nom de scène, votre prénom et nom seront utilisés."
+            >
+              <Saisie
+                id="stage_name"
+                name="stage_name"
+                erreur={err("stage_name")}
+              />
+            </Champ>
+          ) : null}
 
           <div className="grid gap-5 sm:grid-cols-2">
             <Champ etiquette="Ville" pour="city" erreur={err("city")}>
@@ -229,24 +444,26 @@ export function FormulaireInscription({
               />
             </Champ>
 
-            <Champ
-              etiquette="Date de naissance"
-              pour="date_of_birth"
-              erreur={err("date_of_birth")}
-            >
-              <Saisie
-                id="date_of_birth"
-                name="date_of_birth"
-                type="date"
+            {!enGroupe ? (
+              <Champ
+                etiquette="Date de naissance"
+                pour="date_of_birth"
                 erreur={err("date_of_birth")}
-              />
-            </Champ>
+              >
+                <Saisie
+                  id="date_of_birth"
+                  name="date_of_birth"
+                  type="date"
+                  erreur={err("date_of_birth")}
+                />
+              </Champ>
+            ) : null}
           </div>
         </Groupe>
 
         <Groupe
           titre="Vous joindre"
-          description="L'organisation utilise ces coordonnées pour vous confirmer votre inscription. Elles ne sont pas publiées."
+          description="L'organisation utilise ces coordonnées pour vous confirmer l'inscription. Elles ne sont pas publiées."
         >
           <div className="grid gap-5 sm:grid-cols-2">
             <Champ
@@ -287,49 +504,35 @@ export function FormulaireInscription({
           <Champ
             etiquette="Email"
             pour="email"
-            obligatoire
             erreur={err("email")}
+            aide="Si vous n'en avez pas, laissez vide : le téléphone suffit."
           >
             <Saisie
               id="email"
               name="email"
               type="email"
               autoComplete="email"
-              required
               erreur={err("email")}
             />
           </Champ>
         </Groupe>
 
         <Groupe
-          titre="Votre travail"
+          titre={enGroupe ? "Votre groupe en quelques mots" : "Votre travail"}
           description="Ce que le public verra sur votre page de candidat."
         >
           <Champ
-            etiquette="Photo"
+            etiquette={enGroupe ? "Photo du groupe" : "Photo"}
             pour="photo"
             erreur={err("photo")}
-            aide="JPG, PNG ou WebP, 4 Mo maximum. Un portrait net est préférable."
+            aide="JPG, PNG ou WebP, 4 Mo maximum."
           >
-            <div className="controle flex items-center gap-3 border border-rule bg-paper-raised p-1.5">
-              <label
-                htmlFor="photo"
-                className="controle cursor-pointer border border-ink/20 bg-paper px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors hover:border-ink hover:bg-ink/5"
-              >
-                Choisir une photo
-              </label>
-              <span className="min-w-0 truncate text-sm text-paper-soft">
-                {photo ?? "Aucune photo choisie"}
-              </span>
-              <input
-                id="photo"
-                name="photo"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                onChange={(e) => setPhoto(e.target.files?.[0]?.name ?? null)}
-                className="sr-only"
-              />
-            </div>
+            <ChampFichier
+              id="photo"
+              name="photo"
+              fichier={photo}
+              onFichier={setPhoto}
+            />
           </Champ>
 
           <Champ
@@ -463,9 +666,15 @@ export function FormulaireInscription({
               </dd>
             </div>
             <div className="flex items-baseline justify-between gap-4 px-6 py-4">
+              <dt className="text-sm text-paper-soft">Formule</dt>
+              <dd className="text-right text-sm font-medium">
+                {enGroupe ? `Groupe de ${membres.length}` : "Individuel"}
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-4 px-6 py-4">
               <dt className="text-sm text-paper-soft">Frais</dt>
               <dd className="montant text-xl">
-                {categorie ? fcfa(categorie.registration_fee) : "—"}
+                {montant !== null ? fcfa(montant) : "—"}
               </dd>
             </div>
           </dl>
@@ -479,8 +688,8 @@ export function FormulaireInscription({
             >
               {envoi
                 ? "Envoi en cours"
-                : categorie
-                  ? `Payer ${fcfa(categorie.registration_fee)}`
+                : montant !== null
+                  ? `Payer ${fcfa(montant)}`
                   : "Payer les frais"}
             </Bouton>
 

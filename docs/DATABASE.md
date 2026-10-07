@@ -65,7 +65,10 @@ Cles lues par le code metier : `registration_enabled`, `voting_enabled`,
 
 | Colonne | Note |
 | --- | --- |
-| `registration_fee` | Frais d'inscription en FCFA (10 000 a 15 000 selon la discipline) |
+| `registration_fee` | Tarif **individuel** en FCFA |
+| `group_fee` | Tarif **groupe**. `NULL` = la categorie ne se presente qu'en individuel (cas de Miss & Master) |
+| `max_group_members` | Plafond de membres d'un groupe |
+| `tagline` | Accroche de la discipline, reprise des affiches |
 | `vote_price` | Prix d'une voix en FCFA |
 | `max_candidates` | `NULL` = pas de plafond |
 | `registration_opens_at` / `closes_at` | `NULL` = on retombe sur les reglages globaux |
@@ -83,7 +86,11 @@ Resolution d'URL par `slug`. Soft deletes.
 | --- | --- |
 | `candidate_number` | `AVC-MUS-014`. **`NULL` jusqu'au paiement des frais.** Hors `$fillable` : seul `RegistrationFulfilment` l'attribue |
 | `slug` | Genere a la creation, unique, resolution d'URL publique |
-| `email`, `phone` | **Uniques globalement** — anti-doublon d'inscription demande par l'organisation |
+| `registration_type` | `solo` ou `group` |
+| `group_name` | Nom de la formation. C'est lui qui est affiche au public pour un groupe |
+| `members_count` | **Denormalise** depuis `candidate_members` |
+| `phone` | **Unique globalement** — cle anti-doublon d'inscription |
+| `email` | **Facultatif**, unique parmi les adresses fournies. MySQL autorise plusieurs `NULL` dans un index unique |
 | `status` | `draft`, `awaiting_payment`, `pending_review`, `active`, `rejected`, `withdrawn`, `eliminated` |
 | `votes_count` | **Denormalise.** Hors `$fillable` |
 | `socials` | JSON : `facebook`, `instagram`, `tiktok`, `youtube`, `x` |
@@ -95,6 +102,21 @@ lui qui rend le classement public rapide.
 Unicite sur l'email et le telephone **globale et non par categorie** : un
 artiste ne doit pas pouvoir s'inscrire deux fois en changeant simplement de
 categorie.
+
+---
+
+## `candidate_members`
+
+Membres declares d'une inscription en groupe. La liste sert au controle le
+jour du casting : on verifie que les personnes presentes sont celles
+annoncees.
+
+| Colonne | Note |
+| --- | --- |
+| `candidate_id` | Supprime en cascade avec le dossier |
+| `full_name` | Nom et prenom tels que saisis |
+| `photo_path` | **Facultative** : tous les candidats n'en ont pas une sous la main |
+| `position` | Ordre de saisie dans le formulaire |
 
 ---
 

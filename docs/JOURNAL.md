@@ -23,7 +23,8 @@ tenir l'echeance.
 | Module | Backend | Interface |
 | --- | --- | --- |
 | Architecture, base de donnees | Fait | — |
-| Inscription + paiement | Fait | **Fait** |
+| Inscription individuelle + paiement | Fait | **Fait** |
+| Inscription en groupe, membres declares | Fait | **Fait** |
 | Suivi du paiement par le candidat | Fait | **Fait** |
 | Relance d'un paiement echoue | Fait | **Fait** |
 | Connexion back-office | Fait | **Fait** |
@@ -284,6 +285,17 @@ doit jamais valoir `*`.
 Corollaire : les ecritures declenchees par le visiteur (inscription, relance
 de paiement, suivi) partent **directement du navigateur** vers l'API, pour que
 l'adresse vue soit la sienne sans dependre de cette configuration.
+
+### Quatre categories, deux tarifs
+
+Danse, Chant et Comedie se presentent en individuel (8 000 FCFA) ou en groupe
+(10 000 FCFA). Miss & Master est individuel uniquement, a 10 000 FCFA : son
+`group_fee` reste a `NULL`, ce qui ferme la formule groupe partout, du
+formulaire jusqu'au service.
+
+Le tarif n'est jamais lu dans la requete : `Category::feeFor()` le calcule a
+partir de la categorie et de la formule. Un montant envoye par le navigateur
+est ignore, et un test le verifie.
 
 ### Simulation d'un echec de paiement
 

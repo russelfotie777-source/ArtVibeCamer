@@ -27,8 +27,10 @@ trait TestSupport
     protected function makeCategory(array $attributes = []): Category
     {
         return Category::create([
-            'name' => $attributes['name'] ?? 'Musique',
-            'registration_fee' => 15000,
+            'name' => $attributes['name'] ?? 'Danse',
+            'registration_fee' => 8000,
+            'group_fee' => 10000,
+            'max_group_members' => 15,
             'vote_price' => 100,
             'is_active' => true,
             ...$attributes,

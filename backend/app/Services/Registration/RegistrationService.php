@@ -4,18 +4,21 @@ namespace App\Services\Registration;
 
 use App\Enums\CandidateStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\RegistrationType;
 use App\Enums\TransactionType;
 use App\Models\Candidate;
+use App\Models\CandidateMember;
 use App\Models\Category;
 use App\Models\Transaction;
 use App\Services\Payments\CheckoutResult;
 use App\Services\Payments\PaymentProcessor;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Inscription d'un candidat et encaissement des frais.
+ * Inscription d'un candidat, seul ou en groupe, et encaissement des frais.
  *
  * Le dossier est cree avant le paiement, en `awaiting_payment` : un candidat
  * dont le paiement echoue n'a pas a ressaisir son formulaire, il relance
@@ -25,14 +28,26 @@ class RegistrationService
 {
     public function __construct(private readonly PaymentProcessor $payments) {}
 
-    public function register(Category $category, array $data, Request $request): CheckoutResult
-    {
+    /**
+     * @param  array<int, array{full_name: string, photo: ?UploadedFile}>  $members
+     */
+    public function register(
+        Category $category,
+        RegistrationType $type,
+        array $data,
+        array $members,
+        Request $request,
+    ): CheckoutResult {
         if (! $category->isRegistrationOpen()) {
             throw ValidationException::withMessages([
-                'category' => $category->isFull()
+                'category_id' => $category->isFull()
                     ? 'Cette catégorie a atteint son nombre maximum de candidats.'
                     : 'Les inscriptions ne sont pas ouvertes pour cette catégorie.',
             ]);
+        }
+
+        if ($type->isGroup()) {
+            $this->assertGroupAllowed($category, $members);
         }
 
         // Le numero a debiter accompagne la demande mais n'appartient pas au
@@ -40,24 +55,32 @@ class RegistrationService
         $payerPhone = $data['payer_phone'] ?? null;
         unset($data['payer_phone']);
 
-        [$candidate, $transaction] = DB::transaction(function () use ($category, $data, $request, $payerPhone) {
+        // Le montant vient de la categorie et de la formule choisie, jamais
+        // du client : un prix envoye par le navigateur serait manipulable.
+        $montant = $category->feeFor($type);
+
+        [$candidate, $transaction] = DB::transaction(function () use (
+            $category, $type, $data, $members, $request, $payerPhone, $montant
+        ) {
             $candidate = Candidate::create([
                 ...$data,
                 'category_id' => $category->id,
+                'registration_type' => $type,
+                'members_count' => count($members),
                 'status' => CandidateStatus::AwaitingPayment,
                 'ip_address' => $request->ip(),
             ]);
 
-            // Le montant vient de la categorie, jamais du client : un prix
-            // envoye par le navigateur serait manipulable.
+            $this->attachMembers($candidate, $members);
+
             $transaction = Transaction::create([
                 'reference' => Transaction::generateReference(TransactionType::Registration),
                 'type' => TransactionType::Registration,
                 'payable_type' => $candidate->getMorphClass(),
                 'payable_id' => $candidate->id,
-                'amount' => $category->registration_fee,
+                'amount' => $montant,
                 'currency' => config('payments.currency'),
-                'payer_name' => $candidate->full_name,
+                'payer_name' => $candidate->display_name,
                 'payer_phone' => $payerPhone ?? $candidate->phone,
                 'payer_email' => $candidate->email,
                 'payment_method' => PaymentMethod::fromCameroonPhone(
@@ -73,7 +96,11 @@ class RegistrationService
 
         $intent = $this->payments->start($transaction);
 
-        return new CheckoutResult($candidate->refresh(), $transaction->refresh(), $intent);
+        return new CheckoutResult(
+            $candidate->refresh()->load('members'),
+            $transaction->refresh(),
+            $intent,
+        );
     }
 
     /**
@@ -95,9 +122,12 @@ class RegistrationService
             'type' => TransactionType::Registration,
             'payable_type' => $candidate->getMorphClass(),
             'payable_id' => $candidate->id,
-            'amount' => $candidate->category->registration_fee,
+            // Le tarif est relu depuis la categorie et la formule du dossier :
+            // on ne reprend pas le montant de la tentative precedente, qui
+            // pourrait dater d'avant un changement de tarif.
+            'amount' => $candidate->category->feeFor($candidate->registration_type),
             'currency' => config('payments.currency'),
-            'payer_name' => $candidate->full_name,
+            'payer_name' => $candidate->display_name,
             'payer_phone' => $request->input('payer_phone', $candidate->phone),
             'payer_email' => $candidate->email,
             'payment_method' => PaymentMethod::fromCameroonPhone(
@@ -110,6 +140,47 @@ class RegistrationService
         $intent = $this->payments->start($transaction);
 
         return new CheckoutResult($candidate->refresh(), $transaction->refresh(), $intent);
+    }
+
+    /** @param array<int, array{full_name: string, photo: ?UploadedFile}> $members */
+    private function assertGroupAllowed(Category $category, array $members): void
+    {
+        if (! $category->allowsGroup()) {
+            throw ValidationException::withMessages([
+                'registration_type' => "La catégorie « {$category->name} » ne se présente qu'en individuel.",
+            ]);
+        }
+
+        $nombre = count($members);
+
+        if ($nombre < 2) {
+            throw ValidationException::withMessages([
+                'members' => 'Un groupe compte au moins deux membres.',
+            ]);
+        }
+
+        if ($nombre > $category->max_group_members) {
+            throw ValidationException::withMessages([
+                'members' => "Un groupe de cette catégorie compte au maximum {$category->max_group_members} membres.",
+            ]);
+        }
+    }
+
+    /** @param array<int, array{full_name: string, photo: ?UploadedFile}> $members */
+    private function attachMembers(Candidate $candidate, array $members): void
+    {
+        foreach ($members as $position => $membre) {
+            $photo = $membre['photo'] ?? null;
+
+            CandidateMember::create([
+                'candidate_id' => $candidate->id,
+                'full_name' => $membre['full_name'],
+                'photo_path' => $photo instanceof UploadedFile
+                    ? $photo->store('membres', 'public')
+                    : null,
+                'position' => $position,
+            ]);
+        }
     }
 
     /**

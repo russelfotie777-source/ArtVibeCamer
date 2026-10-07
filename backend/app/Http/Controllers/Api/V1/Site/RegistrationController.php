@@ -28,10 +28,13 @@ class RegistrationController extends Controller
             $data['photo_path'] = $request->file('photo')->store('candidates', 'public');
         }
 
-        $result = $this->registrations->register($category, [
-            ...$data,
-            'payer_phone' => $request->input('payer_phone'),
-        ], $request);
+        $result = $this->registrations->register(
+            $category,
+            $request->type(),
+            [...$data, 'payer_phone' => $request->input('payer_phone')],
+            $request->members(),
+            $request,
+        );
 
         return response()->json([
             'message' => 'Inscription enregistrée. Validez le paiement des frais sur votre téléphone.',

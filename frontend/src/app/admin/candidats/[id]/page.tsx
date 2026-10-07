@@ -80,7 +80,10 @@ export default async function PageCandidat({
               {candidat.display_name}
             </h1>
             <p className="mt-1 text-sm text-paper-soft">
-              {candidat.category?.name ?? "Sans catégorie"}
+              {candidat.category?.name ?? "Sans catégorie"} —{" "}
+              {candidat.is_group
+                ? `groupe de ${candidat.members_count}`
+                : "individuel"}
             </p>
             {candidat.full_name && candidat.stage_name ? (
               <p className="text-sm text-paper-soft">
@@ -113,11 +116,13 @@ export default async function PageCandidat({
                   <span className="chiffre">{telephone(candidat.whatsapp)}</span>
                 </Ligne>
               ) : null}
-              <Ligne terme="Email">
-                <a href={`mailto:${candidat.email}`} className="hover:text-brass">
-                  {candidat.email}
-                </a>
-              </Ligne>
+              {candidat.email ? (
+                <Ligne terme="Email">
+                  <a href={`mailto:${candidat.email}`} className="hover:text-brass">
+                    {candidat.email}
+                  </a>
+                </Ligne>
+              ) : null}
               {candidat.city ? <Ligne terme="Ville">{candidat.city}</Ligne> : null}
               {candidat.date_of_birth ? (
                 <Ligne terme="Date de naissance">
@@ -138,6 +143,53 @@ export default async function PageCandidat({
                   {candidat.presentation}
                 </p>
               </div>
+            </section>
+          ) : null}
+
+          {candidat.is_group ? (
+            <section className="panneau border border-rule bg-paper-raised">
+              <div className="border-b border-rule px-5 py-4">
+                <h2 className="font-display text-lg font-extrabold">
+                  Composition du groupe
+                </h2>
+                <p className="mt-1 text-sm text-paper-soft">
+                  Liste déclarée à l&apos;inscription. Elle sert au contrôle le
+                  jour du casting.
+                </p>
+              </div>
+
+              {candidat.members && candidat.members.length > 0 ? (
+                <ol className="divide-y divide-rule">
+                  {candidat.members.map((membre, i) => (
+                    <li
+                      key={`${membre.full_name}-${i}`}
+                      className="flex items-center gap-4 px-5 py-3"
+                    >
+                      {membre.photo_url ? (
+                        <Image
+                          src={membre.photo_url}
+                          alt=""
+                          width={40}
+                          height={40}
+                          className="controle size-10 shrink-0 border border-rule object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <span className="controle flex size-10 shrink-0 items-center justify-center border border-rule bg-paper text-xs text-paper-soft">
+                          {i + 1}
+                        </span>
+                      )}
+                      <span className="text-sm font-medium">
+                        {membre.full_name}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="px-5 py-5 text-sm text-paper-soft">
+                  Aucun membre déclaré.
+                </p>
+              )}
             </section>
           ) : null}
 

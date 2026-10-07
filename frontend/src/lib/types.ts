@@ -27,8 +27,14 @@ export type Categorie = {
   name: string;
   slug: string;
   description: string | null;
+  tagline: string | null;
   cover_image: string | null;
+  /** Tarif individuel. */
   registration_fee: number;
+  /** Tarif groupe. `null` = la categorie ne se presente qu'en individuel. */
+  group_fee: number | null;
+  allows_group: boolean;
+  max_group_members: number;
   vote_price: number;
   candidates_count: number;
   votes_count: number;
@@ -52,12 +58,25 @@ export type StatutCandidat =
   | "withdrawn"
   | "eliminated";
 
+export type TypeInscription = "solo" | "group";
+
+export type MembreGroupe = {
+  full_name: string;
+  photo_url: string | null;
+};
+
 export type Candidat = {
   id: number;
   candidate_number: string | null;
   slug: string;
   display_name: string;
   stage_name: string | null;
+  registration_type: TypeInscription;
+  registration_type_label: string;
+  is_group: boolean;
+  group_name: string | null;
+  members_count: number;
+  members?: MembreGroupe[];
   photo_url: string | null;
   presentation: string | null;
   city: string | null;

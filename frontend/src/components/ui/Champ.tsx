@@ -105,6 +105,57 @@ export function Zone({
   );
 }
 
+/**
+ * Selecteur de fichier.
+ *
+ * Le controle natif est masque et pilote depuis le label : le texte
+ * « Choose File » vient du navigateur et n'est pas traduisible, ce qui
+ * jurerait sur un formulaire entierement en francais.
+ */
+export function ChampFichier({
+  id,
+  name,
+  fichier,
+  onFichier,
+  libelle = "Choisir une photo",
+  vide = "Aucune photo choisie",
+  compact = false,
+}: {
+  id: string;
+  name: string;
+  fichier: string | null;
+  onFichier: (nom: string | null) => void;
+  libelle?: string;
+  vide?: string;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className={`controle flex items-center gap-3 border border-rule bg-paper-raised ${compact ? "p-1" : "p-1.5"}`}
+    >
+      <label
+        htmlFor={id}
+        className={`controle cursor-pointer border border-ink/20 bg-paper font-medium whitespace-nowrap transition-colors hover:border-ink hover:bg-ink/5 ${compact ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"}`}
+      >
+        {libelle}
+      </label>
+      <span
+        className={`min-w-0 truncate text-paper-soft ${compact ? "text-xs" : "text-sm"}`}
+      >
+        {fichier ?? vide}
+      </span>
+      <input
+        id={id}
+        name={name}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={(e) => onFichier(e.target.files?.[0]?.name ?? null)}
+        className="sr-only"
+      />
+    </div>
+  );
+}
+
 /** Regroupement visuel d'une section de formulaire. */
 export function Groupe({
   titre,

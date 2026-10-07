@@ -34,7 +34,7 @@ class CandidateController extends Controller
     public function show(Candidate $candidate)
     {
         return CandidateResource::make(
-            $candidate->load(['category', 'registrationTransaction', 'reviewer:id,name'])
+            $candidate->load(['category', 'members', 'registrationTransaction', 'reviewer:id,name'])
         );
     }
 

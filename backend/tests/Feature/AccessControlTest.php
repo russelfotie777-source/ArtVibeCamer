@@ -50,7 +50,7 @@ class AccessControlTest extends TestCase
             ->patchJson("/api/v1/admin/categories/{$category->id}", ['registration_fee' => 1])
             ->assertStatus(403);
 
-        $this->assertSame(15000, $category->fresh()->registration_fee);
+        $this->assertSame(8000, $category->fresh()->registration_fee);
     }
 
     public function test_un_compte_desactive_est_refuse(): void

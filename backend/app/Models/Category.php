@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CandidateStatus;
+use App\Enums\RegistrationType;
 use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,8 +22,11 @@ class Category extends Model
         'name',
         'slug',
         'description',
+        'tagline',
         'cover_image',
         'registration_fee',
+        'group_fee',
+        'max_group_members',
         'vote_price',
         'max_candidates',
         'registration_opens_at',
@@ -37,6 +41,8 @@ class Category extends Model
     {
         return [
             'registration_fee' => 'integer',
+            'group_fee' => 'integer',
+            'max_group_members' => 'integer',
             'vote_price' => 'integer',
             'max_candidates' => 'integer',
             'candidates_count' => 'integer',
@@ -89,6 +95,25 @@ class Category extends Model
     public function code(): string
     {
         return Str::upper(Str::substr(Str::ascii($this->name), 0, 3));
+    }
+
+    /**
+     * Tarif applicable selon la formule choisie.
+     *
+     * Le montant vient toujours de la categorie, jamais du client : c'est ce
+     * qui empeche un prix envoye par le navigateur d'etre pris en compte.
+     */
+    public function feeFor(RegistrationType $type): int
+    {
+        return $type->isGroup()
+            ? (int) ($this->group_fee ?? $this->registration_fee)
+            : $this->registration_fee;
+    }
+
+    /** group_fee a NULL signifie que la categorie est individuelle seulement. */
+    public function allowsGroup(): bool
+    {
+        return $this->group_fee !== null;
     }
 
     public function isRegistrationOpen(?Carbon $at = null): bool

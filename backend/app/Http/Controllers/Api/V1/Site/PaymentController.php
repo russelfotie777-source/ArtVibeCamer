@@ -60,6 +60,8 @@ class PaymentController extends Controller
             'status' => $candidate->status->value,
             'status_label' => $candidate->status->label(),
             'category' => $candidate->loadMissing('category')->category?->name,
+            'registration_type_label' => $candidate->registration_type->label(),
+            'members_count' => $candidate->members_count,
         ];
     }
 }

@@ -23,11 +23,17 @@ class SettingSeeder extends Seeder
             ['key' => 'event_name', 'value' => 'ArtVibeCamer', 'type' => 'string', 'group' => 'event', 'label' => 'Nom de l\'événement', 'is_public' => true],
             ['key' => 'event_tagline', 'value' => 'La culture, les talents et l\'art camerounais sur une seule scène.', 'type' => 'string', 'group' => 'event', 'label' => 'Accroche', 'is_public' => true],
             ['key' => 'event_date', 'value' => null, 'type' => 'datetime', 'group' => 'event', 'label' => 'Date de l\'événement', 'is_public' => true],
-            ['key' => 'event_venue', 'value' => null, 'type' => 'string', 'group' => 'event', 'label' => 'Lieu', 'is_public' => true],
+            ['key' => 'event_venue', 'value' => 'Salle des fêtes d\'Akwa', 'type' => 'string', 'group' => 'event', 'label' => 'Lieu', 'is_public' => true],
             ['key' => 'event_city', 'value' => 'Douala', 'type' => 'string', 'group' => 'event', 'label' => 'Ville', 'is_public' => true],
 
+            // --- Castings, tels qu'annonces sur les affiches ---
+            ['key' => 'registration_window', 'value' => 'Du 10 au 30 octobre 2026', 'type' => 'string', 'group' => 'event', 'label' => 'Période d\'inscription', 'is_public' => true],
+            ['key' => 'casting_douala', 'value' => 'Salle des fêtes d\'Akwa, Douala — à partir du 8 novembre 2026', 'type' => 'string', 'group' => 'event', 'label' => 'Casting Douala', 'is_public' => true],
+            ['key' => 'casting_yaounde', 'value' => 'Yaoundé — à partir du 16 novembre 2026', 'type' => 'string', 'group' => 'event', 'label' => 'Casting Yaoundé', 'is_public' => true],
+
             // --- Contact ---
-            ['key' => 'contact_phone', 'value' => null, 'type' => 'string', 'group' => 'contact', 'label' => 'Téléphone', 'is_public' => true],
+            ['key' => 'contact_phone', 'value' => '+237 696 43 47 86', 'type' => 'string', 'group' => 'contact', 'label' => 'Téléphone', 'is_public' => true],
+            ['key' => 'contact_phone_2', 'value' => '+237 686 77 26 60', 'type' => 'string', 'group' => 'contact', 'label' => 'Téléphone (2)', 'is_public' => true],
             ['key' => 'contact_whatsapp', 'value' => null, 'type' => 'string', 'group' => 'contact', 'label' => 'WhatsApp', 'is_public' => true],
             ['key' => 'contact_email', 'value' => null, 'type' => 'string', 'group' => 'contact', 'label' => 'Email', 'is_public' => true],
 

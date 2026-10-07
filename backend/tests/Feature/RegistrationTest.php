@@ -32,10 +32,10 @@ class RegistrationTest extends TestCase
         $candidate = Candidate::firstOrFail();
 
         // Le numero n'est attribue que par le fulfilment du paiement.
-        $this->assertSame('AVC-MUS-001', $candidate->candidate_number);
+        $this->assertSame('AVC-DAN-001', $candidate->candidate_number);
         $this->assertSame(CandidateStatus::PendingReview, $candidate->status);
         $this->assertSame(TransactionStatus::Succeeded, $candidate->registrationTransaction->status);
-        $this->assertSame(15000, $candidate->registrationTransaction->amount);
+        $this->assertSame(8000, $candidate->registrationTransaction->amount);
 
         // Le compteur de la categorie suit.
         $this->assertSame(1, $category->fresh()->candidates_count);
@@ -156,7 +156,7 @@ class RegistrationTest extends TestCase
 
         $candidate = Candidate::firstOrFail();
 
-        $this->assertSame('AVC-MUS-001', $candidate->candidate_number);
+        $this->assertSame('AVC-DAN-001', $candidate->candidate_number);
         $this->assertSame(CandidateStatus::PendingReview, $candidate->status);
 
         // Le dossier n'a pas ete duplique.

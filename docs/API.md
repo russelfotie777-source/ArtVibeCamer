@@ -66,8 +66,10 @@ GET /categories
 GET /categories/{slug}?per_page=24
 ```
 
-Champs utiles : `registration_fee`, `vote_price`, `candidates_count`,
-`votes_count`, `is_registration_open`, `is_voting_open`, `is_full`.
+Champs utiles : `registration_fee` (tarif individuel), `group_fee` (tarif
+groupe, **`null` = la categorie ne se presente qu'en individuel**),
+`allows_group`, `max_group_members`, `tagline`, `vote_price`,
+`candidates_count`, `is_registration_open`, `is_full`.
 
 Le detail renvoie en plus les candidats de la categorie, classes par voix,
 dans une cle `candidates` paginee.
@@ -107,10 +109,14 @@ Content-Type: multipart/form-data
 | Champ | Requis | Note |
 | --- | --- | --- |
 | `category_id` | oui | |
-| `first_name`, `last_name` | oui | |
-| `stage_name` | non | Nom affiche publiquement s'il est fourni |
-| `email` | oui | Unique |
-| `phone` | oui | Mobile camerounais, unique |
+| `registration_type` | oui | `solo` ou `group` |
+| `group_name` | si groupe | Nom affiche publiquement pour un groupe |
+| `members[i][full_name]` | si groupe | Entre 2 et `max_group_members` de la categorie |
+| `members[i][photo]` | non | jpg/png/webp, 4 Mo max |
+| `first_name`, `last_name` | oui | En groupe : la personne responsable |
+| `stage_name` | non | Nom affiche publiquement en individuel |
+| `email` | **non** | Facultatif. Unique parmi les adresses fournies |
+| `phone` | oui | Mobile camerounais, unique. Cle anti-doublon |
 | `whatsapp` | non | |
 | `city`, `region`, `gender`, `date_of_birth` | non | |
 | `presentation` | non | 2000 caracteres max |
@@ -122,12 +128,18 @@ Content-Type: multipart/form-data
 `multipart/form-data` est necessaire a cause de la photo. Sans photo, du JSON
 fonctionne aussi.
 
+Le montant n'est **jamais** un parametre : il est calcule par le serveur a
+partir de la categorie et de la formule. Un `amount` envoye par le client est
+ignore.
+
 **201 Created** :
 
 ```json
 {
   "message": "Inscription enregistree. Validez le paiement des frais sur votre telephone.",
-  "candidate": { "slug": "arno-vibe", "candidate_number": null, "status": "awaiting_payment" },
+  "candidate": { "slug": "arno-vibe", "candidate_number": null, "status": "awaiting_payment",
+                 "registration_type": "group", "group_name": "Les Enfants du Wouri",
+                 "members_count": 5, "members": [{ "full_name": "...", "photo_url": null }] },
   "transaction": { "reference": "AVC-INS-2026-X2AQYWFS", "amount": 15000, "status": "processing" },
   "payment": {
     "instructions": "Composez *126# sur votre telephone pour valider le paiement.",

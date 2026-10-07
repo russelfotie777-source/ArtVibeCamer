@@ -16,8 +16,13 @@ class CategoryResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->description,
+            'tagline' => $this->tagline,
             'cover_image' => $this->cover_image,
+            // Tarif individuel. group_fee a null ferme la formule groupe.
             'registration_fee' => $this->registration_fee,
+            'group_fee' => $this->group_fee,
+            'allows_group' => $this->allowsGroup(),
+            'max_group_members' => $this->max_group_members,
             'vote_price' => $this->vote_price,
             'candidates_count' => $this->candidates_count,
             'votes_count' => $this->votes_count,

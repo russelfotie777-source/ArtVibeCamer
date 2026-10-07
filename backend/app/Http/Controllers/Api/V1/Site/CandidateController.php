@@ -31,7 +31,7 @@ class CandidateController extends Controller
     {
         abort_unless($candidate->status->isPubliclyVisible(), 404);
 
-        $candidate->load('category');
+        $candidate->load(['category', 'members']);
 
         return CandidateResource::make($candidate)->additional([
             'meta' => [

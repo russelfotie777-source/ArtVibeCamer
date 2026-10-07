@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CandidateStatus;
+use App\Enums\RegistrationType;
 use Database\Factories\CandidateFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,9 +21,12 @@ class Candidate extends Model
 
     protected $fillable = [
         'category_id',
+        'registration_type',
         'first_name',
         'last_name',
         'stage_name',
+        'group_name',
+        'members_count',
         'email',
         'phone',
         'whatsapp',
@@ -49,6 +53,8 @@ class Candidate extends Model
             'socials' => 'array',
             'date_of_birth' => 'date',
             'status' => CandidateStatus::class,
+            'registration_type' => RegistrationType::class,
+            'members_count' => 'integer',
             'votes_count' => 'integer',
             'is_featured' => 'boolean',
             'reviewed_at' => 'datetime',
@@ -60,8 +66,12 @@ class Candidate extends Model
     protected static function booted(): void
     {
         static::creating(function (self $candidate) {
+            // Un groupe est identifie publiquement par son nom de formation,
+            // un solo par son nom de scene puis son etat civil.
             $candidate->slug ??= self::generateSlug(
-                $candidate->stage_name ?: "{$candidate->first_name} {$candidate->last_name}"
+                $candidate->group_name
+                    ?: ($candidate->stage_name
+                        ?: "{$candidate->first_name} {$candidate->last_name}")
             );
         });
     }
@@ -86,6 +96,12 @@ class Candidate extends Model
         return $this->hasMany(Vote::class);
     }
 
+    /** Membres declares d'une inscription en groupe. */
+    public function members(): HasMany
+    {
+        return $this->hasMany(CandidateMember::class)->orderBy('position');
+    }
+
     public function getRouteKeyName(): string
     {
         return 'slug';
@@ -98,10 +114,18 @@ class Candidate extends Model
         return trim("{$this->first_name} {$this->last_name}");
     }
 
-    /** Nom de scene s'il existe, sinon etat civil. */
+    /**
+     * Nom affiche au public : celui de la formation pour un groupe, le nom de
+     * scene sinon, et l'etat civil en dernier recours.
+     */
     public function getDisplayNameAttribute(): string
     {
-        return $this->stage_name ?: $this->full_name;
+        return $this->group_name ?: ($this->stage_name ?: $this->full_name);
+    }
+
+    public function isGroup(): bool
+    {
+        return $this->registration_type === RegistrationType::Group;
     }
 
     public function getPhotoUrlAttribute(): ?string
@@ -147,6 +171,7 @@ class Candidate extends Model
             $q->where('first_name', 'like', $like)
                 ->orWhere('last_name', 'like', $like)
                 ->orWhere('stage_name', 'like', $like)
+                ->orWhere('group_name', 'like', $like)
                 ->orWhere('candidate_number', 'like', $like)
                 ->orWhere('phone', 'like', $like)
                 ->orWhere('email', 'like', $like);

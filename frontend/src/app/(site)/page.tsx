@@ -20,8 +20,13 @@ export default async function Accueil() {
   const { categories, reglages, erreur } = await donnees();
 
   const ouvertes = categories.some((c) => c.is_registration_open);
-  const fraisMin = categories.length ? Math.min(...categories.map((c) => c.registration_fee)) : 0;
-  const fraisMax = categories.length ? Math.max(...categories.map((c) => c.registration_fee)) : 0;
+
+  // Fourchette reelle : les deux formules confondues, pas le seul tarif solo.
+  const tarifs = categories.flatMap((c) =>
+    [c.registration_fee, c.group_fee].filter((f): f is number => f !== null),
+  );
+  const fraisMin = tarifs.length ? Math.min(...tarifs) : 0;
+  const fraisMax = tarifs.length ? Math.max(...tarifs) : 0;
   const echeance = categories
     .map((c) => c.registration_closes_at)
     .filter((d): d is string => Boolean(d))
@@ -33,7 +38,7 @@ export default async function Accueil() {
       <section className="mx-auto w-full max-w-6xl px-5 pt-10 pb-20 sm:px-8 sm:pt-16">
         <div className="grid gap-12 lg:grid-cols-[1.6fr_1fr] lg:items-end lg:gap-16">
           <div>
-            <h1 className="font-display text-[length:var(--text-display-lg)] font-extrabold">
+            <h1 className="font-display text-display-lg font-extrabold">
               Huit disciplines,
               <br />
               une scène,
@@ -133,12 +138,12 @@ export default async function Accueil() {
         <section id="disciplines" className="bg-paper text-ink">
           <div className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8">
             <div className="flex flex-wrap items-end justify-between gap-4">
-              <h2 className="font-display text-[length:var(--text-display)] font-extrabold">
+              <h2 className="font-display text-display font-extrabold">
                 Choisissez votre discipline
               </h2>
               <p className="prose-etroit text-sm text-paper-soft">
-                Les frais varient selon les exigences techniques de la
-                discipline. Ils couvrent votre participation au concours.
+                Présentez-vous seul ou en groupe. Les frais couvrent votre
+                participation au casting et au concours.
               </p>
             </div>
 
@@ -154,26 +159,52 @@ export default async function Accueil() {
                       <h3 className="font-display text-xl font-extrabold">
                         {c.name}
                       </h3>
+                      {c.tagline ? (
+                        <p className="mt-1 text-sm text-brass">{c.tagline}</p>
+                      ) : null}
                       {c.description ? (
-                        <p className="mt-2 text-sm leading-relaxed text-paper-soft">
+                        <p className="mt-3 text-sm leading-relaxed text-paper-soft">
                           {c.description}
                         </p>
                       ) : null}
                     </div>
 
                     <div>
-                      <p className="montant text-2xl">
-                        {fcfa(c.registration_fee)}
-                      </p>
-                      <p className="mt-2 text-xs text-paper-soft">
+                      {/*
+                        Les deux formules sont annoncees des la vitrine : un
+                        candidat doit connaitre le cout avant d'entrer dans le
+                        formulaire, pas le decouvrir a la derniere etape.
+                      */}
+                      <dl className="border-t border-rule pt-4">
+                        <div className="flex items-baseline justify-between gap-3">
+                          <dt className="text-sm text-paper-soft">Individuel</dt>
+                          <dd className="montant text-lg">
+                            {fcfa(c.registration_fee)}
+                          </dd>
+                        </div>
+                        <div className="mt-1.5 flex items-baseline justify-between gap-3">
+                          <dt className="text-sm text-paper-soft">Groupe</dt>
+                          <dd className="montant text-lg">
+                            {c.group_fee !== null ? (
+                              fcfa(c.group_fee)
+                            ) : (
+                              <span className="text-sm font-normal text-paper-soft">
+                                non proposé
+                              </span>
+                            )}
+                          </dd>
+                        </div>
+                      </dl>
+
+                      <p className="mt-3 text-xs text-paper-soft">
                         {c.candidates_count === 0
                           ? "Aucun candidat inscrit"
                           : `${nombre(c.candidates_count)} candidat${c.candidates_count > 1 ? "s" : ""} inscrit${c.candidates_count > 1 ? "s" : ""}`}
                         {c.is_full
-                          ? " · complet"
+                          ? ", complet"
                           : c.is_registration_open
                             ? ""
-                            : " · inscriptions fermées"}
+                            : ", inscriptions fermées"}
                       </p>
 
                       {c.is_registration_open ? (
@@ -183,7 +214,7 @@ export default async function Accueil() {
                           taille="petit"
                           className="mt-4"
                         >
-                          S&apos;inscrire en {c.name.toLowerCase()}
+                          S&apos;inscrire
                         </LienBouton>
                       ) : null}
                     </div>
@@ -197,7 +228,7 @@ export default async function Accueil() {
 
       {/* --- Deroulement : vraie sequence, donc numerotee --------------- */}
       <section className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-8">
-        <h2 className="font-display text-[length:var(--text-display)] font-extrabold">
+        <h2 className="font-display text-display font-extrabold">
           Comment se déroule une inscription
         </h2>
 

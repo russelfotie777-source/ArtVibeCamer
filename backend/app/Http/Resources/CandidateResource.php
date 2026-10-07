@@ -19,6 +19,21 @@ class CandidateResource extends JsonResource
             'slug' => $this->slug,
             'display_name' => $this->display_name,
             'stage_name' => $this->stage_name,
+            'registration_type' => $this->registration_type->value,
+            'registration_type_label' => $this->registration_type->label(),
+            'is_group' => $this->isGroup(),
+            'group_name' => $this->group_name,
+            'members_count' => $this->members_count,
+
+            /*
+             * Les membres d'un groupe sont la composition de l'acte presente
+             * au public : leurs noms et photos ont vocation a etre vus, au
+             * contraire des coordonnees du responsable.
+             */
+            'members' => $this->whenLoaded('members', fn () => $this->members->map(fn ($m) => [
+                'full_name' => $m->full_name,
+                'photo_url' => $m->photo_url,
+            ])),
             'photo_url' => $this->photo_url,
             'presentation' => $this->presentation,
             'city' => $this->city,

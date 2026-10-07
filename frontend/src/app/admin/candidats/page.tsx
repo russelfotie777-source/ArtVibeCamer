@@ -102,12 +102,13 @@ export default async function PageCandidats({
       ) : (
         <>
           <div className="mt-7 overflow-x-auto border border-rule bg-paper-raised">
-            <table className="w-full min-w-[48rem] text-sm">
+            <table className="w-full min-w-[54rem] text-sm">
               <thead>
                 <tr className="border-b border-rule text-left text-paper-soft">
                   <th scope="col" className="px-5 py-3 font-medium">Numéro</th>
                   <th scope="col" className="px-5 py-3 font-medium">Candidat</th>
                   <th scope="col" className="px-5 py-3 font-medium">Catégorie</th>
+                  <th scope="col" className="px-5 py-3 font-medium">Formule</th>
                   <th scope="col" className="px-5 py-3 font-medium">Téléphone</th>
                   <th scope="col" className="px-5 py-3 font-medium">Statut</th>
                   <th scope="col" className="px-5 py-3 font-medium">Inscrit le</th>
@@ -136,6 +137,18 @@ export default async function PageCandidats({
                     </td>
                     <td className="px-5 py-3 whitespace-nowrap">
                       {c.category?.name ?? "—"}
+                    </td>
+                    <td className="px-5 py-3 whitespace-nowrap">
+                      {c.is_group ? (
+                        <>
+                          Groupe
+                          <span className="chiffre ml-1 text-xs text-paper-soft">
+                            ({c.members_count})
+                          </span>
+                        </>
+                      ) : (
+                        "Individuel"
+                      )}
                     </td>
                     <td className="chiffre px-5 py-3 whitespace-nowrap">
                       {telephone(c.phone)}
