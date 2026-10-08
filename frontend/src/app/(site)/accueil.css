@@ -52,12 +52,12 @@
 }
 
 .avc-heroDisciplines {
-  margin-top: 1.75rem;
-  color: var(--color-brass-lift);
-  font-family: var(--font-display);
-  font-size: clamp(0.9rem, 1.5vw, 1.06rem);
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  /* Ligne d'appui, pas un second titre : meme fonte que le corps de texte,
+     graisse normale, couleur sourde. En gras dore et en fonte de titre, elle
+     entrait en concurrence avec le titre juste au-dessus. */
+  margin-top: 1.5rem;
+  color: var(--color-ink-soft);
+  font-size: 1rem;
 }
 
 .avc-heroIntro {
@@ -109,18 +109,20 @@
 
 
 .avc-actionSecondaire {
-  border-bottom: 1px solid var(--color-brass-lift);
-  color: var(--color-paper);
-  font-size: 0.9rem;
-  line-height: 1.8;
-  transition:
-    border-color 180ms ease,
-    color 180ms ease;
+  /* Une bordure basse sur un element en ligne flotte sous le texte sans
+     l'epouser, et se voit comme un bricolage. Le lien se signale par sa
+     couleur, et ne se souligne qu'au survol. */
+  color: var(--color-ink-soft);
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color 180ms ease;
 }
 
 .avc-actionSecondaire:hover {
-  border-color: var(--color-brass-lift);
   color: var(--color-brass-lift);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
 }
 
 .avc-fenetreInscription {
@@ -645,12 +647,58 @@
     max-width: 11ch;
   }
 
+  /*
+   * Sur telephone, l'illustration passait sous trois paragraphes : personne
+   * ne la voyait. Elle passe derriere le texte, debordant a droite et en
+   * bas — un cadre qui coupe le sujet donne l'echelle, la ou un visuel
+   * entierement contenu la perd.
+   *
+   * Pas de voile sombre par-dessus pour faire ressortir le texte : c'est
+   * l'espace laisse libre qui assure la lisibilite, pas un degrade.
+   */
+  .avc-heroInner {
+    display: block;
+    position: relative;
+  }
+
+  .avc-heroCopy {
+    position: relative;
+    z-index: 2;
+    max-width: 34rem;
+    /* Juste de quoi degager le bas du sujet, pas une page de vide. */
+    padding-bottom: 7rem;
+  }
+
+  /* Le bouton quitte la pleine largeur : il libere le cote droit, ou monte
+     l'illustration. Un bouton qui barre l'ecran ne laisse place a rien. */
+  .avc-heroActions {
+    align-items: center;
+  }
+
+  .avc-actionPrincipale {
+    width: auto;
+  }
+
   .avc-heroVisual {
-    min-height: 38rem;
+    position: absolute;
+    right: -16%;
+    bottom: -2rem;
+    left: auto;
+    z-index: 0;
+    display: block;
+    width: 74%;
+    min-height: 0;
+    pointer-events: none;
+  }
+
+  .avc-illustrationCadre {
+    display: block;
+    width: 100%;
   }
 
   .avc-illustration {
-    width: min(78vw, 27rem);
+    width: 100%;
+    height: auto;
   }
 
 
@@ -698,19 +746,26 @@
 
   .avc-heroTitle {
     margin-top: 1.25rem;
-    font-size: clamp(3.15rem, 15vw, 4.7rem);
+    font-size: clamp(2.8rem, 12.5vw, 4.2rem);
   }
 
   .avc-heroDisciplines {
     line-height: 1.6;
   }
 
-  .avc-heroVisual {
-    min-height: 34rem;
+  .avc-heroCopy {
+    padding-bottom: 6rem;
   }
 
-  .avc-illustration {
-    width: min(88vw, 23rem);
+  .avc-heroVisual {
+    right: -20%;
+    width: 82%;
+  }
+
+  /* L'information de bas de hero reste dans la colonne libre, a gauche du
+     sujet, plutot que de se poser dessus. */
+  .avc-fenetreInscription {
+    max-width: 60%;
   }
 
 
@@ -768,10 +823,18 @@
 
 @media (max-width: 25rem) {
 
-  .avc-heroActions,
-  .avc-actionPrincipale,
+  /*
+   * Le bouton du hero garde sa largeur propre, meme sur les petits ecrans :
+   * sa min-width lui assure deja une cible confortable, et barrer toute la
+   * largeur reviendrait a couper l'illustration qui monte derriere.
+   * Celui de la cloture, lui, est seul dans son bloc et peut s'etendre.
+   */
   .avc-actionFinale {
     width: 100%;
+  }
+
+  .avc-actionPrincipale {
+    width: auto;
   }
 
 
