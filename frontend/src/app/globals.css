@@ -32,23 +32,31 @@
   --color-brass-lift: #f0be45;
   --color-brass-wash: #1b3a26;
 
-  /* --- Papier : terrain du back-office --- */
-  --color-paper: #f3f4f7;
+  /* --- Papier : terrain du back-office et des sections claires ---
+   *
+   * Le fond est un gris teinte, pas un presque-blanc. C'est ce qui permet
+   * aux panneaux en blanc pur de s'en detacher sans bordure : la hierarchie
+   * vient du rapport entre deux surfaces, pas d'un filet trace autour.
+   *
+   * A #f3f4f7, le fond et les panneaux etaient trop proches pour qu'on
+   * distingue l'un de l'autre, et tout flottait sur un meme plan blanc.
+   */
+  --color-paper: #e2e8ef;
   --color-paper-raised: #ffffff;
-  --color-rule: #d8dbe4;
-  --color-paper-soft: #5b6560;
+  --color-rule: #ccd6e2;
+  --color-paper-soft: #4f5b68;
 
   /* --- Etats --- */
   /* Sur un site deja vert, le vert perd sa valeur de signal : les etats
      reussis se distinguent par une teinte nettement plus claire que le fond,
      jamais par la seule couleur. Le libelle porte toujours l'information. */
   --color-sage: #2f6b46;
-  --color-sage-wash: #e6f2ea;
+  --color-sage-wash: #d8ebdf;
   --color-sage-clair: #8fd3a8;
   --color-oxblood: #a3231c;
-  --color-oxblood-wash: #fbeae8;
+  --color-oxblood-wash: #f7e1de;
   --color-amber: #8a6410;
-  --color-amber-wash: #fbf1dc;
+  --color-amber-wash: #f7ebd2;
 
   /* --- Familles --- */
   --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
