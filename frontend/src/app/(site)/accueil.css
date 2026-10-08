@@ -35,9 +35,6 @@
   max-width: 46rem;
 }
 
-
-
-
 .avc-heroTitle {
   max-width: 10.5ch;
   margin-top: clamp(1.4rem, 3vh, 2.25rem);
@@ -106,8 +103,6 @@
   transform: translateY(-2px);
 }
 
-
-
 .avc-actionSecondaire {
   /* Une bordure basse sur un element en ligne flotte sous le texte sans
      l'epouser, et se voit comme un bricolage. Le lien se signale par sa
@@ -124,8 +119,6 @@
   text-decoration-thickness: 1px;
   text-underline-offset: 0.3em;
 }
-
-
 
 .avc-heroVisual {
   position: relative;
@@ -150,23 +143,6 @@
   filter: drop-shadow(0 1.5rem 1.8rem rgb(0 0 0 / 24%));
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 .avc-disciplines,
 .avc-parcours {
   background: var(--color-paper);
@@ -178,64 +154,12 @@
   padding-block: clamp(5rem, 9vw, 8.5rem);
 }
 
-.avc-enteteSection {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(17rem, 0.75fr);
-  align-items: end;
-  gap: 3rem;
-}
-
 /* --- Disciplines -----------------------------------------------------
  *
  * Une liste editoriale, pas une grille de fiches. Quatre rectangles
  * identiques bordes font un catalogue de produits ; un filet franc et de
  * l'air laissent chaque discipline exister pour elle-meme.
  */
-
-.avc-listeDisciplines {
-  display: grid;
-  margin: 3.5rem 0 0;
-  padding: 0;
-  gap: 0 4rem;
-  list-style: none;
-}
-
-.avc-listeDisciplines > li {
-  /* Un filet franc, pas un cheveu a 20 % : il porte la separation, donc il
-     doit se voir. */
-  border-top: 2px solid var(--color-ink);
-}
-
-.avc-discipline {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding-block: clamp(2rem, 5vw, 3rem);
-}
-
-.avc-discipline h3 {
-  margin: 0;
-  color: var(--color-ink);
-  font-family: var(--font-display);
-  font-size: clamp(2.4rem, 10vw, 3.8rem);
-  font-weight: 800;
-  line-height: 0.95;
-  letter-spacing: -0.02em;
-}
-
-.avc-accrocheDiscipline {
-  margin: 0.75rem 0 0;
-  color: var(--color-amber);
-  font-size: 1rem;
-}
-
-.avc-descriptionDiscipline {
-  max-width: 32rem;
-  margin: 1.1rem 0 0;
-  color: var(--color-paper-soft);
-  font-size: 1rem;
-  line-height: 1.6;
-}
 
 /* Les tarifs se lisent comme une phrase : le montant porte, l'unite suit. */
 .avc-tarifDiscipline {
@@ -245,44 +169,11 @@
   line-height: 1.9;
 }
 
-.avc-tarifDiscipline strong {
-  color: var(--color-ink);
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-
-.avc-piedDiscipline {
-  margin: 1.25rem 0 0;
-  color: var(--color-paper-soft);
-  font-size: 0.9rem;
-}
-
-.avc-boutonDiscipline {
-  margin-top: 1.5rem;
-  padding: 0.85rem 1.6rem;
-  border: 1.5px solid var(--color-ink);
-  color: var(--color-ink);
-  font-size: 0.95rem;
-  font-weight: 600;
-  transition:
-    background-color 180ms ease,
-    color 180ms ease;
-}
-
-.avc-boutonDiscipline:hover {
-  background: var(--color-ink);
-  color: var(--color-paper);
-}
-
 @media (min-width: 52rem) {
   .avc-listeDisciplines {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 
 .avc-enteteSection h2,
 .avc-enteteCandidats h2,
@@ -303,36 +194,6 @@
 .avc-rendezVous h2 {
   font-size: clamp(2.75rem, 5.5vw, 5.2rem);
 }
-
-.avc-enteteSection > p {
-  max-width: 28rem;
-  color: var(--color-paper-soft);
-  font-size: 1rem;
-  line-height: 1.7;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 .avc-candidats {
   position: relative;
@@ -417,8 +278,6 @@
   padding-left: 0;
   border-left: 0;
 }
-
-
 
 .avc-numeroEtape {
   color: var(--color-amber);
@@ -640,7 +499,6 @@
     height: auto;
   }
 
-
   .avc-enteteSection,
   .avc-enteteParcours,
   .avc-clotureInterieur {
@@ -701,16 +559,15 @@
     width: 82%;
   }
 
-
-
-
-
-
   .avc-grilleCandidats > li:not(:first-child) {
     border-top: 1px solid var(--color-ink-line);
   }
 
   .avc-etapes {
+    /* La grille a trois colonnes du bureau restait active : sur un telephone,
+       les trois etapes se serraient a 110 px de large et debordaient de
+       l'ecran. Une etape par ligne. */
+    grid-template-columns: 1fr;
     border-top: 0;
   }
 
@@ -749,7 +606,5 @@
   .avc-actionPrincipale {
     width: auto;
   }
-
-
 
 }

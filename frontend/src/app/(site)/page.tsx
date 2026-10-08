@@ -3,7 +3,6 @@ import Link from "next/link";
 import { MarqueSeule } from "@/components/Marque";
 import { VignetteCandidat } from "@/components/VignetteCandidat";
 import { lirePublic } from "@/lib/api";
-import {fcfa, nombre } from "@/lib/format";
 import type {
   Candidat,
   Categorie,
@@ -91,10 +90,10 @@ export default async function Accueil() {
                   {libellePrincipal}
                 </Link>
               ) : null}
-              {categories.length > 0 ? (
-                <a href="#disciplines" className={"avc-actionSecondaire"}>
-                  Voir les disciplines
-                </a>
+              {candidats.length > 0 ? (
+                <Link href="/candidats" className={"avc-actionSecondaire"}>
+                  Voir les candidats
+                </Link>
               ) : null}
             </div>
 
@@ -114,105 +113,6 @@ export default async function Accueil() {
 
       </section>
 
-
-      {/* Disciplines : tarifs et états viennent toujours de l'API. */}
-      {categories.length > 0 ? (
-        <section
-          id="disciplines"
-          className={"avc-disciplines"}
-          aria-labelledby="titre-disciplines"
-        >
-          <div className={"avc-conteneurClair"}>
-            <header className={"avc-enteteSection"}>
-              <div>
-                <h2 id="titre-disciplines">Choisissez votre discipline.</h2>
-              </div>
-              <p>
-                Consultez les formats proposés et les frais d&apos;inscription
-                propres à chaque discipline.
-              </p>
-            </header>
-
-            {/*
-              Liste editoriale, pas une grille de fiches. Quatre rectangles
-              identiques bordes font un catalogue de produits ; un filet franc
-              et de l'air laissent chaque discipline exister pour elle-meme.
-            */}
-            <ul className={"avc-listeDisciplines"}>
-              {categories.map((categorie) => {
-                const complet = categorie.is_full;
-                const ouverte = categorie.is_registration_open && !complet;
-
-                return (
-                  <li key={categorie.id}>
-                    <article className={"avc-discipline"}>
-                      <h3>{categorie.name}</h3>
-
-                      {categorie.tagline ? (
-                        <p className={"avc-accrocheDiscipline"}>
-                          {categorie.tagline}
-                        </p>
-                      ) : null}
-
-                      {categorie.description ? (
-                        <p className={"avc-descriptionDiscipline"}>
-                          {categorie.description}
-                        </p>
-                      ) : null}
-
-                      {/*
-                        Les tarifs se lisent comme une phrase. « Individuel …
-                        8 000 FCFA » sur deux colonnes, c'est une grille de
-                        prix ; ici quelqu'un parle.
-                      */}
-                      <p className={"avc-tarifDiscipline"}>
-                        <strong>{fcfa(categorie.registration_fee)}</strong>
-                        {categorie.group_fee !== null ? " en individuel" : ""}
-                        {categorie.group_fee !== null ? (
-                          <>
-                            <br />
-                            <strong>{fcfa(categorie.group_fee)}</strong> en
-                            groupe
-                          </>
-                        ) : null}
-                      </p>
-
-                      {/*
-                        On ne signale que l'exception. « Ouvert » repete sur
-                        les quatre disciplines n'apprend rien : c'est l'etat
-                        normal, et le bouton le dit deja.
-                      */}
-                      <p className={"avc-piedDiscipline"}>
-                        {complet
-                          ? "Complet"
-                          : !categorie.is_registration_open
-                            ? "Inscriptions fermées"
-                            : categorie.candidates_count > 0
-                              ? `${nombre(categorie.candidates_count)} candidat${
-                                  categorie.candidates_count > 1 ? "s" : ""
-                                } déjà inscrit${
-                                  categorie.candidates_count > 1 ? "s" : ""
-                                }`
-                              : "Personne ne s'est encore présenté"}
-                      </p>
-
-                      {ouverte ? (
-                        <Link
-                          href={`/inscription?categorie=${categorie.slug}`}
-                          aria-label={`S'inscrire en ${categorie.name}`}
-                          className={"avc-boutonDiscipline"}
-                        >
-                          S&apos;inscrire
-                        </Link>
-                      ) : null}
-                    </article>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </section>
-      ) : null}
 
       {/* De vrais visages uniquement : la section disparaît si aucun profil validé. */}
       {candidats.length > 0 ? (
