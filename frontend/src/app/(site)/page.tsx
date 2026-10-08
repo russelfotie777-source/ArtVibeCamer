@@ -133,77 +133,82 @@ export default async function Accueil() {
               </p>
             </header>
 
-            <ul className={"avc-grilleDisciplines"}>
-              {categories.map((categorie) => (
-                <li key={categorie.id}>
-                  <article className={"avc-carteDiscipline"}>
-                    <div className={"avc-carteEntete"}>
-                      <span className={"avc-etatDiscipline"}>
-                                                {categorie.is_full
-                          ? "Complet"
-                          : categorie.is_registration_open
-                            ? "Ouvert"
-                            : "Fermé"}
-                      </span>
-                    </div>
+            {/*
+              Liste editoriale, pas une grille de fiches. Quatre rectangles
+              identiques bordes font un catalogue de produits ; un filet franc
+              et de l'air laissent chaque discipline exister pour elle-meme.
+            */}
+            <ul className={"avc-listeDisciplines"}>
+              {categories.map((categorie) => {
+                const complet = categorie.is_full;
+                const ouverte = categorie.is_registration_open && !complet;
 
-                    <div className={"avc-carteCorps"}>
+                return (
+                  <li key={categorie.id}>
+                    <article className={"avc-discipline"}>
                       <h3>{categorie.name}</h3>
+
                       {categorie.tagline ? (
                         <p className={"avc-accrocheDiscipline"}>
                           {categorie.tagline}
                         </p>
                       ) : null}
+
                       {categorie.description ? (
                         <p className={"avc-descriptionDiscipline"}>
                           {categorie.description}
                         </p>
                       ) : null}
-                    </div>
 
-                    <div className={"avc-carteBas"}>
-                      <dl className={"avc-tarifsDiscipline"}>
-                        <div>
-                          <dt>Individuel</dt>
-                          <dd>{fcfa(categorie.registration_fee)}</dd>
-                        </div>
+                      {/*
+                        Les tarifs se lisent comme une phrase. « Individuel …
+                        8 000 FCFA » sur deux colonnes, c'est une grille de
+                        prix ; ici quelqu'un parle.
+                      */}
+                      <p className={"avc-tarifDiscipline"}>
+                        <strong>{fcfa(categorie.registration_fee)}</strong>
+                        {categorie.group_fee !== null ? " en individuel" : ""}
                         {categorie.group_fee !== null ? (
-                          <div>
-                            <dt>Groupe</dt>
-                            <dd>{fcfa(categorie.group_fee)}</dd>
-                          </div>
-                        ) : (
-                          <div>
-                            <dt>Formule</dt>
-                            <dd>Individuel uniquement</dd>
-                          </div>
-                        )}
-                      </dl>
-
-                      <div className={"avc-carteAction"}>
-                        {categorie.candidates_count > 0 ? (
-                          <p>
-                            {nombre(categorie.candidates_count)} candidat
-                            {categorie.candidates_count > 1 ? "s" : ""}
-                          </p>
-                        ) : (
-                          <span aria-hidden="true" />
-                        )}
-
-                        {categorie.is_registration_open ? (
-                          <Link
-                            href={`/inscription?categorie=${categorie.slug}`}
-                            aria-label={`S'inscrire en ${categorie.name}`}
-                            className={"avc-lienDiscipline"}
-                          >
-                            S&apos;inscrire
-                          </Link>
+                          <>
+                            <br />
+                            <strong>{fcfa(categorie.group_fee)}</strong> en
+                            groupe
+                          </>
                         ) : null}
-                      </div>
-                    </div>
-                  </article>
-                </li>
-              ))}
+                      </p>
+
+                      {/*
+                        On ne signale que l'exception. « Ouvert » repete sur
+                        les quatre disciplines n'apprend rien : c'est l'etat
+                        normal, et le bouton le dit deja.
+                      */}
+                      <p className={"avc-piedDiscipline"}>
+                        {complet
+                          ? "Complet"
+                          : !categorie.is_registration_open
+                            ? "Inscriptions fermées"
+                            : categorie.candidates_count > 0
+                              ? `${nombre(categorie.candidates_count)} candidat${
+                                  categorie.candidates_count > 1 ? "s" : ""
+                                } déjà inscrit${
+                                  categorie.candidates_count > 1 ? "s" : ""
+                                }`
+                              : "Personne ne s'est encore présenté"}
+                      </p>
+
+                      {ouverte ? (
+                        <Link
+                          href={`/inscription?categorie=${categorie.slug}`}
+                          aria-label={`S'inscrire en ${categorie.name}`}
+                          className={"avc-boutonDiscipline"}
+                        >
+                          S&apos;inscrire
+                        </Link>
+                      ) : null}
+                    </article>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </section>
