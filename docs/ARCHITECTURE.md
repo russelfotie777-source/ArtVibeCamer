@@ -353,6 +353,11 @@ Les couleurs viennent du logotype de l'evenement, pas d'un choix arbitraire :
 le vert foret profond de la typographie sert de fond, l'or de l'etoile sert
 d'accent. Le site appartient ainsi visuellement a la marque.
 
+Le fond reste un a-plat. Pas de bandeau decoratif, pas de degrade, pas de
+texture : l'illustration de la marque et, bientot, les photos des candidats
+suffisent a porter la couleur. Un ornement ajoute par-dessus se lit comme un
+remplissage.
+
 **Choix assume** : on ne reprend pas les bandes vert-rouge-jaune du drapeau.
 Elles sont deja dans le logo, ou elles ont leur place ; repetees sur toute la
 page, elles entreraient en concurrence avec lui et donneraient une plateforme

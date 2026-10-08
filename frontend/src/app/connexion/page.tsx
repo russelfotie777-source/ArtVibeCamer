@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LogoEvenement } from "@/components/Marque";
 import { FormulaireConnexion } from "@/components/FormulaireConnexion";
-import { BandeMotif } from "@/components/Motif";
 import { jetonSession } from "@/lib/api";
 
 export const metadata: Metadata = {
@@ -16,7 +15,6 @@ export default async function PageConnexion() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-ink text-paper">
-      <BandeMotif hauteur={12} />
 
       <div className="flex flex-1 items-center justify-center px-5 py-16">
         <div className="w-full max-w-sm">
