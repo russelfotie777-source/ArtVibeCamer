@@ -162,43 +162,10 @@
 
 
 
-.avc-railDisciplines {
-  border-block: 1px solid #b88713;
-  background: var(--color-brass);
-  color: var(--color-ink);
-}
 
-.avc-railDisciplines ul {
-  display: flex;
-  width: min(100%, 76rem);
-  margin: 0 auto;
-  padding: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-  list-style: none;
-}
 
-.avc-railDisciplines ul::-webkit-scrollbar {
-  display: none;
-}
 
-.avc-railDisciplines li {
-  display: flex;
-  min-width: max-content;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem clamp(1.25rem, 3vw, 2.4rem);
-  border-left: 1px solid var(--color-rule);
-  font-family: var(--font-display);
-  font-size: 0.9rem;
-  font-weight: 750;
-  letter-spacing: 0.02em;
-}
 
-.avc-railDisciplines li:last-child {
-  border-right: 1px solid var(--color-rule);
-}
 
 .avc-disciplines,
 .avc-parcours {
@@ -750,19 +717,7 @@
   }
 
 
-  .avc-railDisciplines li {
-    min-width: 0;
-    justify-content: center;
-    padding-inline: 0.75rem;
-    border-bottom: 1px solid var(--color-rule);
-    font-size: 0.82rem;
-    text-align: center;
-  }
 
-  .avc-railDisciplines ul {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 
   .avc-grilleDisciplines,
   .avc-grilleCandidats,

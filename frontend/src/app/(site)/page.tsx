@@ -114,18 +114,6 @@ export default async function Accueil() {
 
       </section>
 
-      {/* Bande de rythme : uniquement les disciplines réellement renvoyées. */}
-      {categories.length > 0 ? (
-        <div className={"avc-railDisciplines"} aria-hidden="true">
-          <ul>
-            {categories.map((categorie) => (
-              <li key={categorie.id}>
-                {categorie.name}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
 
       {/* Disciplines : tarifs et états viennent toujours de l'API. */}
       {categories.length > 0 ? (
