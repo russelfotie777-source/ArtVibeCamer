@@ -3,7 +3,7 @@ import Link from "next/link";
 import { MarqueSeule } from "@/components/Marque";
 import { VignetteCandidat } from "@/components/VignetteCandidat";
 import { lirePublic } from "@/lib/api";
-import { dateCourte, fcfa, nombre } from "@/lib/format";
+import {fcfa, nombre } from "@/lib/format";
 import type {
   Candidat,
   Categorie,
@@ -40,25 +40,10 @@ export default async function Accueil() {
     categories,
     reglages,
     candidats,
-    categoriesInjoignables,
     candidatsInjoignables,
   } = await donnees();
 
   const ouvertes = categories.some((categorie) => categorie.is_registration_open);
-
-  // Fourchette reelle : les deux formules confondues, pas le seul tarif solo.
-  const tarifs = categories.flatMap((categorie) =>
-    [categorie.registration_fee, categorie.group_fee].filter(
-      (frais): frais is number => frais !== null,
-    ),
-  );
-  const fraisMin = tarifs.length ? Math.min(...tarifs) : null;
-  const fraisMax = tarifs.length ? Math.max(...tarifs) : null;
-  const echeance = categories
-    .filter((categorie) => categorie.is_registration_open)
-    .map((categorie) => categorie.registration_closes_at)
-    .filter((date): date is string => Boolean(date))
-    .sort()[0];
 
   const slogan =
     reglages?.event_tagline ??
@@ -113,24 +98,6 @@ export default async function Accueil() {
               ) : null}
             </div>
 
-            {/*
-              L'information utile tient en une phrase. Un panneau flottant
-              par-dessus l'illustration la presenterait comme un tableau de
-              bord : ce n'est pas ce que lit un candidat qui arrive.
-            */}
-            <p className={"avc-fenetreInscription"}>
-              {categoriesInjoignables
-                ? "Les informations d'inscription ne sont pas joignables pour le moment."
-                : ouvertes
-                  ? `Inscriptions ouvertes${echeance ? ` jusqu'au ${dateCourte(echeance)}` : ""}${
-                      fraisMin !== null && fraisMax !== null
-                        ? fraisMin === fraisMax
-                          ? `, ${fcfa(fraisMin)}`
-                          : `, de ${nombre(fraisMin)} à ${fcfa(fraisMax)}`
-                        : ""
-                    }. Paiement par MTN Mobile Money ou Orange Money.`
-                  : "Les inscriptions sont fermées pour le moment."}
-            </p>
           </div>
 
           <div className={"avc-heroVisual"}>
