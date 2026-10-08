@@ -27,25 +27,28 @@ export default async function LayoutSite({
       {/* Le motif toghu, une seule fois : en tete de page, comme un galon. */}
       <BandeMotif hauteur={12} />
 
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-6 sm:px-8">
-        <LogoEvenement hauteur={44} priorite />
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-4 py-5 min-[30rem]:gap-4 sm:px-8 sm:py-6">
+        <LogoEvenement hauteur={36} priorite className="shrink-0" />
 
-        <nav className="flex items-center gap-5 text-sm">
+        <nav
+          aria-label="Navigation principale"
+          className="flex items-center gap-2 text-xs min-[30rem]:gap-4 min-[30rem]:text-sm"
+        >
           <Link
             href="/candidats"
-            className="text-ink-soft transition-colors hover:text-brass"
+            className="py-3 text-ink-soft transition-colors hover:text-brass"
           >
             Candidats
           </Link>
           <Link
             href="/inscription"
-            className="text-ink-soft transition-colors hover:text-brass"
+            className="py-3 text-ink-soft transition-colors hover:text-brass"
           >
             S&apos;inscrire
           </Link>
           <Link
             href="/admin"
-            className="text-ink-soft transition-colors hover:text-brass"
+            className="hidden py-3 text-ink-soft transition-colors hover:text-brass min-[30rem]:inline"
           >
             Organisation
           </Link>

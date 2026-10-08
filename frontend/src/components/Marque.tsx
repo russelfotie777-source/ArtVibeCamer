@@ -74,8 +74,6 @@ export function LogoEvenement({
         width={Math.round((texte.w / texte.h) * hauteurTexte)}
         height={hauteurTexte}
         priority={priorite}
-        className="w-auto"
-        style={{ height: hauteurTexte }}
       />
     </>
   );

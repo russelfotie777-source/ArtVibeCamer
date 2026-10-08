@@ -9,7 +9,15 @@ import type { Candidat } from "@/lib/types";
  * Le numero passe avant le nom : c'est lui qui sert a voter, et c'est sous ce
  * numero que le public le retrouvera le soir du spectacle.
  */
-export function VignetteCandidat({ candidat }: { candidat: Candidat }) {
+export function VignetteCandidat({
+  candidat,
+  niveauTitre = 2,
+}: {
+  candidat: Candidat;
+  niveauTitre?: 2 | 3;
+}) {
+  const Titre = niveauTitre === 3 ? "h3" : "h2";
+
   return (
     <Link
       href={`/candidats/${candidat.slug}`}
@@ -39,12 +47,12 @@ export function VignetteCandidat({ candidat }: { candidat: Candidat }) {
               {candidat.candidate_number}
             </p>
           ) : null}
-          <h2 className="mt-1 font-display text-lg font-extrabold group-hover:text-brass">
+          <Titre className="mt-1 font-display text-lg font-extrabold group-hover:text-brass">
             {candidat.display_name}
-          </h2>
+          </Titre>
           <p className="mt-1 text-sm text-ink-soft">
             {candidat.category?.name}
-            {candidat.is_group ? ` — groupe de ${candidat.members_count}` : ""}
+            {candidat.is_group ? `, groupe de ${candidat.members_count}` : ""}
           </p>
         </div>
 

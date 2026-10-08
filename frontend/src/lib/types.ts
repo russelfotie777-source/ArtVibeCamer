@@ -12,7 +12,12 @@ export type Reglages = {
   event_date: string | null;
   event_venue: string | null;
   event_city: string | null;
+  /** Fenetre et rendez-vous publics, renseignes par l'organisation. */
+  registration_window?: string | null;
+  casting_douala?: string | null;
+  casting_yaounde?: string | null;
   contact_phone: string | null;
+  contact_phone_2?: string | null;
   contact_whatsapp: string | null;
   contact_email: string | null;
   registration_enabled: boolean;

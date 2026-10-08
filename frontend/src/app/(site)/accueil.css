@@ -1,0 +1,783 @@
+.avc-page {
+  overflow: clip;
+  background: var(--color-ink);
+}
+
+.avc-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: calc(100svh - 6.75rem);
+  overflow: hidden;
+  background: var(--color-ink);
+}
+
+.avc-heroInner,
+.avc-conteneurClair,
+.avc-conteneurSombre,
+.avc-clotureInterieur {
+  width: min(100%, 76rem);
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 2rem);
+}
+
+.avc-heroInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(25rem, 0.92fr);
+  align-items: center;
+  min-height: calc(100svh - 6.75rem);
+  gap: clamp(1rem, 4vw, 4rem);
+  padding-block: clamp(3.5rem, 8vh, 6.5rem) 5.5rem;
+}
+
+.avc-heroCopy {
+  position: relative;
+  z-index: 3;
+  max-width: 46rem;
+}
+
+
+
+
+.avc-heroTitle {
+  max-width: 10.5ch;
+  margin-top: clamp(1.4rem, 3vh, 2.25rem);
+  color: var(--color-paper);
+  font-family: var(--font-display);
+  font-size: clamp(3.65rem, 7.6vw, 7.4rem);
+  font-weight: 780;
+  font-variation-settings: "wdth" 82;
+  letter-spacing: -0.02em;
+  line-height: 0.86;
+  text-wrap: balance;
+}
+
+.avc-heroDisciplines {
+  margin-top: 1.75rem;
+  color: var(--color-brass-lift);
+  font-family: var(--font-display);
+  font-size: clamp(0.9rem, 1.5vw, 1.06rem);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.avc-heroIntro {
+  max-width: 34rem;
+  margin-top: 1.1rem;
+  color: #c2d4c9;
+  font-size: clamp(1rem, 1.5vw, 1.16rem);
+  line-height: 1.65;
+}
+
+.avc-heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.2rem;
+  margin-top: 2rem;
+}
+
+.avc-actionPrincipale,
+.avc-actionFinale {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 13.5rem;
+  gap: 1.5rem;
+  border: 1px solid var(--color-brass);
+  background: var(--color-brass);
+  color: var(--color-ink);
+  font-size: 0.94rem;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.avc-actionPrincipale {
+  padding: 1.1rem 1.25rem;
+}
+
+.avc-actionPrincipale:hover,
+.avc-actionFinale:hover {
+  border-color: var(--color-brass-lift);
+  background: var(--color-brass-lift);
+  transform: translateY(-2px);
+}
+
+
+
+.avc-actionSecondaire {
+  border-bottom: 1px solid var(--color-brass-lift);
+  color: var(--color-paper);
+  font-size: 0.9rem;
+  line-height: 1.8;
+  transition:
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.avc-actionSecondaire:hover {
+  border-color: var(--color-brass-lift);
+  color: var(--color-brass-lift);
+}
+
+.avc-fenetreInscription {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  margin-top: 1.7rem;
+  color: var(--color-ink-soft);
+  font-size: 0.78rem;
+}
+
+.avc-fenetreInscription span {
+  color: var(--color-paper);
+  font-weight: 650;
+  letter-spacing: 0.08em;
+}
+
+.avc-heroVisual {
+  position: relative;
+  display: flex;
+  min-height: 39rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.avc-illustrationCadre {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+}
+
+.avc-illustration {
+  width: min(100%, 29rem);
+  height: auto;
+  filter: drop-shadow(0 1.5rem 1.8rem rgb(0 0 0 / 24%));
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+.avc-railDisciplines {
+  border-block: 1px solid #b88713;
+  background: var(--color-brass);
+  color: var(--color-ink);
+}
+
+.avc-railDisciplines ul {
+  display: flex;
+  width: min(100%, 76rem);
+  margin: 0 auto;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.avc-railDisciplines ul::-webkit-scrollbar {
+  display: none;
+}
+
+.avc-railDisciplines li {
+  display: flex;
+  min-width: max-content;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem clamp(1.25rem, 3vw, 2.4rem);
+  border-left: 1px solid var(--color-rule);
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+
+.avc-railDisciplines li:last-child {
+  border-right: 1px solid var(--color-rule);
+}
+
+.avc-disciplines,
+.avc-parcours {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+.avc-conteneurClair,
+.avc-conteneurSombre {
+  padding-block: clamp(5rem, 9vw, 8.5rem);
+}
+
+.avc-enteteSection {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(17rem, 0.75fr);
+  align-items: end;
+  gap: 3rem;
+}
+
+.avc-enteteSection h2,
+.avc-enteteCandidats h2,
+.avc-enteteParcours h2,
+.avc-rendezVous h2,
+.avc-appelFinal h2 {
+  margin-top: 1rem;
+  font-family: var(--font-display);
+  font-weight: 780;
+  letter-spacing: -0.02em;
+  line-height: 0.94;
+  text-wrap: balance;
+}
+
+.avc-enteteSection h2,
+.avc-enteteCandidats h2,
+.avc-enteteParcours h2,
+.avc-rendezVous h2 {
+  font-size: clamp(2.75rem, 5.5vw, 5.2rem);
+}
+
+.avc-enteteSection > p {
+  max-width: 28rem;
+  color: var(--color-paper-soft);
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.avc-grilleDisciplines {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: clamp(3.5rem, 6vw, 5rem);
+  padding: 1px;
+  background: var(--color-rule);
+  list-style: none;
+}
+
+.avc-grilleDisciplines > li {
+  min-width: 0;
+  background: var(--color-paper-raised);
+}
+
+.avc-carteDiscipline {
+  display: flex;
+  min-height: 31rem;
+  height: 100%;
+  flex-direction: column;
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  transition:
+    background-color 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.avc-carteDiscipline:hover {
+  background: #f8f8f5;
+  box-shadow: inset 0 0 0 1px var(--color-rule);
+}
+
+.avc-carteEntete,
+.avc-carteAction {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+
+.avc-etatDiscipline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--color-paper-soft);
+  font-size: 0.73rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+}
+
+
+
+.avc-carteCorps {
+  padding-block: clamp(2rem, 5vw, 3.3rem);
+}
+
+.avc-carteCorps h3 {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5vw, 4.65rem);
+  font-weight: 780;
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+}
+
+.avc-accrocheDiscipline {
+  margin-top: 1.1rem;
+  color: var(--color-amber);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.avc-descriptionDiscipline {
+  max-width: 28rem;
+  margin-top: 1rem;
+  color: var(--color-paper-soft);
+  font-size: 0.9rem;
+  line-height: 1.65;
+}
+
+.avc-carteBas {
+  margin-top: auto;
+}
+
+.avc-tarifsDiscipline {
+  border-top: 1px solid var(--color-rule);
+}
+
+.avc-tarifsDiscipline > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.78rem;
+  border-bottom: 1px solid var(--color-rule);
+}
+
+.avc-tarifsDiscipline dt {
+  color: var(--color-paper-soft);
+  font-size: 0.78rem;
+}
+
+.avc-tarifsDiscipline dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.97rem;
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.avc-carteAction {
+  margin-top: 1.3rem;
+}
+
+.avc-carteAction p {
+  color: var(--color-paper-soft);
+  font-size: 0.73rem;
+}
+
+.avc-lienDiscipline,
+.avc-lienToutVoir {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.avc-lienDiscipline {
+  color: var(--color-ink);
+}
+
+.avc-lienDiscipline:focus-visible {
+  outline-color: var(--color-ink);
+}
+
+.avc-candidats {
+  position: relative;
+  background: #0b2517;
+  color: var(--color-paper);
+}
+
+.avc-enteteCandidats {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.avc-enteteCandidats > div {
+  max-width: 49rem;
+}
+
+.avc-lienToutVoir {
+  flex: none;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--color-brass);
+  color: var(--color-paper);
+  transition:
+    border-color 180ms ease,
+    color 180ms ease;
+}
+
+.avc-lienToutVoir:hover {
+  border-color: var(--color-brass-lift);
+  color: var(--color-brass-lift);
+}
+
+.avc-grilleCandidats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: clamp(3rem, 6vw, 4.5rem);
+  padding: 1px;
+  background: var(--color-ink-line);
+  list-style: none;
+}
+
+.avc-grilleCandidats > li {
+  min-width: 0;
+  background: var(--color-ink);
+}
+
+.avc-parcours {
+  border-top: 1px solid var(--color-rule);
+}
+
+.avc-enteteParcours {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 2fr);
+  align-items: start;
+  gap: 2rem;
+}
+
+.avc-enteteParcours h2 {
+  max-width: 14ch;
+  margin-top: 0;
+}
+
+.avc-etapes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: clamp(3.5rem, 7vw, 6rem);
+  padding: 0;
+  border-top: 1px solid var(--color-rule);
+  list-style: none;
+}
+
+.avc-etapes li {
+  position: relative;
+  min-width: 0;
+  padding: 2rem clamp(1.25rem, 3vw, 2.2rem) 0;
+  border-left: 1px solid var(--color-rule);
+}
+
+.avc-etapes li:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+
+
+.avc-numeroEtape {
+  color: var(--color-amber);
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-weight: 760;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.avc-etapes h3 {
+  margin-top: 1.7rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 760;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+
+.avc-etapes p {
+  max-width: 20rem;
+  margin-top: 0.8rem;
+  color: var(--color-paper-soft);
+  font-size: 0.86rem;
+  line-height: 1.7;
+}
+
+.avc-cloture {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.avc-clotureInterieur {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(19rem, 0.7fr);
+  align-items: stretch;
+  gap: clamp(2rem, 6vw, 6rem);
+  padding-block: clamp(5rem, 10vw, 9rem);
+}
+
+.avc-rendezVous {
+  align-self: center;
+}
+
+.avc-rendezVous h2 {
+  max-width: 12ch;
+}
+
+.avc-introCastings {
+  max-width: 35rem;
+  margin-top: 1.5rem;
+  color: var(--color-ink-soft);
+  line-height: 1.65;
+}
+
+.avc-listeCastings {
+  max-width: 44rem;
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--color-ink-line);
+}
+
+.avc-listeCastings > div {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  gap: 1.25rem;
+  padding-block: 1.2rem;
+  border-bottom: 1px solid var(--color-ink-line);
+}
+
+.avc-listeCastings dt {
+  color: var(--color-brass-lift);
+  font-family: var(--font-display);
+  font-weight: 720;
+}
+
+.avc-listeCastings dd {
+  margin: 0;
+  color: #c2d4c9;
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+.avc-appelFinal {
+  position: relative;
+  display: flex;
+  min-height: 29rem;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(2rem, 5vw, 3.2rem);
+  overflow: hidden;
+  background: var(--color-brass);
+  color: var(--color-ink);
+}
+
+.avc-appelEtiquette {
+  position: relative;
+  font-size: 0.71rem;
+  font-weight: 750;
+}
+
+.avc-appelFinal h2 {
+  position: relative;
+  max-width: 9ch;
+  margin-top: 1.1rem;
+  font-size: clamp(2.4rem, 4vw, 3.9rem);
+}
+
+.avc-appelFinal > p:not(.avc-appelEtiquette) {
+  position: relative;
+  max-width: 28rem;
+  margin-top: 1.25rem;
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.avc-actionFinale {
+  position: relative;
+  margin-top: 2rem;
+  padding: 1rem 1.15rem;
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+.avc-actionFinale:hover {
+  border-color: var(--color-ink-raised);
+  background: var(--color-ink-raised);
+}
+
+.avc-actionFinale:focus-visible {
+  outline-color: var(--color-ink);
+}
+
+@media (max-width: 68rem) {
+  .avc-heroInner {
+    grid-template-columns: minmax(0, 1fr) minmax(21rem, 0.75fr);
+  }
+
+  .avc-heroVisual {
+    min-height: 34rem;
+  }
+
+  .avc-illustration {
+    width: min(100%, 24rem);
+  }
+
+}
+
+@media (max-width: 52rem) {
+  .avc-hero {
+    min-height: auto;
+  }
+
+  .avc-heroInner {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    gap: 1.5rem;
+    padding-block: 4rem 5rem;
+  }
+
+  .avc-heroTitle {
+    max-width: 11ch;
+  }
+
+  .avc-heroVisual {
+    min-height: 38rem;
+  }
+
+  .avc-illustration {
+    width: min(78vw, 27rem);
+  }
+
+
+  .avc-enteteSection,
+  .avc-enteteParcours,
+  .avc-clotureInterieur {
+    grid-template-columns: 1fr;
+  }
+
+  .avc-enteteSection {
+    align-items: start;
+    gap: 1.5rem;
+  }
+
+  .avc-enteteSection > p {
+    max-width: 36rem;
+  }
+
+  .avc-enteteCandidats {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .avc-enteteParcours {
+    gap: 1.25rem;
+  }
+
+  .avc-grilleCandidats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .avc-clotureInterieur {
+    gap: 3.5rem;
+  }
+
+  .avc-appelFinal {
+    min-height: 25rem;
+  }
+}
+
+@media (max-width: 40rem) {
+  .avc-heroInner {
+    padding-top: 3.25rem;
+  }
+
+  .avc-heroTitle {
+    margin-top: 1.25rem;
+    font-size: clamp(3.15rem, 15vw, 4.7rem);
+  }
+
+  .avc-heroDisciplines {
+    line-height: 1.6;
+  }
+
+  .avc-heroVisual {
+    min-height: 34rem;
+  }
+
+  .avc-illustration {
+    width: min(88vw, 23rem);
+  }
+
+
+  .avc-railDisciplines li {
+    min-width: 0;
+    justify-content: center;
+    padding-inline: 0.75rem;
+    border-bottom: 1px solid var(--color-rule);
+    font-size: 0.82rem;
+    text-align: center;
+  }
+
+  .avc-railDisciplines ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .avc-grilleDisciplines,
+  .avc-grilleCandidats,
+  .avc-etapes {
+    grid-template-columns: 1fr;
+  }
+
+  .avc-carteDiscipline {
+    min-height: 29rem;
+  }
+
+  .avc-grilleCandidats > li:not(:first-child) {
+    border-top: 1px solid var(--color-ink-line);
+  }
+
+  .avc-etapes {
+    border-top: 0;
+  }
+
+  .avc-etapes li,
+  .avc-etapes li:first-child {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    gap: 1.1rem;
+    padding: 1.7rem 0;
+    border-top: 1px solid var(--color-rule);
+    border-left: 0;
+  }
+
+  .avc-etapes h3 {
+    margin-top: 0.2rem;
+  }
+
+  .avc-listeCastings > div {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+}
+
+@media (max-width: 25rem) {
+
+  .avc-heroActions,
+  .avc-actionPrincipale,
+  .avc-actionFinale {
+    width: 100%;
+  }
+
+
+
+  .avc-carteAction {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
