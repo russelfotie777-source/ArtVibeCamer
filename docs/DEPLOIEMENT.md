@@ -193,6 +193,49 @@ fonctionnera pas.
 
 ---
 
+## 3 bis. Ce que le serveur Hostinger impose reellement
+
+Releve au premier deploiement, le 11 octobre. Ces points ne figurent dans
+aucune documentation et coutent une heure si on les decouvre sur place.
+
+**PHP 8.4 est obligatoire, pas 8.3.** `composer.json` annonce `^8.3`, mais le
+verrou resout `symfony/http-foundation` en 8.1.8, qui exige `php >= 8.4.1`.
+Sous 8.3, `composer install` refuse de poser les dependances et le site
+repond :
+
+```
+Your Composer dependencies require a PHP version ">= 8.4.1"
+```
+
+Deux reglages distincts, et les oublier l'un ou l'autre donne la meme panne :
+
+| Ou | Comment |
+| --- | --- |
+| Serveur web | hPanel > Avance > Configuration PHP > **8.4** |
+| Ligne de commande | `/opt/alt/php84/usr/bin/php` — le `php` du PATH reste en 8.3 |
+
+Toute commande `artisan` ou `composer` passe donc par le chemin complet. Un
+`php artisan migrate` ordinaire echoue sans rien expliquer.
+
+**La racine web est un lien symbolique.** Le depot vit hors de l'espace
+servi, pour que `.env` ne soit jamais accessible par le web :
+
+```bash
+cd ~/domains/<site>
+mv public_html public_html.origine
+ln -s ~/depot/backend/public public_html
+```
+
+**`crontab` n'existe pas en SSH** sur ce plan. La tache planifiee se declare
+dans hPanel > Avance > Taches Cron, toutes les minutes :
+
+```
+/opt/alt/php84/usr/bin/php /home/<user>/depot/backend/artisan schedule:run
+```
+
+**Les douze extensions PHP requises sont presentes**, verifiees une a une,
+ainsi que les liens symboliques et Composer 2.9.8.
+
 ## 4. Cron — non negociable
 
 ```cron
