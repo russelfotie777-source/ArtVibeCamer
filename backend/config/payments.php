@@ -63,11 +63,44 @@ return [
             'class' => ElgiopayGateway::class,
 
             // sandbox-api.elgiopay.com pour les tests, api.elgiopay.com en
-            // production. L'API refuse tout autre sous-domaine.
+            // production. L'API refuse tout autre sous-domaine, et une cle
+            // n'authentifie que l'hote de son environnement : une cle
+            // `..._test_...` est refusee sur api.elgiopay.com, et l'inverse.
             'base_url' => env('ELGIOPAY_BASE_URL', 'https://sandbox-api.elgiopay.com'),
 
-            // pk_test_... en bac a sable, pk_live_... en production.
-            'api_key' => env('ELGIOPAY_API_KEY'),
+            /*
+             * Elgiopay delivre deux cles par application.
+             *
+             *   sk_...  Cle secrete. Elle authentifie nos appels serveur et
+             *           elle seule autorise a encaisser et a retirer : a
+             *           traiter comme un mot de passe.
+             *   pk_...  Cle publique, prevue pour les parcours ou le
+             *           navigateur s'adresse directement a la passerelle.
+             *           Nous n'en sommes pas la, tout passe par notre API.
+             *           Elle est conservee ici pour garder le couple lisible
+             *           et pouvoir verifier que les deux cles appartiennent
+             *           au meme environnement.
+             *
+             * `ELGIOPAY_API_KEY` reste lu en dernier recours : c'etait le nom
+             * de la variable quand une seule cle existait.
+             */
+            'secret_key' => env('ELGIOPAY_SECRET_KEY') ?: env('ELGIOPAY_API_KEY'),
+            'public_key' => env('ELGIOPAY_PUBLIC_KEY'),
+
+            /*
+             * Laquelle des deux cles authentifie nos appels serveur :
+             * `secrete` ou `publique`.
+             *
+             * `secrete` est le reglage correct, celui qu'annonce leur
+             * tableau de bord. Mais le 10 octobre 2026 leur bac a sable
+             * repond 401 a la cle secrete et 200 a la publique, verifie sur
+             * `GET /api/v1/balance` avec les deux cles du meme couple.
+             * Le reglage existe pour ne pas avoir a choisir entre encaisser
+             * et rester conforme a leur documentation : on suit le bac a
+             * sable la ou il est, et on rebascule sur `secrete` des qu'ils
+             * corrigent, sans toucher au code.
+             */
+            'auth_key' => env('ELGIOPAY_AUTH_KEY', 'secrete'),
 
             // whsec_... Affiche une seule fois a la creation et a chaque
             // rotation : sans lui, aucune notification n'est acceptee.

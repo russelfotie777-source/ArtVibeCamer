@@ -63,25 +63,81 @@ class ElgiopayDiagnostic extends Command
     {
         $config = config('payments.drivers.elgiopay');
 
-        if (blank($config['api_key'] ?? null)) {
-            $this->components->error('ELGIOPAY_API_KEY est vide.');
-            $this->line('  Renseignez votre clé pk_test_… dans backend/.env, puis relancez.');
+        $passerelle = new ElgiopayGateway($config);
+
+        $mode = $passerelle->modeDAuthentification();
+        $cle = $passerelle->cleDAuthentification();
+
+        if (blank($cle)) {
+            $variable = $mode === 'publique' ? 'ELGIOPAY_PUBLIC_KEY' : 'ELGIOPAY_SECRET_KEY';
+
+            $this->components->error("{$variable} est vide.");
+            $this->line('  Copiez la clé depuis le tableau de bord Elgiopay');
+            $this->line('  (Développeurs → Clés API) dans backend/.env, puis relancez.');
+            $this->line("  C'est la clé {$mode} qui authentifie les appels, voir ELGIOPAY_AUTH_KEY.");
 
             return self::FAILURE;
         }
 
-        $cle = (string) $config['api_key'];
-        $horsLigne = str_starts_with($cle, 'pk_live_');
+        $secrete = (string) ($config['secret_key'] ?? '');
+        $publique = (string) ($config['public_key'] ?? '');
+        $hote = (string) $config['base_url'];
 
-        $this->components->twoColumnDetail('Hôte', (string) $config['base_url']);
-        $this->components->twoColumnDetail('Clé', Str::limit($cle, 12, '…'));
+        $envCle = ElgiopayGateway::environnementDeLaCle($cle);
+        $envHote = ElgiopayGateway::environnementDeLHote($hote);
+
+        $resume = fn (string $v): string => $v === '' ? 'non renseignée' : Str::limit($v, 12, '…');
+
+        $this->components->twoColumnDetail('Hôte', $hote);
+        $this->components->twoColumnDetail(
+            'Clé secrète',
+            $resume($secrete).($mode === 'secrete' ? '  ← authentifie' : ''),
+        );
+        $this->components->twoColumnDetail(
+            'Clé publique',
+            $resume($publique).($mode === 'publique' ? '  ← authentifie' : ''),
+        );
         $this->components->twoColumnDetail(
             'Secret de signature',
             blank($config['webhook_secret'] ?? null) ? 'absent' : 'présent',
         );
         $this->newLine();
 
-        if ($horsLigne) {
+        /*
+         * Une cle n'authentifie que l'hote de son environnement. Le dire ici
+         * evite de lire « clé refusée » et de suspecter la cle elle-meme,
+         * alors que c'est l'hote qui ne correspond pas.
+         */
+        if ($envCle !== null && $envCle !== $envHote) {
+            $this->components->error('La clé et l\'hôte ne sont pas du même environnement.');
+            $this->line("  Clé {$envCle}, hôte {$envHote}.");
+            $this->line('  Une clé …_test_… ne fonctionne que sur sandbox-api.elgiopay.com,');
+            $this->line('  une clé …_live_… que sur api.elgiopay.com.');
+
+            return self::FAILURE;
+        }
+
+        if ($mode === 'secrete' && ! str_starts_with($cle, 'sk_')) {
+            $this->components->warn(
+                'ELGIOPAY_SECRET_KEY ne contient pas une clé secrète (sk_…). Les appels serveur seront probablement refusés.'
+            );
+        }
+
+        if ($mode === 'publique') {
+            $this->components->warn(
+                'Les appels partent avec la clé publique (ELGIOPAY_AUTH_KEY=publique), contournement du 401 de leur bac à sable.'
+            );
+            $this->line('  A rebasculer sur `secrete` des qu\'Elgiopay accepte la clé secrète.');
+            $this->newLine();
+        }
+
+        if ($publique !== '' && ElgiopayGateway::environnementDeLaCle($publique) !== $envCle) {
+            $this->components->warn(
+                'Les deux clés ne viennent pas du même environnement. Reprenez le couple affiché par le tableau de bord.'
+            );
+        }
+
+        if ($envCle === 'live') {
             $this->components->warn(
                 'Clé de production détectée. Ce diagnostic déclenche de vrais débits : interrompez si ce n\'est pas voulu.'
             );
@@ -103,8 +159,6 @@ class ElgiopayDiagnostic extends Command
             return $requete;
         });
 
-        $passerelle = new ElgiopayGateway($config);
-
         /*
          * Controle prealable sur une lecture authentifiee. Sans lui, une cle
          * refusee ferait echouer tous les appels, et les scenarios qui
@@ -115,12 +169,7 @@ class ElgiopayDiagnostic extends Command
         $solde = $passerelle->balance((string) config('payments.currency'));
 
         if ($solde === null) {
-            $this->components->error('La clé est refusée par Elgiopay.');
-            $this->line('  Vérifiez ELGIOPAY_API_KEY et ELGIOPAY_BASE_URL.');
-            $this->line('  Une clé pk_test_… ne fonctionne que sur sandbox-api.elgiopay.com,');
-            $this->line('  et une clé pk_live_… que sur api.elgiopay.com.');
-
-            return self::FAILURE;
+            return $this->expliquerLeRefus($passerelle, $config, $mode);
         }
 
         $format = fn (int $m) => number_format($m, 0, ',', ' ').' '.$solde['currency'];
@@ -203,10 +252,87 @@ class ElgiopayDiagnostic extends Command
         }
 
         $this->components->info('Les encaissements aboutissent sur les deux opérateurs.');
+
+        if (blank($config['webhook_secret'] ?? null)) {
+            $this->newLine();
+            $this->components->warn('ELGIOPAY_WEBHOOK_SECRET est absent : toute notification sera refusée.');
+            $this->line('  Sans lui, un paiement débité reste « en cours » jusqu\'à une');
+            $this->line('  vérification manuelle. Le secret whsec_… s\'affiche une seule fois,');
+            $this->line('  à la création du webhook dans le tableau de bord.');
+        }
+
+        $this->newLine();
         $this->line('  Reste à valider le webhook : il demande une URL publique');
         $this->line('  (tunnel ngrok ou cloudflared) déclarée dans le tableau de bord Elgiopay.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Le preambule a echoue. Dire ce qui s'est reellement passe plutot que de
+     * deduire : « cle refusee » et « passerelle injoignable » n'appellent pas
+     * la meme correction, et un 403 sur une cle valide pointe vers une
+     * application pas encore approuvee.
+     *
+     * Sur un 401, on sonde l'autre cle du couple. Si elle passe, la question
+     * n'est plus « pourquoi ca echoue » mais « laquelle cette API attend »,
+     * et c'est une ligne de configuration au lieu d'une enquete.
+     */
+    private function expliquerLeRefus(ElgiopayGateway $passerelle, array $config, string $mode): int
+    {
+        $statut = $passerelle->dernierStatut();
+
+        match (true) {
+            $statut === null || $statut === 0 => $this->components->error('Elgiopay est injoignable : aucune réponse HTTP.'),
+            $statut === 401 => $this->components->error("Clé {$mode} refusée par Elgiopay (HTTP 401)."),
+            $statut === 403 => $this->components->error('Clé reconnue mais sans droit sur cette ressource (HTTP 403).'),
+            $statut === 404 => $this->components->error('Chemin inconnu chez Elgiopay (HTTP 404).'),
+            default => $this->components->error("Lecture du solde impossible (HTTP {$statut})."),
+        };
+
+        $autreMode = $mode === 'publique' ? 'secrete' : 'publique';
+        $autreCle = (string) ($autreMode === 'publique'
+            ? ($config['public_key'] ?? '')
+            : ($config['secret_key'] ?? ''));
+
+        /*
+         * Un seul appel de plus, et seulement ici : il tranche la question
+         * qu'on ne peut pas trancher en lisant le code — laquelle des deux
+         * cles cette API accepte en jeton Bearer.
+         */
+        if ($statut === 401 && $autreCle !== '' && $autreCle !== $passerelle->cleDAuthentification()) {
+            $this->newLine();
+            $this->components->task(
+                "Même lecture avec la clé {$autreMode}",
+                function () use ($config, $autreMode, &$autre) {
+                    $autre = (new ElgiopayGateway([...$config, 'auth_key' => $autreMode]))
+                        ->balance((string) config('payments.currency'));
+
+                    return $autre !== null;
+                },
+            );
+
+            $this->newLine();
+
+            if ($autre !== null) {
+                $this->components->warn("La clé {$autreMode} est acceptée là où la clé {$mode} est refusée.");
+                $this->line("  Mettez ELGIOPAY_AUTH_KEY={$autreMode} dans backend/.env, puis relancez.");
+                $this->line('  Et signalez-le a Elgiopay : leur tableau de bord annonce la clé');
+                $this->line('  secrète comme credential serveur, ce que leur API ne respecte pas.');
+
+                return self::FAILURE;
+            }
+
+            $this->line('  Les deux clés sont refusées : le problème ne vient pas du choix de la clé.');
+            $this->line('  Vérifiez que l\'application n\'a pas été supprimée, ni ses clés renouvelées.');
+
+            return self::FAILURE;
+        }
+
+        $this->line('  Recopiez la clé depuis le tableau de bord avec le bouton de copie,');
+        $this->line('  sans espace ni retour à la ligne. Une clé renouvelée invalide la précédente.');
+
+        return self::FAILURE;
     }
 
     /** @return array{0: array<int, string>, 1: bool} */

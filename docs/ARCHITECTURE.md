@@ -124,7 +124,7 @@ transaction reste `processing` entre les deux.
 | Point | Detail |
 | --- | --- |
 | Hotes | `sandbox-api.elgiopay.com` en test, `api.elgiopay.com` en production. L'API refuse tout autre sous-domaine |
-| Cles | `pk_test_…` / `pk_live_…`, en jeton Bearer |
+| Cles | Un couple par application : `sk_…` secrete, `pk_…` publique. Chaque cle est liee a un environnement. `ELGIOPAY_AUTH_KEY` designe celle qui part en jeton Bearer — leur bac a sable refuse la secrete en 401, voir le journal |
 | Lancement | `POST /api/v1/payments` avec `payment_method` deduit du prefixe du numero |
 | Lecture | `GET /api/v1/payments/{id}` — Elgiopay interroge lui-meme l'operateur quand la transaction est en cours |
 | Notification | Configuree **dans leur tableau de bord**, pas par requete : `https://<domaine>/api/v1/webhooks/payments/elgiopay` |

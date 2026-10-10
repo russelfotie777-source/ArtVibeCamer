@@ -156,8 +156,12 @@ développement. **Aucun risque pour vos données.**
 
 ## Diagnostic Elgiopay
 
-Vérifie l'intégration contre leur bac à sable. Demande une clé `pk_test_`
-dans `backend/.env`.
+Vérifie l'intégration contre leur bac à sable. Demande le couple de clés
+`sk_test_…` / `pk_test_…` dans `backend/.env`.
+
+En haut de la sortie, la mention « ← authentifie » indique laquelle des deux
+part réellement vers Elgiopay. Si une clé est refusée, la commande essaie
+l'autre et vous dit laquelle passe — inutile de chercher.
 
 ```bash
 cd backend

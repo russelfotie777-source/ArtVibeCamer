@@ -31,16 +31,82 @@ class ElgiopayGateway implements PaymentGateway
     /** Tolerance recommandee par Elgiopay sur l'horodatage de signature. */
     private const TOLERANCE_DEFAUT = 300;
 
+    /**
+     * Statut HTTP de la derniere lecture de solde.
+     *
+     * `balance()` ne renvoie que null en cas d'echec, ce qui ne distingue pas
+     * une cle refusee d'une passerelle injoignable. Le diagnostic a besoin de
+     * cette nuance pour orienter vers la bonne cause, sans payer un appel de
+     * plus pour l'obtenir.
+     */
+    private ?int $dernierStatut = null;
+
     public function __construct(private readonly array $config) {}
+
+    public function dernierStatut(): ?int
+    {
+        return $this->dernierStatut;
+    }
 
     public function name(): string
     {
         return 'elgiopay';
     }
 
+    /**
+     * C'est la cle retenue pour l'authentification qui compte : declarer
+     * l'autre ne rend pas la passerelle utilisable, et PaymentManager doit le
+     * voir avant le premier paiement plutot qu'au premier encaissement.
+     */
     public function isConfigured(): bool
     {
-        return filled($this->config['api_key'] ?? null);
+        return filled($this->cleDAuthentification());
+    }
+
+    /**
+     * Cle envoyee en jeton Bearer.
+     *
+     * Normalement la secrete. Le bac a sable Elgiopay refusant la sienne en
+     * 401 au 10 octobre 2026, `ELGIOPAY_AUTH_KEY` permet de pointer la
+     * publique sans rien changer d'autre.
+     */
+    public function cleDAuthentification(): string
+    {
+        return (string) match ($this->modeDAuthentification()) {
+            'publique' => $this->config['public_key'] ?? '',
+            default => $this->config['secret_key'] ?? '',
+        };
+    }
+
+    /** `secrete` ou `publique`. Tout autre valeur retombe sur `secrete`. */
+    public function modeDAuthentification(): string
+    {
+        return ($this->config['auth_key'] ?? 'secrete') === 'publique'
+            ? 'publique'
+            : 'secrete';
+    }
+
+    /**
+     * Environnement auquel une cle appartient, lu sur son prefixe.
+     *
+     * Une cle de bac a sable est refusee par l'hote de production, et
+     * reciproquement. Le controle vit ici pour que le diagnostic et la
+     * configuration lisent la meme regle.
+     */
+    public static function environnementDeLaCle(?string $cle): ?string
+    {
+        return match (true) {
+            $cle === null => null,
+            str_contains($cle, '_test_') => 'test',
+            str_contains($cle, '_live_') => 'live',
+            default => null,
+        };
+    }
+
+    /** Environnement deduit de l'hote appele. */
+    public static function environnementDeLHote(?string $url): ?string
+    {
+        return str_contains((string) $url, 'sandbox') ? 'test' : 'live';
     }
 
     // --- Encaissement ------------------------------------------------------
@@ -159,6 +225,8 @@ class ElgiopayGateway implements PaymentGateway
     public function balance(string $devise = 'XAF'): ?array
     {
         $reponse = $this->client()->get('/api/v1/balance', ['currency' => $devise]);
+
+        $this->dernierStatut = $reponse->status();
 
         if ($reponse->failed()) {
             Log::warning('Elgiopay : solde illisible', [
@@ -371,7 +439,7 @@ class ElgiopayGateway implements PaymentGateway
         $this->cadence()->attendreSonTour();
 
         return Http::baseUrl(rtrim((string) $this->config['base_url'], '/'))
-            ->withToken((string) $this->config['api_key'])
+            ->withToken($this->cleDAuthentification())
             ->acceptJson()
             ->timeout(30)
             /*
@@ -425,7 +493,10 @@ class ElgiopayGateway implements PaymentGateway
     private function nettoyer(array $charge): array
     {
         return collect($charge)
-            ->except(['api_key', 'apikey', 'secret', 'token', 'authorization'])
+            ->except([
+                'api_key', 'apikey', 'secret_key', 'public_key',
+                'secret', 'token', 'authorization',
+            ])
             ->all();
     }
 }

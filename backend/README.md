@@ -78,8 +78,24 @@ php artisan counters:recalculate --dry-run   # Controler les compteurs de votes
   `0` simule un refus. **Refuse en production.**
 - `elgiopay` — la passerelle reelle, MTN Mobile Money et Orange Money.
 
-Pour Elgiopay, renseigner `ELGIOPAY_API_KEY`, `ELGIOPAY_WEBHOOK_SECRET` et
-`ELGIOPAY_BASE_URL` (`sandbox-api.elgiopay.com` en test).
+Pour Elgiopay, renseigner `ELGIOPAY_BASE_URL` (`sandbox-api.elgiopay.com` en
+test), le couple de cles de l'application et le secret de signature :
+
+| Variable | Role |
+| --- | --- |
+| `ELGIOPAY_SECRET_KEY` | `sk_...` — authentifie les appels serveur. A traiter comme un mot de passe |
+| `ELGIOPAY_PUBLIC_KEY` | `pk_...` — parcours cote navigateur, inutilisee pour l'instant |
+| `ELGIOPAY_AUTH_KEY` | `secrete` ou `publique` — laquelle des deux part en jeton Bearer |
+| `ELGIOPAY_WEBHOOK_SECRET` | `whsec_...` — sans lui, toute notification est refusee |
+
+`ELGIOPAY_AUTH_KEY` vaut `secrete` par defaut, conformement a leur
+documentation. Leur bac a sable refusant cette cle en 401 au 10 octobre 2026,
+le poste de developpement est sur `publique` : a rebasculer des qu'ils
+corrigent, c'est une ligne.
+
+Une cle n'authentifie que l'hote de son environnement : une cle `..._test_...`
+est refusee sur `api.elgiopay.com`, et l'inverse. `php artisan
+elgiopay:diagnostic` controle cette coherence avant le premier appel.
 
 L'URL de notification se declare **dans le tableau de bord Elgiopay** :
 `https://<domaine>/api/v1/webhooks/payments/elgiopay`.
