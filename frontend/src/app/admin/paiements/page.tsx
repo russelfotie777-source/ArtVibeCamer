@@ -52,7 +52,10 @@ export default async function PagePaiements({
       <header className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="font-display text-display-sm font-extrabold">Paiements</h1>
         <a
-          href={`${process.env.NEXT_PUBLIC_API_URL ?? ""}/admin/exports/transactions`}
+          href={`/admin/exports/transactions${parametres({
+            type: filtres.type,
+            status: filtres.status,
+          })}`}
           className="text-sm text-ink underline decoration-rule underline-offset-4 hover:decoration-ink"
         >
           Exporter en CSV

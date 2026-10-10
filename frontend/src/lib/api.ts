@@ -149,6 +149,35 @@ export async function lireAdmin<T>(chemin: string): Promise<T> {
   return appel<T>(chemin, { jeton, ipClient: await ipVisiteur() });
 }
 
+/**
+ * Reponse brute authentifiee, reservee aux contenus non JSON comme les CSV.
+ * Le Route Handler appelant choisit explicitement les entetes qu'il renvoie
+ * au navigateur afin de ne jamais propager un cookie ou un entete interne de
+ * l'API.
+ */
+export async function lireAdminBrut(chemin: string): Promise<Response> {
+  const [jeton, ipClient] = await Promise.all([
+    jetonSession(),
+    ipVisiteur(),
+  ]);
+
+  if (!jeton) {
+    throw new ErreurApi(401, "Session expiree.");
+  }
+
+  const entetes: Record<string, string> = {
+    Accept: "text/csv, application/json;q=0.9",
+    Authorization: `Bearer ${jeton}`,
+  };
+
+  if (ipClient) entetes["X-Forwarded-For"] = ipClient;
+
+  return fetch(`${BASE}${chemin}`, {
+    headers: entetes,
+    cache: "no-store",
+  });
+}
+
 export async function envoyerAdmin<T>(
   chemin: string,
   options: Omit<Options, "jeton"> & { methode: Exclude<Options["methode"], "GET"> },

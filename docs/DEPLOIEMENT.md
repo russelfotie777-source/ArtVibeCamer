@@ -18,11 +18,10 @@ Le projet est en deux morceaux qui n'ont pas les memes besoins :
 | `artvibecamer.com` | Site public et back-office (Next.js 16) | Node.js, process permanent |
 | `api.artvibecamer.com` | API Laravel 13 | PHP 8.3, racine sur `backend/public` |
 
-**Le front ne peut pas etre servi en statique.** `next build` produit douze
-routes dont dix sont rendues a la demande : le formulaire d'inscription, le
-suivi de paiement, les fiches candidats et tout le back-office lisent l'API au
-moment de la requete. Il faut un process Node qui tourne, pas un dossier de
-fichiers. C'est la raison du plan Business plutot que Premium.
+**Le front ne peut pas etre servi en statique.** Le formulaire d'inscription,
+le suivi de paiement, les fiches candidats, les exports et tout le back-office
+lisent l'API au moment de la requete. Il faut un process Node qui tourne, pas
+un dossier de fichiers. C'est la raison du plan Business plutot que Premium.
 
 Consequence de la separation : le navigateur ecrit directement sur l'API, donc
 `FRONTEND_URL` doit etre renseigne cote Laravel pour que CORS laisse passer.
@@ -33,9 +32,11 @@ Consequence de la separation : le navigateur ecrit directement sur l'API, donc
 
 Dans hPanel :
 
-- [ ] Rattacher `artvibecamer.com` a l'hebergement — le DNS quitte alors
-      `dns-parking.com` tout seul.
-- [ ] Creer le sous-domaine `api.artvibecamer.com`.
+- [ ] Ajouter `artvibecamer.com` comme **Node.js Web App**. Le domaine est
+      actuellement parque chez Hostinger : l'ajout de l'application remplace
+      la page de parking.
+- [ ] Ajouter `api.artvibecamer.com` comme site **PHP/HTML independant**. Sa
+      creation publie aussi l'enregistrement DNS du sous-domaine.
 - [ ] Activer **PHP 8.3** minimum (`composer.json` exige `^8.3`).
 - [ ] Activer l'acces **SSH**.
 - [ ] Creer une base MySQL, noter nom, utilisateur et mot de passe.
@@ -47,14 +48,21 @@ Dans hPanel :
 Un CDN devant l'API masque l'adresse du visiteur et fausse les limites de
 debit, qui protegent le vote d'un bourrage automatise.
 
+Commencer sur le domaine temporaire de l'application Node. Ne connecter le
+domaine public qu'apres le test de bout en bout. Tant que les cles Elgiopay
+live ne sont pas disponibles, garder les inscriptions fermees dans les
+reglages : le bac a sable ne doit jamais etre presente au public comme un vrai
+encaissement.
+
 ---
 
 ## 2. Backend Laravel
 
 ```bash
 # Depuis le SSH Hostinger
-cd ~/domains/artvibecamer.com
-git clone git@github.com:russelfotie777-source/ArtVibeCamer.git depot
+cd ~/domains/api.artvibecamer.com
+git clone --branch main --single-branch \
+  git@github.com:russelfotie777-source/ArtVibeCamer.git depot
 cd depot/backend
 
 composer install --no-dev --optimize-autoloader
@@ -63,10 +71,10 @@ php artisan key:generate
 ```
 
 Puis la racine du sous-domaine `api.artvibecamer.com` doit pointer sur
-`~/domains/artvibecamer.com/depot/backend/public`. **A VERIFIER** : selon les
+`~/domains/api.artvibecamer.com/depot/backend/public`. **A VERIFIER** : selon les
 plans, hPanel permet de changer la racine d'un sous-domaine ou impose
-`public_html/api`. Dans le second cas, remplacer le dossier par un lien
-symbolique vers `depot/backend/public`.
+`~/domains/api.artvibecamer.com/public_html`. Dans le second cas, remplacer ce
+dossier par un lien symbolique vers `depot/backend/public`.
 
 ### `.env` de production
 
@@ -75,6 +83,8 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://api.artvibecamer.com
 FRONTEND_URL=https://artvibecamer.com
+# Laisser vide si www redirige vers le domaine nu. Sinon autoriser aussi :
+# ADMIN_URL=https://www.artvibecamer.com
 
 DB_CONNECTION=mysql
 DB_HOST=localhost
@@ -87,6 +97,7 @@ TRUSTED_PROXIES=
 
 PAYMENT_DRIVER=elgiopay
 PAYMENT_CURRENCY=XAF
+# Preproduction seulement :
 ELGIOPAY_BASE_URL=https://sandbox-api.elgiopay.com
 ELGIOPAY_SECRET_KEY=sk_...
 ELGIOPAY_PUBLIC_KEY=pk_...
@@ -106,42 +117,57 @@ cle secrete.
 
 ```bash
 php artisan migrate --force          # --force : pas de confirmation en production
-php artisan db:seed --force          # categories, tarifs, reglages, compte admin
 php artisan storage:link
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
 
+Uniquement lors de l'initialisation d'une base vide :
+
+```bash
+php artisan db:seed --force
+```
+
+Ne pas remettre `db:seed` dans la routine de redeploiement : le seeder des
+categories utilise `updateOrCreate` et reecrit notamment les tarifs et la date
+de cloture. Apres la premiere initialisation, ces valeurs appartiennent au
+back-office.
+
 **A VERIFIER** : `storage:link` cree un lien symbolique. Si l'hebergeur les
 refuse, servir `storage/app/public` autrement, sinon aucune photo de candidat
 ne s'affichera.
 
-**Supprimer le compte du seeder** une fois les comptes nominatifs crees :
-`admin@artvibecamer.cm` / `password` donne acces aux recettes et aux donnees
-personnelles des candidats.
+En production, le seeder affiche une seule fois un mot de passe aleatoire pour
+`admin@artvibecamer.cm`. Le noter immediatement, creer ensuite les comptes
+nominatifs avec `php artisan user:create`, puis desactiver ce compte
+d'amorcage. Le mot de passe `password` n'est utilise qu'en environnement local.
 
 ---
 
 ## 3. Frontend Next.js
 
-Dans hPanel, creer une application Node.js sur `artvibecamer.com`, racine
-`depot/frontend`, commande de demarrage `npm start`.
+Le Node.js gere de Hostinger se deploie depuis hPanel, pas depuis le SSH :
+
+1. **Websites → Add website → Deploy Web App**.
+2. Connecter GitHub et choisir le depot `ArtVibeCamer`, branche `main`.
+3. Choisir `frontend` comme repertoire racine et **Next.js** comme framework.
+4. Choisir **Node.js 22**, commande de build `npm run build`, commande de
+   demarrage `npm start`.
+5. Renseigner les variables ci-dessous avant de lancer le premier build.
 
 Variables d'environnement, **avant le build** — elles sont figees dedans :
 
 ```dotenv
 NEXT_PUBLIC_API_URL=https://api.artvibecamer.com/api/v1
 NEXT_PUBLIC_SITE_URL=https://artvibecamer.com
-NEXT_PUBLIC_SITE_NAME=ArtVibeCamer
 NODE_ENV=production
 ```
 
-```bash
-cd depot/frontend
-npm ci
-npm run build
-```
+Hostinger execute automatiquement l'installation et le build. Sur les offres
+Business gerees, les commandes npm ne sont pas disponibles par SSH. Examiner
+les journaux du deploiement si le build echoue ; les deux polices Google sont
+telechargees pendant cette etape, donc l'acces sortant doit fonctionner.
 
 `NEXT_PUBLIC_API_URL` sert aussi a autoriser l'hote des photos de candidats :
 `next.config.ts` en deduit `images.remotePatterns`. Une valeur fausse laisse
@@ -156,8 +182,13 @@ fonctionnera pas.
 ## 4. Cron — non negociable
 
 ```cron
-* * * * * cd ~/domains/artvibecamer.com/depot/backend && php artisan schedule:run >> /dev/null 2>&1
+* * * * * /usr/bin/php /home/UTILISATEUR/domains/api.artvibecamer.com/depot/backend/artisan schedule:run
 ```
+
+Remplacer `UTILISATEUR` par l'identifiant affiche dans hPanel. Tester cette
+commande une fois par SSH, puis verifier la sortie du cron. La reconciliation
+utilise `runInBackground()` : si Hostinger interdit `proc_open`, elle ne partira
+pas et il faudra retirer ce mode ou creer un cron dedie.
 
 Sans cette entree, `payments:reconcile` ne tourne jamais. Un candidat qui
 ferme son onglet avant la confirmation reste bloque en « en cours » jusqu'a
@@ -184,6 +215,10 @@ passerelle retombe.
 approbation de l'application par Elgiopay. A demander tot. D'ici la, le bac a
 sable reste en service et aucun argent reel ne circule.
 
+Au passage live, remplacer aussi `ELGIOPAY_BASE_URL` par
+`https://api.elgiopay.com`, utiliser le couple de cles live correspondant et
+retester `ELGIOPAY_AUTH_KEY=secrete` avant d'ouvrir les inscriptions.
+
 ---
 
 ## 6. Limites de debit et adresse du visiteur
@@ -209,15 +244,19 @@ son choix et contourner tous les plafonds.
 
 Dans l'ordre, et avant d'annoncer l'ouverture :
 
+- [ ] `https://api.artvibecamer.com/up` renvoie HTTP 200.
 - [ ] `https://api.artvibecamer.com/api/v1/categories` renvoie du JSON.
 - [ ] La page d'accueil s'affiche, photos comprises.
 - [ ] Connexion au back-office avec un compte nominatif.
+- [ ] Les exports CSV Candidats et Paiements se telechargent sans erreur 401.
 - [ ] `php artisan elgiopay:diagnostic --scenario=699000000` depuis le serveur.
 - [ ] **Une inscription complete avec un vrai numero**, jusqu'a la
       confirmation. Le bac a sable ne remplace pas ce test.
 - [ ] La notification arrive : `payment_webhooks` contient une ligne avec
       `signature_valid = 1` et `processed_at` renseigne.
-- [ ] Sauvegardes quotidiennes actives dans hPanel.
+- [ ] Sauvegardes quotidiennes MySQL **et** `storage/app/public` actives.
+- [ ] `www.artvibecamer.com` redirige vers le domaine nu, ou figure dans
+      `ADMIN_URL` cote Laravel.
 
 ---
 
