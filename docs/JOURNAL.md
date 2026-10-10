@@ -319,6 +319,33 @@ ne peut etre importe que depuis un composant serveur. L'URL publique de l'API
 vit donc dans `src/lib/config.ts`, que les composants client utilisent.
 Importer `api.ts` depuis un composant client casse le build.
 
+### Next.js est fige a 16.3.8, et ce n'est pas un oubli
+
+Le front tourne sur Cloudflare Workers via l'adaptateur OpenNext. **Next.js
+16.4 le casse** : cette version deplace les preview props dans
+`.next/server/preview-props.json`, un fichier que le chargeur de manifestes
+de l'adaptateur ne reconnait pas. Toutes les routes dynamiques repondent
+alors 500, avec l'erreur Cloudflare 1101 :
+
+```
+Error: Unexpected loadManifest(/.next/server/preview-props.json) call!
+```
+
+Constate en production le 11 octobre, sur next 16.4.0 et
+@opennextjs/cloudflare 1.20.10. Le correctif est ouvert chez eux (PR #1356 et
+#1428) mais pas publie.
+
+La version est donc **figee sans accent circonflexe** dans `package.json` :
+`"next": "16.3.8"`. Un `^` suffirait a ramener 16.4 au prochain `npm install`
+et a remettre le site hors ligne.
+
+**Le piege** : rien ne se voit en local. `next build` aboutit, `next start`
+sert les pages normalement. L'erreur n'existe que dans le runtime Workers.
+Toute montee de version de Next doit donc etre verifiee par un deploiement
+reel, pas par un build.
+
+A rouvrir des qu'une version de l'adaptateur integre ces correctifs.
+
 ### `env()` hors des fichiers de configuration
 
 `TRUSTED_PROXIES` etait lu par `env()` dans `bootstrap/app.php`. Les
