@@ -13,10 +13,24 @@ de developpement : ils dependent de l'hebergeur.
 
 Le projet est en deux morceaux qui n'ont pas les memes besoins :
 
-| Sous-domaine | Contenu | Execution |
+| Adresse | Contenu | Execution |
 | --- | --- | --- |
-| `artvibecamer.com` | Site public et back-office (Next.js 16) | Node.js, process permanent |
-| `api.artvibecamer.com` | API Laravel 13 | PHP 8.3, racine sur `backend/public` |
+| `artvibecamer.com` | Site public et back-office (Next.js) | **Cloudflare Workers**, adaptateur OpenNext |
+| `api.artvibecamer.com` | API Laravel 13 | Hostinger, PHP 8.3, racine sur `backend/public` |
+
+Le plan Hostinger retenu ne fournit pas de process Node : le front est donc
+servi par Cloudflare Workers, dont le palier gratuit autorise l'usage
+commercial. Mesure au deploiement : **1,47 Mio compresse**, pour 3 Mio
+autorises.
+
+```bash
+cd frontend
+npm run cf:build     # build Next.js + adaptation au runtime Workers
+npx wrangler deploy  # CLOUDFLARE_API_TOKEN et CLOUDFLARE_ACCOUNT_ID dans l'environnement
+```
+
+Les variables `NEXT_PUBLIC_*` sont figees au moment du build : les renseigner
+avant `cf:build`, pas dans les variables du Worker.
 
 **Le front ne peut pas etre servi en statique.** Le formulaire d'inscription,
 le suivi de paiement, les fiches candidats, les exports et tout le back-office
