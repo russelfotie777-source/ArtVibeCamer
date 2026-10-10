@@ -1,0 +1,43 @@
+# Dependances
+/node_modules
+/vendor
+
+# Environnement
+.env
+.env.*
+!.env.example
+
+# Build
+/frontend/.next
+/frontend/out
+/frontend/build
+/frontend/next-env.d.ts
+
+# Laravel
+/backend/vendor
+/backend/storage/*.key
+/backend/storage/pail
+/backend/public/storage
+/backend/public/hot
+/backend/bootstrap/cache/*.php
+/backend/.phpunit.result.cache
+/backend/.phpunit.cache
+
+# Outils
+/.idea
+/.vscode
+/.fleet
+*.swp
+*.swo
+
+# Systeme
+.DS_Store
+Thumbs.db
+
+# Logs locaux
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Journaux des serveurs de developpement
+/.logs

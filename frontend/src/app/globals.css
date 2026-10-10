@@ -1,0 +1,173 @@
+@import "tailwindcss";
+
+/*
+ * ArtVibeCamer — systeme de design
+ *
+ * Les couleurs viennent du logotype de l'evenement : le vert forêt profond de
+ * la typographie sert de fond, l'or de l'etoile sert d'accent. Le site
+ * appartient ainsi visuellement a la marque, au lieu d'habiller celle-ci
+ * d'une couleur arbitraire.
+ *
+ * Choix assume : on ne reprend pas les bandes vert-rouge-jaune du drapeau.
+ * Elles sont deja dans le logo, ou elles ont leur place ; repetees sur toute
+ * la page, elles entreraient en concurrence avec lui et donneraient une
+ * plateforme institutionnelle plutot qu'un evenement culturel. Le fond reste
+ * sobre et laisse les logos, puis les photos des candidats, porter la
+ * couleur.
+ *
+ * Deux terrains, un seul jeu de jetons :
+ *   - site public : fond vert profond, registre de soiree
+ *   - back-office : fond papier, registre de travail diurne
+ */
+
+@theme {
+  /* --- Vert forêt, tire du logotype ArtVibeCamer --- */
+  --color-ink: #0f2d1c;
+  --color-ink-raised: #17402a;
+  --color-ink-line: #26563a;
+  --color-ink-soft: #9cbca9;
+
+  /* --- Or, repris de l'etoile du logo --- */
+  --color-brass: #d9a527;
+  --color-brass-lift: #f0be45;
+  --color-brass-wash: #1b3a26;
+
+  /* --- Papier : terrain du back-office et des sections claires ---
+   *
+   * Le fond est un gris teinte, pas un presque-blanc. C'est ce qui permet
+   * aux panneaux en blanc pur de s'en detacher sans bordure : la hierarchie
+   * vient du rapport entre deux surfaces, pas d'un filet trace autour.
+   *
+   * A #f3f4f7, le fond et les panneaux etaient trop proches pour qu'on
+   * distingue l'un de l'autre, et tout flottait sur un meme plan blanc.
+   */
+  --color-paper: #e2e8ef;
+  --color-paper-raised: #ffffff;
+  --color-rule: #ccd6e2;
+  --color-paper-soft: #4f5b68;
+
+  /* --- Etats --- */
+  /* Sur un site deja vert, le vert perd sa valeur de signal : les etats
+     reussis se distinguent par une teinte nettement plus claire que le fond,
+     jamais par la seule couleur. Le libelle porte toujours l'information. */
+  --color-sage: #2f6b46;
+  --color-sage-wash: #d8ebdf;
+  --color-sage-clair: #8fd3a8;
+  --color-oxblood: #a3231c;
+  --color-oxblood-wash: #f7e1de;
+  --color-amber: #8a6410;
+  --color-amber-wash: #f7ebd2;
+
+  /* --- Familles --- */
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
+
+  /* --- Echelle typographique --- */
+  --text-2xs: 0.75rem;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.4375rem;
+  --text-2xl: 1.75rem;
+
+  --text-display-sm: 2.125rem;
+  --text-display: clamp(2.5rem, 6vw, 4.25rem);
+  --text-display-lg: clamp(3.25rem, 11vw, 8.5rem);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+  }
+
+  /*
+   * Les titres portent la personnalite de la page : grotesque etroit, suivi
+   * resserre, graisse haute. Jamais de capitales pour un simple libelle.
+   */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+    text-wrap: balance;
+  }
+
+  /* Les montants sont la decision : ils se lisent dans la fonte de titre. */
+  .montant {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .chiffre {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Longueur de ligne : en dessous de 72 caracteres pour le corps de texte. */
+  .prose-etroit {
+    max-width: 34rem;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brass-lift);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-brass);
+    color: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /*
+   * Rayon de bordure porteur de sens : nul sur les panneaux structurels,
+   * faible sur les controles manipulables. Pas de rayon uniforme partout.
+   */
+  .panneau {
+    border-radius: 0;
+  }
+
+  .controle {
+    border-radius: 3px;
+  }
+
+  /* Attente d'un paiement : la seule animation non declenchee du site. */
+  @keyframes battement {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
+    }
+  }
+
+  .en-attente {
+    animation: battement 1.6s ease-in-out infinite;
+  }
+}
