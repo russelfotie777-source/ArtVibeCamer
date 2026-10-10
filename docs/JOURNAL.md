@@ -319,6 +319,28 @@ ne peut etre importe que depuis un composant serveur. L'URL publique de l'API
 vit donc dans `src/lib/config.ts`, que les composants client utilisent.
 Importer `api.ts` depuis un composant client casse le build.
 
+### `env()` hors des fichiers de configuration
+
+`TRUSTED_PROXIES` etait lu par `env()` dans `bootstrap/app.php`. Les
+middlewares y sont configures **avant le chargement de la configuration**, et
+des que `config:cache` est actif — donc en production — Laravel ne lit plus
+le fichier `.env` du tout. Verifie : sous `config:cache`,
+`env('TRUSTED_PROXIES')` renvoie `NULL` la ou le `.env` contient bien une
+valeur.
+
+Le garde-fou disparaissait donc silencieusement, precisement la ou il sert :
+Laravel aurait vu l'adresse du serveur Next pour tous les visiteurs, et les
+plafonds par IP auraient bloque le public des les premieres inscriptions.
+Rien ne l'aurait signale, ni au deploiement ni dans les journaux.
+
+Le reglage vit maintenant dans `config/trustedproxy.php`, que le middleware
+`TrustProxies` lit au moment de la requete — c'est le chemin prevu par le
+framework.
+
+**Regle generale** : `env()` ne s'appelle que depuis `config/`. Partout
+ailleurs, passer par `config()`. Un `grep -rn "env(" app/ routes/ bootstrap/`
+doit rester vide.
+
 ### Limites de debit et rendu serveur
 
 Les pages publiques sont rendues cote serveur. Sans precaution, Laravel verrait
