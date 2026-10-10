@@ -6,7 +6,7 @@ session.** C'est ce fichier qui permet a quelqu'un d'autre de reprendre sans
 avoir a reconstituer le contexte.
 
 - **Echeance MVP** : 10 octobre 2026
-- **Derniere mise a jour** : 7 octobre 2026 (fin de journee)
+- **Derniere mise a jour** : 10 octobre 2026
 
 ---
 
@@ -75,7 +75,7 @@ Couche metier organisee en services :
 
 ```bash
 cd backend && php artisan test
-# 27 tests, 110 assertions
+# 64 tests, 263 assertions
 ```
 
 Ils couvrent volontairement les invariants d'argent plutot que du CRUD :
@@ -109,6 +109,21 @@ Dernier etat : inscription payante et suivi par l'organisation termines et
 verifies a l'ecran. **Rien n'a ete commence sur les votes, la billetterie et
 le controle a l'entree cote interface.**
 
+**10 octobre** : le compte Elgiopay est passe a un couple de cles par
+application (`sk_` secrete, `pk_` publique). La configuration suit ce
+decoupage, le bac a sable est renseigne, et le diagnostic refuse desormais de
+partir sur une cle qui ne correspond pas a l'hote appele.
+
+Le secret de signature `whsec_` est en place et verifie : trois notifications
+rejouees en local contre notre propre endpoint, signature correcte acceptee,
+signature falsifiee et horodatage d'une heure refuses.
+
+**L'URL de notification n'est volontairement pas declaree**, le temps de
+prendre un nom de domaine : elle demande une adresse publique stable, et un
+tunnel change d'URL a chaque session. C'est tenable parce que le rattrapage
+par interrogation couvre le meme besoin — voir « Se passer du webhook »
+plus bas.
+
 Pour repartir d'une base propre :
 
 ```bash
@@ -138,7 +153,8 @@ Compte de travail en local : `admin@artvibecamer.cm` / `password`.
 Les inscriptions ouvrent le 10 octobre. Le parcours est termine et valide :
 **ce qui reste n'est pas du code, c'est un deploiement.**
 
-- [ ] Identifiants Elgiopay de production (`pk_live_`, `whsec_`)
+- [ ] Identifiants Elgiopay de production (`sk_live_`, `pk_live_`, `whsec_`),
+      qui supposent l'approbation prealable de l'application par Elgiopay
 - [ ] Hebergement et domaine, en HTTPS
 - [ ] Entree cron pour `schedule:run` — sans elle, `payments:reconcile` ne
       tourne pas et les paiements dont la notification se perd restent bloques
@@ -180,9 +196,12 @@ lots de votes suspects, ecran de reglages. Les routes existent toutes.
 
 ### 3. Avant la mise en production — non negociable
 
-- [ ] **Credentials Elgiopay.** Renseigner `ELGIOPAY_API_KEY` (`pk_live_…`),
+- [ ] **Credentials Elgiopay.** Renseigner `ELGIOPAY_SECRET_KEY`
+      (`sk_live_…`), `ELGIOPAY_PUBLIC_KEY` (`pk_live_…`),
       `ELGIOPAY_WEBHOOK_SECRET` (`whsec_…`) et basculer `ELGIOPAY_BASE_URL`
-      sur `https://api.elgiopay.com`. Le code est ecrit d'apres leur
+      sur `https://api.elgiopay.com`. Les cles de production ne sont
+      delivrees **qu'apres approbation de l'application** par Elgiopay : la
+      demander tot, ce n'est pas instantane. Le code est ecrit d'apres leur
       documentation et couvert par des tests, mais **n'a pas encore tourne
       contre un compte reel** : derouler d'abord le bac a sable.
 - [ ] **Declarer l'URL de notification dans le tableau de bord Elgiopay** :
@@ -328,8 +347,9 @@ declenche un refus, les autres aboutissent immediatement. Pratique sans
 connexion ; a savoir pour ne pas croire a un bug quand un test echoue avec un
 numero en `...0`.
 
-**Contre le bac a sable Elgiopay**, avec `PAYMENT_DRIVER=elgiopay`, une cle
-`pk_test_…` et `ELGIOPAY_BASE_URL=https://sandbox-api.elgiopay.com`. Le
+**Contre le bac a sable Elgiopay**, avec `PAYMENT_DRIVER=elgiopay`, la cle
+secrete `sk_test_…` dans `ELGIOPAY_SECRET_KEY` et
+`ELGIOPAY_BASE_URL=https://sandbox-api.elgiopay.com`. Le
 resultat depend du numero du payeur :
 
 | Numero Orange / MTN | Resultat |
@@ -399,6 +419,209 @@ regression — chez eux ou chez nous — et non une lacune connue.
 **A retenir pour la suite** : un fournisseur corrige quand on lui envoie un
 rapport precis, avec le numero concerne, la reponse obtenue et l'identifiant
 de transaction. Le ton n'y est pour rien, la precision si.
+
+### Orange n'etait verifie nulle part
+
+Constate le 10 octobre en relisant la couverture : **tous les tests de la
+passerelle passaient par un numero MTN.** Les numeros Orange n'apparaissaient
+que dans les tests du driver de simulation, qui ne choisit aucun reseau.
+
+La detection d'operateur elle-meme (`PaymentMethod::fromCameroonPhone`)
+n'avait aucun test, alors que c'est elle qui decide du reseau de chaque
+collecte. Une borne fausse, ou un `orange_money` mal orthographie, aurait
+envoye **tous les payeurs Orange sur le reseau MTN** — un echec cote
+operateur, apres notre reponse au candidat, donc invisible en developpement.
+
+Trois tests comblent le trou :
+
+| Test | Ce qu'il tient |
+| --- | --- |
+| `PaymentMethodTest` | Les deux plages et leurs frontieres : 654/655 et 684/685, le format international, les numeros hors plage |
+| `test_un_numero_orange_part_sur_le_reseau_orange` | L'aller : un 699 produit bien `payment_method: orange_money` |
+| `test_une_notification_orange_enregistre_le_bon_operateur` | Le retour : la notification Orange enregistre `OrangeMoney` sur la transaction |
+
+Verifies par mutation : en remplacant `orange_money` par `mtn_mobile_money`
+dans la correspondance, le test de l'aller echoue. Il tient donc vraiment la
+regle, il ne se contente pas de passer.
+
+**A retenir** : une couverture qui n'exerce qu'un operateur donne la meme
+barre verte qu'une couverture complete. Ici la moitie des payeurs attendus
+n'etait pas testee.
+
+### Se passer du webhook : ce que cela coute
+
+Tant qu'aucun nom de domaine n'est pris, l'URL de notification n'est pas
+declaree chez Elgiopay. **Les paiements se confirment quand meme**, par deux
+chemins qui interrogent la passerelle au lieu d'attendre qu'elle nous appelle :
+
+| Chemin | Quand | Delai de confirmation |
+| --- | --- | --- |
+| Ecran d'attente du candidat | Tant que l'onglet est ouvert | 25 a 40 secondes |
+| `payments:reconcile` | Toutes les 5 minutes, par le planificateur | 5 minutes au pire |
+| Bouton « Verifier » du back-office | A la demande | immediat |
+
+Aucun risque d'expirer un paiement reellement encaisse : `payments:reconcile`
+redemande d'abord l'etat reel a la passerelle, et n'expire que ce qu'elle ne
+reconnait toujours pas comme paye, 10 minutes apres le delai. Les frais et le
+net sont lus par la meme correspondance que la notification, donc la
+tresorerie reste juste.
+
+**Deux conditions, sans lesquelles l'affirmation est fausse :**
+
+1. **Le planificateur doit tourner.** En production c'est l'entree cron
+   `schedule:run`, deja dans la checklist. En local, `demarrer.sh` ne le lance
+   pas : ouvrir `php artisan schedule:work` dans un terminal, ou appeler
+   `php artisan payments:reconcile` a la main. Sans lui, un candidat qui ferme
+   son onglet reste bloque en « en cours » jusqu'a une verification manuelle.
+2. **La charge sur la passerelle augmente.** C'est exactement ce qui nous
+   avait ete signale : sans notification, chaque paiement en attente coute un
+   appel toutes les 5 minutes, plus ceux de l'ecran d'attente. Acceptable a
+   notre volume, a rouvrir des que le domaine existe.
+
+Declarer l'URL reste donc **la premiere chose a faire a la mise en ligne**,
+pas une option : `https://<domaine>/api/v1/webhooks/payments/elgiopay`.
+Attention, le champ du tableau de bord propose `/webhooks/elgiopay` en
+exemple — ce n'est pas notre chemin.
+
+### Deux cles Elgiopay, une seule authentifie
+
+Depuis le 10 octobre, le tableau de bord delivre un **couple de cles par
+application** la ou il n'en donnait qu'une :
+
+| Cle | Role |
+| --- | --- |
+| `sk_…` | Secrete. Elle seule authentifie nos appels serveur, et elle seule autorise a encaisser et a retirer. A traiter comme un mot de passe |
+| `pk_…` | Publique. Prevue pour les parcours ou le navigateur s'adresse directement a la passerelle. Nous n'en sommes pas la : tout passe par notre API |
+
+`ELGIOPAY_API_KEY` est donc remplace par `ELGIOPAY_SECRET_KEY` et
+`ELGIOPAY_PUBLIC_KEY`. L'ancien nom reste lu en dernier recours, pour qu'un
+environnement pas encore mis a jour ne tombe pas en panne sans explication.
+
+**Premier piege** : la cle publique est la plus visible des deux et la plus
+facile a copier. Placee dans `ELGIOPAY_SECRET_KEY`, elle fait echouer chaque
+appel, et le candidat ne voit qu'un « paiement impossible » generique. Le
+diagnostic previent maintenant quand la cle configuree ne commence pas par
+`sk_`.
+
+**Second piege** : une cle n'authentifie que l'hote de son environnement. Une
+cle `…_test_…` est refusee par `api.elgiopay.com`, une cle `…_live_…` par
+`sandbox-api.elgiopay.com`. Le diagnostic compare les deux avant le premier
+appel et s'arrete net — sans quoi le symptome, « cle refusee », pointe vers
+la mauvaise cause.
+
+**Troisieme point** : renouveler une cle depuis le tableau de bord invalide
+immediatement la precedente. A faire au moindre soupcon de fuite, mais en
+sachant que les encaissements s'arretent jusqu'a la mise a jour du `.env`.
+
+**Leur API n'accepte pas la cle qu'annonce leur tableau de bord.** Constate
+le 10 octobre au soir, sur `GET /api/v1/balance`, hote
+`sandbox-api.elgiopay.com`, avec les deux cles du meme couple :
+
+| Cle envoyee en jeton Bearer | Reponse |
+| --- | --- |
+| `sk_test_…` (secrete) | **401** |
+| `pk_test_…` (publique) | **200** |
+
+Leur interface presente pourtant la cle secrete comme le credential serveur
+(« Traitez les cles secretes comme des mots de passe »). Verifie deux fois,
+cle recopiee par le bouton de copie, sans espace ni retour a la ligne.
+
+D'ou `ELGIOPAY_AUTH_KEY` : `secrete` ou `publique`. Le defaut reste `secrete`,
+qui est le reglage correct ; le poste de developpement est sur `publique`.
+Le jour ou Elgiopay aligne son API sur son tableau de bord, c'est une ligne
+de `.env` a changer, pas une relecture du driver.
+
+Deux tests tiennent ce reglage, parce qu'il decide a lui seul qu'un paiement
+aboutit : un par mode, avec le jeton attendu. Les suites fixent desormais
+`auth_key` explicitement — sans cela elles suivaient le `.env` du poste et ne
+donnaient pas le meme resultat d'une machine a l'autre.
+
+**A faire** : le signaler a Elgiopay, avec le chemin, l'horodatage et les deux
+statuts. C'est ce format qui leur avait fait corriger le bac a sable en
+vingt-quatre heures le 8 octobre.
+
+### Se passer du webhook : ce que cela coute
+
+Tant qu'aucun nom de domaine n'est pris, l'URL de notification n'est pas
+declaree chez Elgiopay. **Les paiements se confirment quand meme**, par deux
+chemins qui interrogent la passerelle au lieu d'attendre qu'elle nous appelle :
+
+| Chemin | Quand | Delai de confirmation |
+| --- | --- | --- |
+| Ecran d'attente du candidat | Tant que l'onglet est ouvert | 25 a 40 secondes |
+| `payments:reconcile` | Toutes les 5 minutes, par le planificateur | 5 minutes au pire |
+| Bouton « Verifier » du back-office | A la demande | immediat |
+
+Aucun risque d'expirer un paiement reellement encaisse : `payments:reconcile`
+redemande d'abord l'etat reel a la passerelle, et n'expire que ce qu'elle ne
+reconnait toujours pas comme paye, 10 minutes apres le delai. Les frais et le
+net sont lus par la meme correspondance que la notification, donc la
+tresorerie reste juste.
+
+**Deux conditions, sans lesquelles l'affirmation est fausse :**
+
+1. **Le planificateur doit tourner.** En production c'est l'entree cron
+   `schedule:run`, deja dans la checklist. En local, `demarrer.sh` ne le lance
+   pas : ouvrir `php artisan schedule:work` dans un terminal, ou appeler
+   `php artisan payments:reconcile` a la main. Sans lui, un candidat qui ferme
+   son onglet reste bloque en « en cours » jusqu'a une verification manuelle.
+2. **La charge sur la passerelle augmente.** C'est exactement ce qui nous
+   avait ete signale : sans notification, chaque paiement en attente coute un
+   appel toutes les 5 minutes, plus ceux de l'ecran d'attente. Acceptable a
+   notre volume, a rouvrir des que le domaine existe.
+
+Declarer l'URL reste donc **la premiere chose a faire a la mise en ligne**,
+pas une option : `https://<domaine>/api/v1/webhooks/payments/elgiopay`.
+Attention, le champ du tableau de bord propose `/webhooks/elgiopay` en
+exemple — ce n'est pas notre chemin.
+
+### Deux cles Elgiopay, une seule authentifie
+
+Depuis le 10 octobre, le tableau de bord delivre un **couple de cles par
+application** la ou il n'en donnait qu'une :
+
+| Cle | Role |
+| --- | --- |
+| `sk_…` | Secrete. Elle seule authentifie nos appels serveur, et elle seule autorise a encaisser et a retirer. A traiter comme un mot de passe |
+| `pk_…` | Publique. Prevue pour les parcours ou le navigateur s'adresse directement a la passerelle. Nous n'en sommes pas la : tout passe par notre API |
+
+`ELGIOPAY_API_KEY` est donc remplace par `ELGIOPAY_SECRET_KEY` et
+`ELGIOPAY_PUBLIC_KEY`. L'ancien nom reste lu en dernier recours, pour qu'un
+environnement pas encore mis a jour ne tombe pas en panne sans explication.
+
+**Premier piege** : la cle publique est la plus visible des deux et la plus
+facile a copier. Placee dans `ELGIOPAY_SECRET_KEY`, elle fait echouer chaque
+appel, et le candidat ne voit qu'un « paiement impossible » generique. Le
+diagnostic previent maintenant quand la cle configuree ne commence pas par
+`sk_`.
+
+**Second piege** : une cle n'authentifie que l'hote de son environnement. Une
+cle `…_test_…` est refusee par `api.elgiopay.com`, une cle `…_live_…` par
+`sandbox-api.elgiopay.com`. Le diagnostic compare les deux avant le premier
+appel et s'arrete net — sans quoi le symptome, « cle refusee », pointe vers
+la mauvaise cause.
+
+**Troisieme point** : renouveler une cle depuis le tableau de bord invalide
+immediatement la precedente. A faire au moindre soupcon de fuite, mais en
+sachant que les encaissements s'arretent jusqu'a la mise a jour du `.env`.
+
+**Etat au 10 octobre au soir** : la cle secrete en place est refusee,
+**HTTP 401** sur `GET /api/v1/balance`. Deux causes possibles, et une seule
+requete suffit a les departager :
+
+1. la cle a ete mal recopiee — elle avait ete relevee a l'oeil, pas collee ;
+2. cette API attend encore la cle publique en jeton Bearer, comme avant le
+   passage au couple de cles.
+
+Le diagnostic sonde desormais la cle publique quand la secrete echoue en 401,
+et dit laquelle des deux passe. Il affiche aussi le statut HTTP reel : « cle
+refusee » (401), « droit manquant » (403), « chemin inconnu » (404) et
+« passerelle injoignable » n'appellent pas la meme correction, et les
+confondre fait chercher au mauvais endroit.
+
+**A faire en premier** : recopier la cle secrete avec le bouton de copie du
+tableau de bord, jamais a la main. Si le refus persiste sur une cle collee
+telle quelle, la question est pour Elgiopay, pas pour notre configuration.
 
 ### Commission et tresorerie
 
