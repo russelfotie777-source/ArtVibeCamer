@@ -109,3 +109,4 @@ Les numeros de test du bac a sable sont listes dans
 - [../docs/DATABASE.md](../docs/DATABASE.md) — schema de la base
 - [../docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) — choix techniques
 - [../docs/JOURNAL.md](../docs/JOURNAL.md) — etat d'avancement
+- [../docs/DEPLOIEMENT.md](../docs/DEPLOIEMENT.md) — mise en ligne

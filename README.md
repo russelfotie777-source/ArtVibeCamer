@@ -40,6 +40,7 @@ ArtVibeCamer/
 | --- | --- |
 | [docs/JOURNAL.md](docs/JOURNAL.md) | **A lire en premier** : etat d'avancement, ou en est chaque module, quoi faire ensuite |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Choix techniques et leurs raisons |
+| [docs/DEPLOIEMENT.md](docs/DEPLOIEMENT.md) | Mise en ligne sur Hostinger, pas a pas |
 | [docs/DATABASE.md](docs/DATABASE.md) | Schema de la base, table par table |
 | [docs/API.md](docs/API.md) | Contrat d'API : routes, parametres, reponses |
 | [docs/TESTER.md](docs/TESTER.md) | Dérouler les parcours à la main, et ce qu'il faut regarder |

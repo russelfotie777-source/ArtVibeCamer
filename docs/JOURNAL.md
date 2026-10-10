@@ -150,6 +150,9 @@ Compte de travail en local : `admin@artvibecamer.cm` / `password`.
 
 ### 0. Mise en ligne — l'echeance du 10 octobre
 
+> Procedure complete : [DEPLOIEMENT.md](DEPLOIEMENT.md). Domaine
+> `artvibecamer.com` enregistre le 10 octobre, plan Hostinger Business.
+
 Les inscriptions ouvrent le 10 octobre. Le parcours est termine et valide :
 **ce qui reste n'est pas du code, c'est un deploiement.**
 
