@@ -23,7 +23,8 @@ class CommissionTest extends TestCase
     {
         config([
             'payments.driver' => 'elgiopay',
-            'payments.drivers.elgiopay.api_key' => 'pk_test_exemple',
+            'payments.drivers.elgiopay.secret_key' => 'sk_test_exemple',
+            'payments.drivers.elgiopay.auth_key' => 'secrete',
         ]);
 
         Http::fake([
@@ -59,7 +60,8 @@ class CommissionTest extends TestCase
     {
         config([
             'payments.driver' => 'elgiopay',
-            'payments.drivers.elgiopay.api_key' => 'pk_test_exemple',
+            'payments.drivers.elgiopay.secret_key' => 'sk_test_exemple',
+            'payments.drivers.elgiopay.auth_key' => 'secrete',
         ]);
 
         Http::fake([
@@ -119,7 +121,8 @@ class CommissionTest extends TestCase
          */
         config([
             'payments.driver' => 'elgiopay',
-            'payments.drivers.elgiopay.api_key' => 'pk_test_exemple',
+            'payments.drivers.elgiopay.secret_key' => 'sk_test_exemple',
+            'payments.drivers.elgiopay.auth_key' => 'secrete',
             'payments.drivers.elgiopay.webhook_secret' => 'whsec_exemple',
         ]);
 

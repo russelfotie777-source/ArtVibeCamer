@@ -26,7 +26,8 @@ class CadenceTest extends TestCase
 
         config([
             'payments.driver' => 'elgiopay',
-            'payments.drivers.elgiopay.api_key' => 'pk_test_exemple',
+            'payments.drivers.elgiopay.secret_key' => 'sk_test_exemple',
+            'payments.drivers.elgiopay.auth_key' => 'secrete',
             'payments.drivers.elgiopay.webhook_secret' => 'whsec_exemple',
         ]);
     }
@@ -103,6 +104,14 @@ class CadenceTest extends TestCase
     public function test_la_cadence_sortante_plafonne_les_appels_par_seconde(): void
     {
         $cadence = new CadenceSortante('essai', parSeconde: 3, attenteMax: 1);
+
+        /*
+         * Le compteur est indexe sur la seconde en cours. Demarrer en fin de
+         * seconde reduirait l'attente observee a quelques centiemes et ferait
+         * echouer la mesure sans qu'aucun plafond soit en cause : on se cale
+         * donc sur un debut de seconde avant de chronometrer.
+         */
+        usleep((int) ((1 - (microtime(true) - floor(microtime(true)))) * 1_000_000) + 1_000);
 
         $debut = microtime(true);
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\PaymentMethod;
 use App\Enums\TransactionStatus;
 use App\Enums\VoteStatus;
 use App\Models\PaymentWebhook;
@@ -32,7 +33,11 @@ class ElgiopayTest extends TestCase
         config([
             'payments.driver' => 'elgiopay',
             'payments.drivers.elgiopay.base_url' => 'https://sandbox-api.elgiopay.com',
-            'payments.drivers.elgiopay.api_key' => 'pk_test_exemple',
+            'payments.drivers.elgiopay.secret_key' => 'sk_test_exemple',
+            'payments.drivers.elgiopay.public_key' => 'pk_test_exemple',
+            // Fixe explicitement : sans cela, la suite suivrait le reglage du
+            // poste et changerait de resultat d'une machine a l'autre.
+            'payments.drivers.elgiopay.auth_key' => 'secrete',
             'payments.drivers.elgiopay.webhook_secret' => self::SECRET,
         ]);
     }
@@ -52,14 +57,14 @@ class ElgiopayTest extends TestCase
     }
 
     /** Lance un achat de votes et renvoie la transaction creee. */
-    private function acheterDesVotes(int $quantite = 10): Transaction
+    private function acheterDesVotes(int $quantite = 10, string $telephone = '677000000'): Transaction
     {
         $category = $this->makeCategory();
         $candidate = $this->makeCandidate($category);
 
         $this->postJson("/api/v1/candidates/{$candidate->slug}/votes", [
             'quantity' => $quantite,
-            'voter_phone' => '677000000',
+            'voter_phone' => $telephone,
         ])->assertCreated();
 
         return Transaction::firstOrFail();
@@ -121,7 +126,7 @@ class ElgiopayTest extends TestCase
             $corps = $requete->data();
 
             return str_ends_with($requete->url(), '/api/v1/payments')
-                && $requete->hasHeader('Authorization', 'Bearer pk_test_exemple')
+                && $requete->hasHeader('Authorization', 'Bearer sk_test_exemple')
                 && $corps['amount'] === $transaction->amount
                 && $corps['currency'] === 'XAF'
                 // 677 est un prefixe MTN.
@@ -135,6 +140,80 @@ class ElgiopayTest extends TestCase
         $this->assertSame(TransactionStatus::Processing, $transaction->status);
         $this->assertSame('TXN_ABC123', $transaction->provider_reference);
         $this->assertSame(0, Vote::firstOrFail()->candidate->votes_count);
+    }
+
+    /**
+     * Leur bac a sable refuse la cle secrete en 401 et accepte la publique.
+     * Ce reglage est donc ce qui decide, aujourd'hui, qu'un paiement aboutit
+     * ou non : il merite d'etre tenu par un test et pas seulement par un
+     * commentaire.
+     */
+    public function test_la_cle_publique_authentifie_quand_la_configuration_le_demande(): void
+    {
+        config([
+            'payments.drivers.elgiopay.public_key' => 'pk_test_exemple',
+            'payments.drivers.elgiopay.auth_key' => 'publique',
+        ]);
+
+        $this->collecteAcceptee();
+        $this->acheterDesVotes();
+
+        Http::assertSent(
+            fn ($requete) => $requete->hasHeader('Authorization', 'Bearer pk_test_exemple'),
+        );
+    }
+
+    /** Par defaut, c'est la cle secrete qui part : le reglage reste explicite. */
+    public function test_la_cle_secrete_authentifie_par_defaut(): void
+    {
+        $this->collecteAcceptee();
+        $this->acheterDesVotes();
+
+        Http::assertSent(
+            fn ($requete) => $requete->hasHeader('Authorization', 'Bearer sk_test_exemple'),
+        );
+    }
+
+    /**
+     * Orange represente la moitie des payeurs. Les deux reseaux ne portent pas
+     * le meme nom chez Elgiopay, et une collecte adressee au mauvais reseau
+     * echoue chez l'operateur, bien apres notre reponse au candidat.
+     */
+    public function test_un_numero_orange_part_sur_le_reseau_orange(): void
+    {
+        $this->collecteAcceptee();
+        $this->acheterDesVotes(telephone: '699000000');
+
+        Http::assertSent(function ($requete) {
+            $corps = $requete->data();
+
+            return str_ends_with($requete->url(), '/api/v1/payments')
+                // 699 est un prefixe Orange.
+                && $corps['payment_method'] === 'orange_money'
+                && $corps['customer_phone'] === '237699000000';
+        });
+    }
+
+    /**
+     * Le chemin de retour compte autant que l'aller : c'est l'operateur
+     * enregistre sur la transaction qui alimente la reconciliation et les
+     * recettes par reseau.
+     */
+    public function test_une_notification_orange_enregistre_le_bon_operateur(): void
+    {
+        $this->collecteAcceptee();
+        $transaction = $this->acheterDesVotes(10, '699000000');
+
+        $this->notifier([
+            ...$this->paiementReussi(),
+            'payment' => ['method' => 'orange_money'],
+            'customer' => ['phone' => '+237699000000'],
+        ])->assertOk();
+
+        $fraiche = $transaction->fresh();
+
+        $this->assertSame(TransactionStatus::Succeeded, $fraiche->status);
+        $this->assertSame(PaymentMethod::OrangeMoney, $fraiche->payment_method);
     }
 
     public function test_un_refus_de_la_passerelle_fait_echouer_le_paiement(): void
