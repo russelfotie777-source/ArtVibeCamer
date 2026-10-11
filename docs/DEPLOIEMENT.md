@@ -66,10 +66,28 @@ cd /home/<user>/depot/backend
 # Forcer Composer a utiliser PHP 8.4, quelle que soit sa ligne de lancement.
 COMPOSER_PATH="$(command -v composer)"
 /opt/alt/php84/usr/bin/php "$COMPOSER_PATH" install \
-  --no-dev --optimize-autoloader --no-interaction
+  --no-dev --optimize-autoloader --no-scripts --no-plugins
+
+/opt/alt/php84/usr/bin/php artisan package:discover
 
 cp .env.example .env
 /opt/alt/php84/usr/bin/php artisan key:generate
+```
+
+**`--no-scripts --no-plugins` n'est pas une precaution mais une necessite.**
+`proc_open` est desactive sur le PHP de ce plan, et Composer s'en sert pour
+executer les scripts : sans ces deux options il s'interrompt sur
+« The Process class relies on proc_open ». Les scripts ecartes font le travail
+de `package:discover`, d'ou son appel juste apres.
+
+Si l'installation a deja tourne avec les dependances de developpement, le
+manifeste cache garde une trace de paquets absents en production et toute
+commande `artisan` echoue sur « Class Laravel\Pail\PailServiceProvider not
+found ». Dans ce cas, supprimer les caches avant de redecouvrir :
+
+```bash
+rm -f bootstrap/cache/packages.php bootstrap/cache/services.php bootstrap/cache/config.php
+/opt/alt/php84/usr/bin/php artisan package:discover
 ```
 
 Le depot reste hors de l'espace servi. La racine web est un lien symbolique

@@ -6,7 +6,13 @@
 .avc-hero {
   position: relative;
   isolation: isolate;
-  min-height: calc(100svh - 6.75rem);
+  /*
+   * Plafonne a 45rem plutot que de suivre la hauteur de l'ecran sans limite.
+   * Sur un portable 1080p, le plein ecran repoussait le titre si bas que
+   * l'entete et l'accroche semblaient sans rapport. Le hero occupe toujours
+   * l'ecran sur les petites hauteurs, ou le plafond ne s'applique pas.
+   */
+  min-height: min(42rem, calc(100svh - 6.75rem));
   overflow: hidden;
   background: var(--color-ink);
 }
@@ -24,9 +30,12 @@
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(25rem, 0.92fr);
   align-items: center;
-  min-height: calc(100svh - 6.75rem);
+  min-height: min(42rem, calc(100svh - 6.75rem));
   gap: clamp(1rem, 4vw, 4rem);
-  padding-block: clamp(3.5rem, 8vh, 6.5rem) 5.5rem;
+  /* L'accroche doit se lire des l'arrivee, sans avoir a descendre des yeux.
+     La respiration basse reste plus large que la haute : le regard entre par
+     le haut, il n'a pas besoin qu'on l'y retienne. */
+  padding-block: clamp(0.75rem, 2vh, 1.5rem) clamp(3.5rem, 7vh, 5rem);
 }
 
 .avc-heroCopy {
@@ -37,7 +46,9 @@
 
 .avc-heroTitle {
   max-width: 10.5ch;
-  margin-top: clamp(1.4rem, 3vh, 2.25rem);
+  /* Plus de marge haute : elle compensait un bandeau retire depuis, et ne
+     faisait qu'ajouter du vide sous l'entete. */
+  margin-top: 0;
   color: var(--color-paper);
   font-family: var(--font-display);
   font-size: clamp(3.65rem, 7.6vw, 7.4rem);
@@ -438,7 +449,10 @@
     grid-template-columns: 1fr;
     min-height: auto;
     gap: 1.5rem;
-    padding-block: 4rem 5rem;
+    /* Le titre commence au plus pres de l'entete : sur un ecran de telephone,
+       chaque centimetre gagne en haut est une ligne lue en plus. L'entete a
+       sa propre respiration basse, inutile de la doubler ici. */
+    padding-block: 0.25rem 3rem;
   }
 
   .avc-heroTitle {
@@ -446,13 +460,16 @@
   }
 
   /*
-   * Sur telephone, l'illustration passait sous trois paragraphes : personne
-   * ne la voyait. Elle passe derriere le texte, debordant a droite et en
-   * bas — un cadre qui coupe le sujet donne l'echelle, la ou un visuel
-   * entierement contenu la perd.
+   * L'illustration etait placee en absolu derriere le texte, pour qu'on la
+   * voie sans avoir a faire defiler. L'intention tenait tant que le texte
+   * restait court : des que l'accroche passe sur trois lignes et que les
+   * deux boutons s'affichent, titre, paragraphe et boutons se retrouvent
+   * poses sur le sujet, et plus rien ne se lit proprement.
    *
-   * Pas de voile sombre par-dessus pour faire ressortir le texte : c'est
-   * l'espace laisse libre qui assure la lisibilite, pas un degrade.
+   * Elle revient donc dans le flux, sous le texte. Le debordement a droite
+   * est conserve : couper le sujet donne l'echelle, la ou un visuel
+   * entierement contenu la perd. `overflow: hidden` sur le hero retient ce
+   * qui depasse, sans defilement horizontal.
    */
   .avc-heroInner {
     display: block;
@@ -463,12 +480,39 @@
     position: relative;
     z-index: 2;
     max-width: 34rem;
-    /* Juste de quoi degager le bas du sujet, pas une page de vide. */
-    padding-bottom: 7rem;
+    /*
+     * Hauteur reservee a l'illustration, calee sur la sienne : le bouton
+     * d'inscription doit se terminer au-dessus d'elle, pas la chevaucher.
+     * Toute reduction ici fait remonter l'image sous le bouton.
+     */
+    padding-bottom: 12rem;
   }
 
-  /* Le bouton quitte la pleine largeur : il libere le cote droit, ou monte
-     l'illustration. Un bouton qui barre l'ecran ne laisse place a rien. */
+  /*
+   * Un fond degrade, tire de la couleur du hero, posE derriere le seul texte.
+   * Il est invisible la ou il n'y a rien a couvrir, et garantit la lecture si
+   * une ligne arrive au-dessus du sujet — ce qui depend de la longueur de
+   * l'accroche, donc de reglages qu'on ne maitrise pas depuis le CSS.
+   *
+   * La version precedente s'en passait par parti pris, et c'est exactement ce
+   * qui a casse des que le texte s'est allonge.
+   */
+  .avc-heroCopy::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -2rem -1.5rem 4rem -1.5rem;
+    background: linear-gradient(
+      to bottom,
+      var(--color-ink) 60%,
+      color-mix(in oklab, var(--color-ink) 70%, transparent) 85%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  /* Le bouton quitte la pleine largeur : deux boutons cote a cote tiennent
+     sur une ligne, et l'un sous l'autre ils barreraient l'ecran. */
   .avc-heroActions {
     align-items: center;
   }
@@ -479,12 +523,20 @@
 
   .avc-heroVisual {
     position: absolute;
-    right: -16%;
-    bottom: -2rem;
+    /*
+     * Trois reglages qui se tiennent, et qu'il faut bouger ensemble :
+     *   width   la largeur fixe aussi la hauteur, donc le haut du sujet ;
+     *   bottom  negatif, l'image descend et son sommet s'eloigne du bouton ;
+     *   right   l'ecart au bord droit, qui ecarte son flanc gauche du bouton.
+     * A 66 % calee en bas, son flanc gauche passait sous « Inscrire mon
+     * talent ».
+     */
+    right: -12%;
+    bottom: -3.5rem;
     left: auto;
     z-index: 0;
     display: block;
-    width: 74%;
+    width: 62%;
     min-height: 0;
     pointer-events: none;
   }

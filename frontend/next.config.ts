@@ -8,6 +8,24 @@ const nextConfig: NextConfig = {
    */
   cacheComponents: false,
 
+  /*
+   * En-tetes de securite. Le back-office affiche les recettes de l'evenement
+   * et les donnees personnelles des candidats : l'empecher d'etre charge dans
+   * un cadre tiers evite qu'un clic soit detourne a l'insu de l'utilisateur.
+   */
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+        ],
+      },
+    ];
+  },
+
   images: {
     /*
      * Photos des candidats, servies par le stockage public de Laravel.

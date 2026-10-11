@@ -542,6 +542,39 @@ et declarer l'URL publique obtenue.
 
 ---
 
+### Le motif d'echec, tel qu'Elgiopay le formule reellement
+
+La traduction des motifs reconnait la cause sur des mots-cles. Le premier jeu
+s'appuyait sur « not enough » — tournure plausible, mais pas celle d'Elgiopay,
+qui ecrit :
+
+> The customer does **not have enough** funds to complete this payment.
+
+L'anglais intercale « have », aucun mot-cle ne declenchait, et le payeur
+recevait le message generique la ou il fallait lui dire de recharger son
+compte. Les mots-cles couvrent desormais `enough fund`, `enough money` et
+`enough balance`.
+
+**A retenir** : caler ces listes sur une chaine relevee en production, jamais
+sur une formulation supposee. Le test porte sur la phrase exacte renvoyee le
+11 octobre.
+
+### Le recu de paiement
+
+Un paiement abouti donne un recu en PDF, telechargeable depuis l'ecran de
+suivi : `GET /api/v1/payments/{reference}/recu`.
+
+Trois choix qui meritent d'etre connus avant d'y toucher :
+
+| Choix | Raison |
+| --- | --- |
+| Le document dit ne pas valoir facture | L'evenement n'etablit pas de TVA ; delivrer une « facture » exposerait l'organisation |
+| Un paiement non abouti renvoie 404 | Un recu est une preuve d'encaissement : en delivrer un sur un paiement echoue fournirait une preuve a qui n'a rien paye |
+| Sous-ensemble de police active | 879 Ko sans, 24 Ko avec. Les payeurs telechargent en data mobile |
+
+L'acces se fait sans authentification, comme l'ecran de suivi : c'est la
+reference, aleatoire et connue du seul payeur, qui autorise la lecture.
+
 ## Decisions prises, et pourquoi
 
 Le raisonnement complet est dans [ARCHITECTURE.md](ARCHITECTURE.md). En
