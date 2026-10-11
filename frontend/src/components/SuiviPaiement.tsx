@@ -243,9 +243,21 @@ export function SuiviPaiement({
             serviront en cas de question.
           </p>
 
+          {/*
+            Lien direct vers l'API plutot qu'un appel depuis le navigateur :
+            le PDF arrive en piece jointe, le navigateur le telecharge ou
+            l'ouvre selon son reglage, et rien n'est a garder en memoire.
+          */}
+          <a
+            href={`${BASE_PUBLIQUE}/payments/${transaction.reference}/recu`}
+            className="mt-6 inline-flex items-center gap-2 border border-brass px-5 py-3 text-sm font-medium text-brass transition-colors hover:bg-brass hover:text-ink"
+          >
+            Télécharger le reçu (PDF)
+          </a>
+
           <Link
             href="/"
-            className="mt-6 inline-block text-sm text-brass underline decoration-brass/40 underline-offset-4 hover:decoration-brass"
+            className="mt-6 block text-sm text-brass underline decoration-brass/40 underline-offset-4 hover:decoration-brass"
           >
             Revenir à l&apos;accueil
           </Link>

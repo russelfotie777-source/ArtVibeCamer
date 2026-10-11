@@ -43,6 +43,11 @@ Route::prefix('v1')->group(function () {
     Route::get('payments/{transaction}', [Site\PaymentController::class, 'show'])
         ->middleware('throttle:payment-status');
 
+    // Recu en PDF, delivre seulement sur un paiement abouti.
+    Route::get('payments/{transaction}/recu', [Site\PaymentController::class, 'recu'])
+        ->middleware('throttle:payment-status')
+        ->name('payments.recu');
+
     /*
     | Creations d'encaissement : limitees par IP. Le vote etant payant, la
     | fraude coute de l'argent, mais ce plafond evite qu'un script ne sature
