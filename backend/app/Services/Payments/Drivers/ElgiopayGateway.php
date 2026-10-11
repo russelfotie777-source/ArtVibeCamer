@@ -168,8 +168,8 @@ class ElgiopayGateway implements PaymentGateway
             // Non nul pour les parcours par page hebergee (carte).
             redirectUrl: $corps['payment_url'] ?? null,
             instructions: $this->consignes($methode),
-            fees: $frais !== null ? (int) round((float) $frais) : null,
-            netAmount: $net !== null ? (int) round((float) $net) : null,
+            fees: $this->entierOuNull($frais),
+            netAmount: $this->entierOuNull($net),
             raw: $this->nettoyer($corps),
         );
     }
@@ -368,12 +368,25 @@ class ElgiopayGateway implements PaymentGateway
                 default => null,
             },
             payerPhone: $donnees['customer']['phone'] ?? null,
-            amount: $montant !== null ? (int) $montant : null,
-            fees: $frais !== null ? (int) round((float) $frais) : null,
-            netAmount: $net !== null ? (int) round((float) $net) : null,
+            amount: $this->entierOuNull($montant),
+            fees: $this->entierOuNull($frais),
+            netAmount: $this->entierOuNull($net),
             failureReason: $this->motifEchec($donnees),
             raw: $this->nettoyer($donnees),
         );
+    }
+
+    /**
+     * Montant tel qu'Elgiopay le renvoie, ramene a l'entier.
+     *
+     * Sur un paiement echoue ils envoient `[]` la ou la documentation annonce
+     * un nombre — constate en production le 11 octobre sur `amount.fees` et
+     * `amount.net_amount`. Un tableau converti en entier vaut 0, ce qui
+     * inscrirait une commission de zero franc la ou il n'y en a aucune.
+     */
+    private function entierOuNull(mixed $valeur): ?int
+    {
+        return is_numeric($valeur) ? (int) round((float) $valeur) : null;
     }
 
     private function versStatut(string $statut): TransactionStatus
