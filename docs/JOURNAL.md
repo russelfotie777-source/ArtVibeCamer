@@ -12,64 +12,33 @@ avoir a reconstituer le contexte.
 
 ## Ou on en est
 
-> **Mis en ligne le 11 octobre.** Front sur Cloudflare Workers, API sur
-> Hostinger. Procedure et pieges dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
+> **En ligne depuis le 11 octobre, sur le domaine definitif.**
+> Procedure et pieges dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
 >
-> | Couche | Adresse |
-> | --- | --- |
-> | Front | `artvibecamer.russelfotie777.workers.dev` |
-> | API | `orchid-turtle-578625.hostingersite.com` |
+> | Couche | Adresse | Hebergeur |
+> | --- | --- | --- |
+> | Site et back-office | `https://artvibecamer.com` | Cloudflare Workers |
+> | API | `https://api.artvibecamer.com` | Hostinger, PHP 8.4 |
 >
-> Les deux adresses sont provisoires : `artvibecamer.com` n'est pas encore
-> branche. **A faire avant qu'il le soit**, sans quoi on expose un back-office
-> a mot de passe connu et un parcours de paiement qui n'encaisse rien :
+> DNS gere par Cloudflare. L'enregistrement `api` est **en nuage gris**,
+> proxy desactive : Laravel doit voir l'adresse reelle du visiteur, sans quoi
+> les plafonds par IP qui protegent le vote d'un bourrage automatise tombent.
 >
-> - [x] **Inscriptions et votes fermes** le 11 octobre, le temps que le driver
->       reste sur le bac a sable. Rouvrir par `registration_enabled` et
->       `voting_enabled` une fois les cles live en place.
-> - [x] **Mot de passe du compte admin renouvele.** Le seeder en genere deja un
->       aleatoire hors developpement — `password` ne vaut que en local — mais
->       celui-ci n'avait ete affiche qu'une fois, pendant le seed.
-> - [ ] Declarer le webhook sur `https://api.artvibecamer.com/api/v1/webhooks/payments/elgiopay`
-> - [ ] Brancher `artvibecamer.com` : zone Cloudflare, serveurs de noms chez
->       Hostinger, sous-domaine `api`, domaine personnalise du Worker
-
-**Attention apres toute commande `artisan` en production** : la configuration
-est mise en cache. Un `config:clear` lance pour depanner laisse le serveur
-sans cache jusqu'au prochain `config:cache`, ce qui ralentit chaque requete.
-Reconstruire les trois caches systematiquement.
-
-
-**Le backend est complet et teste.** **Le parcours d'inscription avec paiement
-et le suivi par l'organisation sont utilisables de bout en bout**, du
-formulaire public jusqu'a la validation du dossier dans le back-office.
-
-Les votes et la billetterie existent cote API mais n'ont pas encore
-d'interface : c'est le prochain chantier, decide avec l'organisation pour
-tenir l'echeance.
-
-| Module | Backend | Interface |
-| --- | --- | --- |
-| Architecture, base de donnees | Fait | — |
-| Inscription individuelle + paiement | Fait | **Fait** |
-| Inscription en groupe, membres declares | Fait | **Fait** |
-| Suivi du paiement par le candidat | Fait | **Fait** |
-| Relance d'un paiement echoue | Fait | **Fait** |
-| Connexion back-office | Fait | **Fait** |
-| Tableau de bord, statistiques | Fait | **Fait** |
-| Liste et fiche des candidats | Fait | **Fait** |
-| Validation / rejet des dossiers | Fait | **Fait** |
-| Suivi des paiements, verification | Fait | **Fait** |
-| Recettes brut / commission / net | Fait | **Fait** |
-| Liste et fiche publiques des candidats | Fait | **Fait** |
-| Identite visuelle et logos | — | **Fait** |
-| Exports CSV | Fait | Lien pose |
-| Categories et candidats (pages publiques) | Fait | A faire |
-| Votes payants | Fait | A faire |
-| Billetterie + QR | Fait | A faire |
-| Controle a l'entree | Fait | A faire |
-| Gestion des categories et tarifs | Fait | A faire |
-| Reglages de l'evenement | Fait | A faire |
+> HTTPS sur les deux, HSTS actif, en-tetes de securite poses.
+>
+> **Inscriptions et votes volontairement fermes** tant que l'encaissement se
+> fait sur le bac a sable. Rouvrir par les reglages `registration_enabled` et
+> `voting_enabled` une fois les cles live en place.
+>
+> **Ce qui reste, et qui ne depend plus de nous :**
+>
+> - [ ] Obtenir l'acces au tableau de bord **de production** Elgiopay
+>       (`elgiopay.com`, sans le `sandbox.`) et generer les cles `sk_live_` /
+>       `pk_live_`. Verifie le 11 octobre : les cles en place sont des cles
+>       de bac a sable, refusees en 401 par `api.elgiopay.com`.
+> - [ ] Declarer le webhook de production sur
+>       `https://api.artvibecamer.com/api/v1/webhooks/payments/elgiopay`
+> - [ ] Un paiement reel de bout en bout avant de rouvrir les inscriptions
 
 ## Ce qui est fait, en detail
 
