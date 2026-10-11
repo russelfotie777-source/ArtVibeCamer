@@ -152,6 +152,13 @@ export type Paiement = {
   redirect_url: string | null;
 };
 
+export type ReponseVote = {
+  message: string;
+  vote: { reference: string; quantity: number; amount: number };
+  transaction: Transaction;
+  payment: Paiement;
+};
+
 export type ReponseInscription = {
   message: string;
   candidate: Candidat;
