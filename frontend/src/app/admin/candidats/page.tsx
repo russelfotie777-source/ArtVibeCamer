@@ -50,7 +50,10 @@ export default async function PageCandidats({
       <header className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="font-display text-display-sm font-extrabold">Candidats</h1>
         <a
-          href={`${process.env.NEXT_PUBLIC_API_URL ?? ""}/admin/exports/candidates`}
+          href={`/admin/exports/candidates${parametres({
+            status: filtres.status,
+            category_id: filtres.category_id,
+          })}`}
           className="text-sm text-ink underline decoration-rule underline-offset-4 hover:decoration-ink"
         >
           Exporter en CSV
