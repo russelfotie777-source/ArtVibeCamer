@@ -232,6 +232,40 @@ class ElgiopayTest extends TestCase
         $this->assertSame(VoteStatus::Failed, Vote::firstOrFail()->status);
     }
 
+    /**
+     * En production, Elgiopay remplace parfois les montants absents par des
+     * tableaux vides. Ils ne doivent surtout pas devenir des zeros comptables.
+     */
+    public function test_des_frais_vides_sur_un_echec_restent_nuls(): void
+    {
+        Http::fake([
+            '*/api/v1/payments/TXN_FAILED' => Http::response([
+                'transaction_id' => 'TXN_FAILED',
+                'status' => 'failed',
+                'amount' => [
+                    'total' => 1000,
+                    'currency' => 'XAF',
+                    'fees' => [],
+                    'net_amount' => [],
+                ],
+                'payment' => ['method' => 'mtn_mobile_money'],
+                'customer' => ['phone' => '+237677000000'],
+            ]),
+        ]);
+
+        $transaction = new Transaction;
+        $transaction->provider_reference = 'TXN_FAILED';
+        $transaction->status = TransactionStatus::Processing;
+
+        $statut = (new ElgiopayGateway(
+            config('payments.drivers.elgiopay')
+        ))->verify($transaction);
+
+        $this->assertSame(TransactionStatus::Failed, $statut->status);
+        $this->assertNull($statut->fees);
+        $this->assertNull($statut->netAmount);
+    }
+
     // --- Notifications -----------------------------------------------------
 
     public function test_une_notification_signee_credite_les_voix(): void
