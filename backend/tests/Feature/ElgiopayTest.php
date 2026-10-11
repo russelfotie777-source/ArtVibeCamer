@@ -292,6 +292,33 @@ class ElgiopayTest extends TestCase
         $this->assertDatabaseCount('payment_webhooks', 1);
     }
 
+    /**
+     * En production, Elgiopay n'envoie ni `error_code` ni `message` : la cause
+     * tient dans une phrase anglaise, sous `failure_reason`. Sans traduction,
+     * l'ecran de suivi restait muet et le payeur relancait sans comprendre
+     * qu'il devait d'abord recharger son compte.
+     */
+    public function test_un_solde_insuffisant_est_annonce_en_clair_au_payeur(): void
+    {
+        $this->collecteAcceptee();
+        $transaction = $this->acheterDesVotes();
+
+        $this->notifier(
+            [
+                ...$this->paiementReussi(),
+                'status' => 'failed',
+                'failure_reason' => 'Insufficient balance on the account.',
+            ],
+            evenement: 'payment.failed',
+        )->assertOk();
+
+        $motif = (string) $transaction->fresh()->failure_reason;
+
+        $this->assertStringContainsString('Solde insuffisant', $motif);
+        // Le payeur doit savoir quoi faire, pas seulement ce qui a echoue.
+        $this->assertStringContainsString('Rechargez', $motif);
+    }
+
     public function test_un_echec_notifie_n_octroie_aucune_voix(): void
     {
         $this->collecteAcceptee();
