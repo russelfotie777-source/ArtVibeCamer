@@ -162,7 +162,9 @@ POST /registrations/{reference}/retry
 ```
 
 `{reference}` est la reference de la transaction echouee. `payer_phone` est
-facultatif : sans lui, le numero precedent est reutilise.
+obligatoire. Il est redemande a chaque tentative afin qu'un numero errone ou
+un compte Mobile Money different puisse etre corrige au lieu de rejouer la
+meme erreur en silence.
 
 La route est indexee sur la reference de transaction et non sur le candidat :
 cette reference est aleatoire et connue du seul candidat, alors qu'un slug est
@@ -170,7 +172,8 @@ devinable. Un tiers ne peut donc pas declencher de demandes de paiement sur
 des dossiers qui ne sont pas les siens.
 
 Repond **201** avec la meme structure que `POST /registrations`, pour une
-nouvelle transaction. **422** si les frais sont deja encaisses.
+nouvelle transaction. **422** si `payer_phone` est absent ou invalide, ou si
+les frais sont deja encaisses.
 
 ## Achat de votes
 
