@@ -24,9 +24,20 @@ avoir a reconstituer le contexte.
 > branche. **A faire avant qu'il le soit**, sans quoi on expose un back-office
 > a mot de passe connu et un parcours de paiement qui n'encaisse rien :
 >
-> - [ ] Supprimer ou renommer le compte du seeder `admin@artvibecamer.cm`
-> - [ ] Fermer les inscriptions tant que le driver est le bac a sable
+> - [x] **Inscriptions et votes fermes** le 11 octobre, le temps que le driver
+>       reste sur le bac a sable. Rouvrir par `registration_enabled` et
+>       `voting_enabled` une fois les cles live en place.
+> - [x] **Mot de passe du compte admin renouvele.** Le seeder en genere deja un
+>       aleatoire hors developpement — `password` ne vaut que en local — mais
+>       celui-ci n'avait ete affiche qu'une fois, pendant le seed.
 > - [ ] Declarer le webhook sur `https://api.artvibecamer.com/api/v1/webhooks/payments/elgiopay`
+> - [ ] Brancher `artvibecamer.com` : zone Cloudflare, serveurs de noms chez
+>       Hostinger, sous-domaine `api`, domaine personnalise du Worker
+
+**Attention apres toute commande `artisan` en production** : la configuration
+est mise en cache. Un `config:clear` lance pour depanner laisse le serveur
+sans cache jusqu'au prochain `config:cache`, ce qui ralentit chaque requete.
+Reconstruire les trois caches systematiquement.
 
 
 **Le backend est complet et teste.** **Le parcours d'inscription avec paiement
