@@ -24,7 +24,7 @@ export default async function LayoutSite({
   return (
     <div className="flex min-h-dvh flex-col bg-ink text-paper">
 
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-4 py-5 min-[30rem]:gap-4 sm:px-8 sm:py-6">
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-4 py-3 min-[30rem]:gap-4 sm:px-8 sm:py-6">
         <LogoEvenement hauteur={36} priorite className="shrink-0" />
 
         <nav
