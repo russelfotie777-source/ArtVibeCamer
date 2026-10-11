@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { LogoEvenement } from "@/components/Marque";
 import { FormulaireConnexion } from "@/components/FormulaireConnexion";
-import { jetonSession } from "@/lib/api";
+import { ErreurApi, jetonSession, lireAdmin } from "@/lib/api";
 
 export const metadata: Metadata = {
   title: "Connexion",
@@ -10,8 +10,28 @@ export const metadata: Metadata = {
 };
 
 export default async function PageConnexion() {
-  // Une session valide n'a rien a faire sur l'ecran de connexion.
-  if (await jetonSession()) redirect("/admin");
+  /*
+   * Ne pas confondre presence et validite du cookie. Un jeton revoque ou un
+   * compte desactive doit pouvoir revenir au formulaire, sinon /admin et
+   * /connexion se redirigent mutuellement sans fin.
+   */
+  if (await jetonSession()) {
+    let sessionValide = false;
+
+    try {
+      await lireAdmin("/admin/me");
+      sessionValide = true;
+    } catch (erreur) {
+      if (
+        !(erreur instanceof ErreurApi) ||
+        (!erreur.estAuthentification && erreur.statut !== 403)
+      ) {
+        throw erreur;
+      }
+    }
+
+    if (sessionValide) redirect("/admin");
+  }
 
   return (
     <div className="flex min-h-dvh flex-col bg-ink text-paper">
