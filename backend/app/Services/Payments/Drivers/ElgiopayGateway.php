@@ -396,17 +396,72 @@ class ElgiopayGateway implements PaymentGateway
     {
         $code = $donnees['error_code'] ?? null;
 
-        if ($code === null || (int) $code === 0) {
-            return $donnees['message'] ?? null;
+        if ($code !== null && (int) $code !== 0) {
+            return match ((int) $code) {
+                9201 => 'Le paiement a été refusé sur le téléphone du payeur.',
+                9202 => 'Solde insuffisant sur le compte Mobile Money.',
+                9203 => 'Le paiement n\'a pas été validé à temps.',
+                9204 => 'La transaction a échoué chez l\'opérateur.',
+                default => $donnees['message'] ?? "Le paiement a échoué (code {$code}).",
+            };
         }
 
-        return match ((int) $code) {
-            9201 => 'Le paiement a été refusé sur le téléphone du payeur.',
-            9202 => 'Solde insuffisant sur le compte Mobile Money.',
-            9203 => 'Le paiement n\'a pas été validé à temps.',
-            9204 => 'La transaction a échoué chez l\'opérateur.',
-            default => $donnees['message'] ?? "Le paiement a échoué (code {$code}).",
-        };
+        return $this->traduireMotif(
+            $donnees['failure_reason'] ?? $donnees['message'] ?? null
+        );
+    }
+
+    /**
+     * Motif d'echec en clair, pour le payeur.
+     *
+     * Le bac a sable renvoyait un `error_code` numerique ; la production, elle,
+     * ne renvoie ni code ni `message` mais une phrase anglaise dans
+     * `failure_reason` — constate le 11 octobre. Faute de la lire, l'ecran de
+     * suivi n'affichait aucune raison, et un payeur au solde insuffisant
+     * relancait indefiniment sans comprendre.
+     *
+     * On reconnait la cause sur des mots-cles plutot que sur la phrase
+     * entiere : leur formulation peut changer sans prevenir, le vocabulaire
+     * beaucoup moins.
+     */
+    private function traduireMotif(?string $motif): ?string
+    {
+        if (blank($motif)) {
+            return null;
+        }
+
+        $normalise = mb_strtolower($motif);
+
+        $causes = [
+            'solde' => ['insufficient', 'not enough', 'balance too low'],
+            'refus' => ['did not approve', 'declined', 'rejected', 'cancelled by', 'canceled by'],
+            'delai' => ['timeout', 'timed out', 'expired', 'in time'],
+            'plafond' => ['limit', 'exceed'],
+            'numero' => ['not registered', 'subscriber', 'invalid number', 'wrong number', 'not found'],
+        ];
+
+        foreach ($causes as $cause => $indices) {
+            foreach ($indices as $indice) {
+                if (str_contains($normalise, $indice)) {
+                    return match ($cause) {
+                        'solde' => 'Solde insuffisant sur votre compte Mobile Money. Rechargez-le, puis relancez le paiement.',
+                        'refus' => 'La demande n\'a pas été validée sur le téléphone. Relancez le paiement et saisissez votre code secret.',
+                        'delai' => 'La demande a expiré avant d\'être validée. Relancez le paiement et validez-la sans attendre.',
+                        'plafond' => 'Le plafond de votre compte Mobile Money est atteint. Contactez votre opérateur ou réessayez plus tard.',
+                        'numero' => 'Ce numéro n\'est pas inscrit au service Mobile Money. Vérifiez-le et relancez le paiement.',
+                    };
+                }
+            }
+        }
+
+        /*
+         * Cause inconnue : on la consigne pour pouvoir l'ajouter au tableau
+         * ci-dessus, et on sert au payeur une phrase francaise plutot que
+         * l'anglais brut de la passerelle.
+         */
+        Log::info('Elgiopay : motif d\'echec non traduit', ['motif' => $motif]);
+
+        return 'Le paiement n\'a pas abouti chez l\'opérateur. Relancez-le dans un instant.';
     }
 
     private function methodePourOperateur(?string $telephone): ?string
