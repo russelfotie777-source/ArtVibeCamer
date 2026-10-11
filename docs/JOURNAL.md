@@ -12,33 +12,28 @@ avoir a reconstituer le contexte.
 
 ## Ou on en est
 
-> **En ligne depuis le 11 octobre, sur le domaine definitif.**
-> Procedure et pieges dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
+> **Ouvert au public le 11 octobre.** Premier encaissement reel abouti sur les
+> deux operateurs. Procedure et pieges dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
 >
 > | Couche | Adresse | Hebergeur |
 > | --- | --- | --- |
 > | Site et back-office | `https://artvibecamer.com` | Cloudflare Workers |
 > | API | `https://api.artvibecamer.com` | Hostinger, PHP 8.4 |
 >
-> DNS gere par Cloudflare. L'enregistrement `api` est **en nuage gris**,
-> proxy desactive : Laravel doit voir l'adresse reelle du visiteur, sans quoi
-> les plafonds par IP qui protegent le vote d'un bourrage automatise tombent.
+> DNS gere par Cloudflare, enregistrement `api` en nuage gris pour que Laravel
+> voie l'adresse reelle du visiteur. HTTPS, HSTS et en-tetes de securite poses
+> sur les deux tiers. Cron de reconciliation actif.
 >
-> HTTPS sur les deux, HSTS actif, en-tetes de securite poses.
+> **Encaissement valide en production**, sur de vrais debits de 100 FCFA :
 >
-> **Inscriptions et votes volontairement fermes** tant que l'encaissement se
-> fait sur le bac a sable. Rouvrir par les reglages `registration_enabled` et
-> `voting_enabled` une fois les cles live en place.
+> | Operateur | Resultat | Frais |
+> | --- | --- | --- |
+> | MTN Mobile Money | `payment.completed` | 2 FCFA sur 100 |
+> | Orange Money | `payment.completed` | 2 FCFA sur 100 |
 >
-> **Ce qui reste, et qui ne depend plus de nous :**
->
-> - [ ] Obtenir l'acces au tableau de bord **de production** Elgiopay
->       (`elgiopay.com`, sans le `sandbox.`) et generer les cles `sk_live_` /
->       `pk_live_`. Verifie le 11 octobre : les cles en place sont des cles
->       de bac a sable, refusees en 401 par `api.elgiopay.com`.
-> - [ ] Declarer le webhook de production sur
->       `https://api.artvibecamer.com/api/v1/webhooks/payments/elgiopay`
-> - [ ] Un paiement reel de bout en bout avant de rouvrir les inscriptions
+> Notifications recues sur le webhook de production, **signature verifiee** dans
+> les deux cas. La commission est donc bien de **2 %, identique sur les deux
+> reseaux** — la question etait ouverte depuis le 7 octobre.
 
 ## Ce qui est fait, en detail
 
@@ -692,8 +687,9 @@ Observe sur une transaction reelle du bac a sable : **8 000 FCFA encaisses,
 160 FCFA de frais, 7 840 FCFA nets — soit 2 %.** Confirme par le solde, qui
 progresse de 7 840 XAF a chaque encaissement reussi.
 
-Reste a confirmer aupres d'Elgiopay : le taux est-il identique sur MTN et
-Orange, et s'applique-t-il aussi au retrait ?
+**Confirme le 11 octobre en production** : 2 FCFA preleves sur 100, a
+l'identique sur MTN et sur Orange. Reste a verifier si le taux s'applique
+aussi au retrait.
 
 L'argent ne part pas sur un compte Mobile Money : il s'accumule sur le solde
 Elgiopay jusqu'a un retrait explicite (`POST /payouts` ou leur tableau de
