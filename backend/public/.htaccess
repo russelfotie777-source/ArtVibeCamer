@@ -23,3 +23,25 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# En-tetes de securite
+#
+# L'API sert des donnees personnelles de candidats et des montants encaisses.
+# Ces trois en-tetes coutent une ligne chacun et ferment des portes qu'on ne
+# voit pas s'ouvrir.
+<IfModule mod_headers.c>
+    # Ne jamais deviner le type d'un contenu : un JSON interprete comme du
+    # HTML par un vieux navigateur devient un vecteur d'injection.
+    Header always set X-Content-Type-Options "nosniff"
+
+    # L'API n'a aucune raison d'etre affichee dans un cadre.
+    Header always set X-Frame-Options "DENY"
+
+    # Ne pas fuiter l'URL complete d'origine vers un tiers.
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Une fois le domaine definitif en place et le HTTPS verifie, activer
+    # HSTS. Pose trop tot, il verrouille un domaine qui n'est pas encore le
+    # bon pour six mois dans le cache des navigateurs.
+    # Header always set Strict-Transport-Security "max-age=15552000"
+</IfModule>
