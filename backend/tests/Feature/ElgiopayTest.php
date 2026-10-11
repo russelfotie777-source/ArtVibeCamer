@@ -308,7 +308,7 @@ class ElgiopayTest extends TestCase
                 ...$this->paiementReussi(),
                 'status' => 'failed',
                 // Formulation exacte renvoyee par Elgiopay en production.
-            'failure_reason' => 'The customer does not have enough funds to complete this payment.',
+                'failure_reason' => 'The customer does not have enough funds to complete this payment.',
             ],
             evenement: 'payment.failed',
         )->assertOk();

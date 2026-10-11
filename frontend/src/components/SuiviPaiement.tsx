@@ -306,7 +306,6 @@ export function SuiviPaiement({
                 inputMode="tel"
                 autoComplete="tel"
                 required
-                defaultValue={transaction.payer_phone ?? ""}
                 placeholder="671 23 45 67"
                 erreur={erreurRelance ?? undefined}
               />
