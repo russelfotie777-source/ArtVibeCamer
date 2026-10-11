@@ -558,6 +558,20 @@ cle `…_test_…` est refusee par `api.elgiopay.com`, une cle `…_live_…` pa
 appel et s'arrete net — sans quoi le symptome, « cle refusee », pointe vers
 la mauvaise cause.
 
+**Confirme en production le 11 octobre** : leur API de production se comporte
+comme leur bac a sable. Sur `GET /api/v1/balance`, hote `api.elgiopay.com`,
+avec le couple de cles live de l'application `ProductFinal` (app_000016) :
+
+| Cle envoyee en jeton Bearer | Reponse |
+| --- | --- |
+| `sk_live_…` (secrete) | **401** — « The provided API key is invalid or inactive » |
+| `pk_live_…` (publique) | **200** |
+
+Ce n'est donc pas un defaut du bac a sable mais le comportement reel de leur
+plateforme, sur les deux environnements. `ELGIOPAY_AUTH_KEY=publique` est le
+reglage de production, et non un contournement temporaire. A resignaler : leur
+interface presente toujours la cle secrete comme le credential serveur.
+
 **Troisieme point** : renouveler une cle depuis le tableau de bord invalide
 immediatement la precedente. A faire au moindre soupcon de fuite, mais en
 sachant que les encaissements s'arretent jusqu'a la mise a jour du `.env`.
