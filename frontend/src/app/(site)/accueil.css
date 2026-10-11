@@ -35,7 +35,7 @@
   /* L'accroche doit se lire des l'arrivee, sans avoir a descendre des yeux.
      La respiration basse reste plus large que la haute : le regard entre par
      le haut, il n'a pas besoin qu'on l'y retienne. */
-  padding-block: clamp(1.5rem, 3.5vh, 2.5rem) clamp(3.5rem, 7vh, 5rem);
+  padding-block: clamp(0.75rem, 2vh, 1.5rem) clamp(3.5rem, 7vh, 5rem);
 }
 
 .avc-heroCopy {
@@ -450,8 +450,9 @@
     min-height: auto;
     gap: 1.5rem;
     /* Le titre commence au plus pres de l'entete : sur un ecran de telephone,
-       chaque centimetre gagne en haut est une ligne lue en plus. */
-    padding-block: 1.25rem 3rem;
+       chaque centimetre gagne en haut est une ligne lue en plus. L'entete a
+       sa propre respiration basse, inutile de la doubler ici. */
+    padding-block: 0.25rem 3rem;
   }
 
   .avc-heroTitle {
