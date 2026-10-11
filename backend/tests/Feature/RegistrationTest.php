@@ -163,6 +163,27 @@ class RegistrationTest extends TestCase
         $this->assertDatabaseCount('candidates', 1);
     }
 
+    public function test_la_relance_exige_un_nouveau_numero_de_paiement(): void
+    {
+        $category = $this->makeCategory();
+
+        $echec = $this->postJson('/api/v1/registrations', [
+            'category_id' => $category->id,
+            'first_name' => 'Paul',
+            'last_name' => 'Essomba',
+            'email' => 'paul-relance@example.cm',
+            'phone' => '671234560',
+            'accepts_terms' => true,
+        ])->assertCreated();
+
+        $this->postJson(
+            "/api/v1/registrations/{$echec->json('transaction.reference')}/retry"
+        )->assertStatus(422)->assertJsonValidationErrors('payer_phone');
+
+        // Une requete invalide ne doit pas creer une seconde transaction.
+        $this->assertDatabaseCount('transactions', 1);
+    }
+
     public function test_une_inscription_deja_payee_ne_peut_pas_etre_relancee(): void
     {
         $category = $this->makeCategory();

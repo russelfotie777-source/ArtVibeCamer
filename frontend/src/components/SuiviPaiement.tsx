@@ -273,17 +273,27 @@ export function SuiviPaiement({
 
         <form onSubmit={relancerPaiement} className="px-7 py-7">
           <div className="[&_label]:text-paper [&_p]:text-ink-soft">
+            {/*
+              Le numero est redemande a chaque relance plutot que repris en
+              silence. Une relance fait suite a un echec, et la premiere cause
+              d'echec est un numero errone ou un compte non approvisionne :
+              rejouer le meme numero sans le montrer conduit a enchainer les
+              echecs sans comprendre.
+            */}
             <Champ
               etiquette="Numéro Mobile Money"
               pour="payer_phone"
               erreur={erreurRelance ?? undefined}
-              aide="Laissez vide pour réutiliser le numéro précédent."
+              aide="MTN ou Orange. C'est sur ce numéro qu'arrivera la demande de paiement."
+              obligatoire
             >
               <Saisie
                 id="payer_phone"
                 name="payer_phone"
                 type="tel"
                 inputMode="tel"
+                autoComplete="tel"
+                required
                 placeholder="671 23 45 67"
                 erreur={erreurRelance ?? undefined}
               />

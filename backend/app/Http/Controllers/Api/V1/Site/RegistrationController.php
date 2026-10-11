@@ -70,8 +70,14 @@ class RegistrationController extends Controller
             'Les frais de cette inscription sont déjà encaissés.'
         );
 
+        /*
+         * Obligatoire a la relance, la ou il est facultatif a l'inscription.
+         * Une relance suit un echec, et la premiere cause d'echec est un
+         * numero errone : reprendre le precedent en silence revient a
+         * rejouer la meme erreur.
+         */
         $request->validate([
-            'payer_phone' => ['nullable', 'string', 'max:20', new CameroonPhone],
+            'payer_phone' => ['required', 'string', 'max:20', new CameroonPhone],
         ]);
 
         $result = $this->registrations->retryPayment($candidate, $request);
