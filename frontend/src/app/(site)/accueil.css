@@ -456,29 +456,31 @@
   }
 
   /*
-   * Sur telephone, l'illustration passait sous trois paragraphes : personne
-   * ne la voyait. Elle passe derriere le texte, debordant a droite et en
-   * bas — un cadre qui coupe le sujet donne l'echelle, la ou un visuel
-   * entierement contenu la perd.
+   * L'illustration etait placee en absolu derriere le texte, pour qu'on la
+   * voie sans avoir a faire defiler. L'intention tenait tant que le texte
+   * restait court : des que l'accroche passe sur trois lignes et que les
+   * deux boutons s'affichent, titre, paragraphe et boutons se retrouvent
+   * poses sur le sujet, et plus rien ne se lit proprement.
    *
-   * Pas de voile sombre par-dessus pour faire ressortir le texte : c'est
-   * l'espace laisse libre qui assure la lisibilite, pas un degrade.
+   * Elle revient donc dans le flux, sous le texte. Le debordement a droite
+   * est conserve : couper le sujet donne l'echelle, la ou un visuel
+   * entierement contenu la perd. `overflow: hidden` sur le hero retient ce
+   * qui depasse, sans defilement horizontal.
    */
   .avc-heroInner {
-    display: block;
-    position: relative;
+    display: grid;
+    position: static;
   }
 
   .avc-heroCopy {
-    position: relative;
+    position: static;
     z-index: 2;
     max-width: 34rem;
-    /* Juste de quoi degager le bas du sujet, pas une page de vide. */
-    padding-bottom: 7rem;
+    padding-bottom: 0;
   }
 
-  /* Le bouton quitte la pleine largeur : il libere le cote droit, ou monte
-     l'illustration. Un bouton qui barre l'ecran ne laisse place a rien. */
+  /* Le bouton quitte la pleine largeur : deux boutons cote a cote tiennent
+     sur une ligne, et l'un sous l'autre ils barreraient l'ecran. */
   .avc-heroActions {
     align-items: center;
   }
@@ -488,14 +490,13 @@
   }
 
   .avc-heroVisual {
-    position: absolute;
-    right: -16%;
-    bottom: -2rem;
-    left: auto;
+    position: static;
     z-index: 0;
     display: block;
-    width: 74%;
+    width: 112%;
+    max-width: none;
     min-height: 0;
+    margin-top: 0.75rem;
     pointer-events: none;
   }
 
