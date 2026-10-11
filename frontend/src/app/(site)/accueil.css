@@ -12,7 +12,7 @@
    * l'entete et l'accroche semblaient sans rapport. Le hero occupe toujours
    * l'ecran sur les petites hauteurs, ou le plafond ne s'applique pas.
    */
-  min-height: min(45rem, calc(100svh - 6.75rem));
+  min-height: min(42rem, calc(100svh - 6.75rem));
   overflow: hidden;
   background: var(--color-ink);
 }
@@ -30,11 +30,12 @@
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(25rem, 0.92fr);
   align-items: center;
-  min-height: min(45rem, calc(100svh - 6.75rem));
+  min-height: min(42rem, calc(100svh - 6.75rem));
   gap: clamp(1rem, 4vw, 4rem);
-  /* Respiration haute reduite de moitie : l'accroche doit se lire des
-     l'arrivee, sans avoir a descendre des yeux. */
-  padding-block: clamp(2.25rem, 5vh, 3.5rem) clamp(3.5rem, 7vh, 5rem);
+  /* L'accroche doit se lire des l'arrivee, sans avoir a descendre des yeux.
+     La respiration basse reste plus large que la haute : le regard entre par
+     le haut, il n'a pas besoin qu'on l'y retienne. */
+  padding-block: clamp(1.5rem, 3.5vh, 2.5rem) clamp(3.5rem, 7vh, 5rem);
 }
 
 .avc-heroCopy {
@@ -468,15 +469,39 @@
    * qui depasse, sans defilement horizontal.
    */
   .avc-heroInner {
-    display: grid;
-    position: static;
+    display: block;
+    position: relative;
   }
 
   .avc-heroCopy {
-    position: static;
+    position: relative;
     z-index: 2;
     max-width: 34rem;
-    padding-bottom: 0;
+    /* Degage la zone basse ou monte l'illustration. */
+    padding-bottom: 9.5rem;
+  }
+
+  /*
+   * Un fond degrade, tire de la couleur du hero, posE derriere le seul texte.
+   * Il est invisible la ou il n'y a rien a couvrir, et garantit la lecture si
+   * une ligne arrive au-dessus du sujet — ce qui depend de la longueur de
+   * l'accroche, donc de reglages qu'on ne maitrise pas depuis le CSS.
+   *
+   * La version precedente s'en passait par parti pris, et c'est exactement ce
+   * qui a casse des que le texte s'est allonge.
+   */
+  .avc-heroCopy::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: -2rem -1.5rem 4rem -1.5rem;
+    background: linear-gradient(
+      to bottom,
+      var(--color-ink) 60%,
+      color-mix(in oklab, var(--color-ink) 70%, transparent) 85%,
+      transparent 100%
+    );
+    pointer-events: none;
   }
 
   /* Le bouton quitte la pleine largeur : deux boutons cote a cote tiennent
@@ -490,13 +515,15 @@
   }
 
   .avc-heroVisual {
-    position: static;
+    position: absolute;
+    right: -9%;
+    bottom: 0;
+    left: auto;
     z-index: 0;
     display: block;
-    width: 112%;
-    max-width: none;
+    /* Plus etroite qu'avant : a 74 % elle remontait jusque sous le titre. */
+    width: 66%;
     min-height: 0;
-    margin-top: 0.75rem;
     pointer-events: none;
   }
 
