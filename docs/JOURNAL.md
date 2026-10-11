@@ -6,11 +6,28 @@ session.** C'est ce fichier qui permet a quelqu'un d'autre de reprendre sans
 avoir a reconstituer le contexte.
 
 - **Echeance MVP** : 10 octobre 2026
-- **Derniere mise a jour** : 10 octobre 2026
+- **Derniere mise a jour** : 11 octobre 2026
 
 ---
 
 ## Ou on en est
+
+> **Mis en ligne le 11 octobre.** Front sur Cloudflare Workers, API sur
+> Hostinger. Procedure et pieges dans [DEPLOIEMENT.md](DEPLOIEMENT.md).
+>
+> | Couche | Adresse |
+> | --- | --- |
+> | Front | `artvibecamer.russelfotie777.workers.dev` |
+> | API | `orchid-turtle-578625.hostingersite.com` |
+>
+> Les deux adresses sont provisoires : `artvibecamer.com` n'est pas encore
+> branche. **A faire avant qu'il le soit**, sans quoi on expose un back-office
+> a mot de passe connu et un parcours de paiement qui n'encaisse rien :
+>
+> - [ ] Supprimer ou renommer le compte du seeder `admin@artvibecamer.cm`
+> - [ ] Fermer les inscriptions tant que le driver est le bac a sable
+> - [ ] Declarer le webhook sur `https://api.artvibecamer.com/api/v1/webhooks/payments/elgiopay`
+
 
 **Le backend est complet et teste.** **Le parcours d'inscription avec paiement
 et le suivi par l'organisation sont utilisables de bout en bout**, du
