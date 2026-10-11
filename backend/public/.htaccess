@@ -40,8 +40,9 @@
     # Ne pas fuiter l'URL complete d'origine vers un tiers.
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
 
-    # Une fois le domaine definitif en place et le HTTPS verifie, activer
-    # HSTS. Pose trop tot, il verrouille un domaine qui n'est pas encore le
-    # bon pour six mois dans le cache des navigateurs.
-    # Header always set Strict-Transport-Security "max-age=15552000"
+    # HSTS : le navigateur refuse toute connexion en clair vers ce domaine
+    # pendant six mois. Active le 11 octobre, une fois api.artvibecamer.com
+    # en place et son certificat verifie — le poser avant aurait verrouille
+    # une adresse provisoire.
+    Header always set Strict-Transport-Security "max-age=15552000"
 </IfModule>
