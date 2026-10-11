@@ -449,7 +449,9 @@
     grid-template-columns: 1fr;
     min-height: auto;
     gap: 1.5rem;
-    padding-block: 2.5rem 4rem;
+    /* Le titre commence au plus pres de l'entete : sur un ecran de telephone,
+       chaque centimetre gagne en haut est une ligne lue en plus. */
+    padding-block: 1.25rem 3rem;
   }
 
   .avc-heroTitle {
@@ -477,8 +479,12 @@
     position: relative;
     z-index: 2;
     max-width: 34rem;
-    /* Degage la zone basse ou monte l'illustration. */
-    padding-bottom: 9.5rem;
+    /*
+     * Hauteur reservee a l'illustration, calee sur la sienne : le bouton
+     * d'inscription doit se terminer au-dessus d'elle, pas la chevaucher.
+     * Toute reduction ici fait remonter l'image sous le bouton.
+     */
+    padding-bottom: 12rem;
   }
 
   /*
@@ -516,13 +522,20 @@
 
   .avc-heroVisual {
     position: absolute;
-    right: -9%;
-    bottom: 0;
+    /*
+     * Trois reglages qui se tiennent, et qu'il faut bouger ensemble :
+     *   width   la largeur fixe aussi la hauteur, donc le haut du sujet ;
+     *   bottom  negatif, l'image descend et son sommet s'eloigne du bouton ;
+     *   right   l'ecart au bord droit, qui ecarte son flanc gauche du bouton.
+     * A 66 % calee en bas, son flanc gauche passait sous « Inscrire mon
+     * talent ».
+     */
+    right: -12%;
+    bottom: -3.5rem;
     left: auto;
     z-index: 0;
     display: block;
-    /* Plus etroite qu'avant : a 74 % elle remontait jusque sous le titre. */
-    width: 66%;
+    width: 62%;
     min-height: 0;
     pointer-events: none;
   }
