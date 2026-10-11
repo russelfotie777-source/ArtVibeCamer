@@ -446,7 +446,12 @@ class ElgiopayGateway implements PaymentGateway
         $normalise = mb_strtolower($motif);
 
         $causes = [
-            'solde' => ['insufficient', 'not enough', 'balance too low'],
+            /*
+             * « does not have enough funds » : formulation reellement renvoyee
+             * en production le 11 octobre. Un motif construit sur « not
+             * enough » seul la manquait, l'anglais intercalant « have ».
+             */
+            'solde' => ['insufficient', 'enough fund', 'enough money', 'enough balance', 'not enough', 'balance too low'],
             'refus' => ['did not approve', 'declined', 'rejected', 'cancelled by', 'canceled by'],
             'delai' => ['timeout', 'timed out', 'expired', 'in time'],
             'plafond' => ['limit', 'exceed'],
