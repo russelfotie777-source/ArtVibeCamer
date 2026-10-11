@@ -18,12 +18,24 @@ class RecuTest extends TestCase
 {
     use RefreshDatabase, TestSupport;
 
+    private int $rang = 0;
+
     private function transaction(TransactionStatus $statut): Transaction
     {
-        $category = $this->makeCategory();
-        $candidate = $this->makeCandidate($category);
+        // Le slug de categorie est unique en base : un appel par scenario.
+        $this->rang++;
+        $category = $this->makeCategory([
+            'name' => 'Categorie '.$this->rang,
+            'slug' => 'categorie-'.$this->rang,
+        ]);
+        // Email et telephone sont uniques en base, comme pour de vrais
+        // candidats : chaque scenario a donc les siens.
+        $candidate = $this->makeCandidate($category, [
+            'email' => 'payeur'.$this->rang.'@example.cm',
+            'phone' => '23767123456'.$this->rang,
+        ]);
 
-        return Transaction::create([
+        $transaction = Transaction::create([
             'reference' => Transaction::generateReference(TransactionType::Registration),
             'type' => TransactionType::Registration,
             'payable_type' => $candidate->getMorphClass(),
@@ -33,8 +45,19 @@ class RecuTest extends TestCase
             'status' => $statut,
             'payer_name' => 'Arnaud Nkolo',
             'payer_phone' => '677000000',
-            'paid_at' => $statut === TransactionStatus::Succeeded ? now() : null,
         ]);
+
+        /*
+         * `paid_at` est volontairement hors de $fillable : une date
+         * d'encaissement ne doit jamais venir d'une requete. On l'ecrit donc
+         * comme le fait le service de paiement, et non par assignation de
+         * masse — ce que le modele refuse, a juste titre.
+         */
+        if ($statut === TransactionStatus::Succeeded) {
+            $transaction->forceFill(['paid_at' => now()])->save();
+        }
+
+        return $transaction;
     }
 
     public function test_un_paiement_abouti_donne_un_recu_en_pdf(): void
@@ -48,7 +71,7 @@ class RecuTest extends TestCase
 
         // Un PDF commence par cette signature : on verifie qu'un document est
         // bien produit, pas seulement qu'une reponse revient.
-        $this->assertStringStartsWith('%PDF-', $reponse->streamedContent());
+        $this->assertStringStartsWith('%PDF-', $reponse->getContent());
     }
 
     /**
