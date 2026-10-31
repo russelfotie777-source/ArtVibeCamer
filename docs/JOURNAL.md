@@ -575,6 +575,41 @@ Trois choix qui meritent d'etre connus avant d'y toucher :
 L'acces se fait sans authentification, comme l'ecran de suivi : c'est la
 reference, aleatoire et connue du seul payeur, qui autorise la lecture.
 
+### Les inscriptions se ferment toutes seules a leur date de fin
+
+Constate le 31 octobre : `/inscription` annoncait « les inscriptions sont
+fermees » alors que personne n'avait rien touche. Les quatre categories
+portent `registration_closes_at`, posee par `CategorySeeder` — au 30 octobre
+23:59:59 a l'origine. Passee cette date, `Category::isRegistrationOpen()`
+renvoie faux : ce n'est pas une panne, c'est le comportement prevu, mais
+aucun ecran ne le signale.
+
+**Pour rouvrir ou prolonger**, modifier la date sur le serveur, et non le
+reglage `registration_enabled`, qui restait ouvert pendant tout l'incident :
+
+```bash
+/opt/alt/php84/usr/bin/php artisan tinker --execute="
+foreach (App\Models\Category::all() as \$c) {
+    \$c->registration_closes_at = Illuminate\Support\Carbon::parse('2026-11-30 23:59:59', 'Africa/Douala')->utc();
+    \$c->save();
+}"
+```
+
+Trois points a ne pas rater :
+
+- **`->utc()` est necessaire.** Eloquent ecrit l'heure de l'instance sans la
+  convertir, et le fuseau applicatif est UTC. Sans lui, « 23:59:59 Douala »
+  etait stocke tel quel puis relu en UTC : la cloture tombait une heure trop
+  tard.
+- **Le texte affiche est un reglage a part** : `registration_window`
+  (« Du 10 octobre au 30 novembre 2026 »). Le changer seul ne rouvre rien ;
+  changer la date seule laisse une phrase fausse sur le site.
+- **Le seeder doit suivre.** Sinon un `db:seed` remettrait l'ancienne date.
+
+Date actuelle : **30 novembre 2026**. Les castings sont annonces les 8 et
+16 novembre : ils tombent donc avant la cloture, a reconcilier avec
+l'organisation si les dossiers doivent etre valides avant.
+
 ## Decisions prises, et pourquoi
 
 Le raisonnement complet est dans [ARCHITECTURE.md](ARCHITECTURE.md). En
