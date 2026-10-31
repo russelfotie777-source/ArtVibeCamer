@@ -27,7 +27,7 @@ class SettingSeeder extends Seeder
             ['key' => 'event_city', 'value' => 'Douala', 'type' => 'string', 'group' => 'event', 'label' => 'Ville', 'is_public' => true],
 
             // --- Castings, tels qu'annonces sur les affiches ---
-            ['key' => 'registration_window', 'value' => 'Du 10 au 30 octobre 2026', 'type' => 'string', 'group' => 'event', 'label' => 'Période d\'inscription', 'is_public' => true],
+            ['key' => 'registration_window', 'value' => 'Du 10 octobre au 30 novembre 2026', 'type' => 'string', 'group' => 'event', 'label' => 'Période d\'inscription', 'is_public' => true],
             ['key' => 'casting_douala', 'value' => 'Salle des fêtes d\'Akwa, Douala — à partir du 8 novembre 2026', 'type' => 'string', 'group' => 'event', 'label' => 'Casting Douala', 'is_public' => true],
             ['key' => 'casting_yaounde', 'value' => 'Yaoundé — à partir du 16 novembre 2026', 'type' => 'string', 'group' => 'event', 'label' => 'Casting Yaoundé', 'is_public' => true],
 

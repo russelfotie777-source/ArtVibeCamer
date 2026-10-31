@@ -21,8 +21,14 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        // Les inscriptions annoncees courent jusqu'au 30 octobre.
-        $cloture = Carbon::parse('2026-10-30 23:59:59', 'Africa/Douala');
+        // Les inscriptions annoncees courent jusqu'au 30 novembre, minuit a Douala.
+        // Repoussee depuis le 30 octobre : la date passee fermait les quatre
+        // categories d'elle-meme, sans qu'aucun reglage ne le signale.
+        //
+        // ->utc() n'est pas decoratif : Eloquent ecrit l'heure de l'instance
+        // telle quelle, sans la convertir. Sans lui, 23:59:59 Douala etait
+        // stocke « 23:59:59 » puis relu en UTC, soit une heure trop tard.
+        $cloture = Carbon::parse('2026-11-30 23:59:59', 'Africa/Douala')->utc();
 
         $categories = [
             [
