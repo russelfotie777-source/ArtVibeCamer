@@ -610,6 +610,21 @@ Date actuelle : **30 novembre 2026**. Les castings sont annonces les 8 et
 16 novembre : ils tombent donc avant la cloture, a reconcilier avec
 l'organisation si les dossiers doivent etre valides avant.
 
+### Branche `exercice/backend-vote` : ne pas fusionner
+
+Cette branche a ete volontairement amputee du backend des votes (achat,
+credit apres paiement, moderation) pour qu'il soit reconstruit par un autre
+developpeur. Le cahier des charges est dans
+[EXERCICE-VOTE.md](EXERCICE-VOTE.md).
+
+**Elle ne doit jamais etre fusionnee dans `main` avant d'etre terminee**, ni
+deployee : le backend complet vit sur `main` et tourne en production. La
+fusionner en l'etat supprimerait l'achat de voix du site.
+
+Etat de depart mesure : 50 tests au vert, 20 en echec (les 7 de `VotingTest`
+et 13 de `ElgiopayTest`, qui utilise l'achat de voix comme vehicule). La
+branche est terminee quand la suite repasse a 70 sur 70.
+
 ## Decisions prises, et pourquoi
 
 Le raisonnement complet est dans [ARCHITECTURE.md](ARCHITECTURE.md). En

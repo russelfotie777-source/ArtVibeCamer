@@ -9,7 +9,6 @@ use App\Models\Transaction;
 use App\Services\Payments\Fulfilment\Fulfilment;
 use App\Services\Payments\Fulfilment\RegistrationFulfilment;
 use App\Services\Payments\Fulfilment\TicketFulfilment;
-use App\Services\Payments\Fulfilment\VoteFulfilment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -307,7 +306,11 @@ class PaymentProcessor
     {
         return match ($type) {
             TransactionType::Registration => app(RegistrationFulfilment::class),
-            TransactionType::Vote => app(VoteFulfilment::class),
+            // A IMPLEMENTER : crediter les voix d'un paiement abouti, et les
+            // retirer si le paiement est invalide. Voir docs/EXERCICE-VOTE.md.
+            TransactionType::Vote => throw new \LogicException(
+                'Le credit des votes n\'est pas implemente : voir docs/EXERCICE-VOTE.md.'
+            ),
             TransactionType::Ticket => app(TicketFulfilment::class),
         };
     }

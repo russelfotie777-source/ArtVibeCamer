@@ -60,9 +60,6 @@ Route::prefix('v1')->group(function () {
     Route::post('registrations/{transaction}/retry', [Site\RegistrationController::class, 'retry'])
         ->middleware('throttle:checkout');
 
-    Route::post('candidates/{candidate}/votes', [Site\VoteController::class, 'store'])
-        ->middleware('throttle:checkout');
-
     Route::post('ticket-orders', [Site\TicketController::class, 'store'])
         ->middleware('throttle:checkout');
 
@@ -120,9 +117,6 @@ Route::prefix('v1')->group(function () {
                 Route::get('categories', [Admin\CategoryController::class, 'index']);
                 Route::get('ticket-types', [Admin\TicketTypeController::class, 'index']);
 
-                Route::get('votes', [Admin\VoteController::class, 'index']);
-                Route::get('votes/suspicious', [Admin\VoteController::class, 'suspicious']);
-
                 Route::get('transactions', [Admin\TransactionController::class, 'index']);
                 Route::get('transactions/{transaction}', [Admin\TransactionController::class, 'show']);
 
@@ -161,8 +155,6 @@ Route::prefix('v1')->group(function () {
                 Route::post('ticket-types', [Admin\TicketTypeController::class, 'store']);
                 Route::patch('ticket-types/{ticketType:id}', [Admin\TicketTypeController::class, 'update']);
                 Route::delete('ticket-types/{ticketType:id}', [Admin\TicketTypeController::class, 'destroy']);
-
-                Route::post('votes/{vote:id}/cancel', [Admin\VoteController::class, 'cancel']);
 
                 Route::post('transactions/{transaction}/verify', [Admin\TransactionController::class, 'verify']);
 
