@@ -1,24 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Instrument_Sans } from "next/font/google";
+import { Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
 
 /*
- * Deux familles clairement distinctes. Bricolage Grotesque a un dessin
- * legerement irregulier, presque taille, qui fait echo a la broderie du
- * toghu ; sa largeur variable permet des titres tres resserres. Instrument
- * Sans tient les textes courants et les formulaires.
+ * Une seule famille. Bricolage Grotesque a un dessin legerement irregulier,
+ * presque taille, qui fait echo a la broderie du toghu. Son axe de taille
+ * optique (opsz, 12 a 96) lui donne une coupe de texte sobre a 14 px et une
+ * coupe d'affiche serree a 96 px : elle tient les deux roles sans seconde
+ * fonte. Son axe de chasse (wdth) ne sert qu'au titre d'accueil.
  */
 const bricolage = Bricolage_Grotesque({
   variable: "--font-bricolage",
   subsets: ["latin"],
   display: "swap",
   axes: ["opsz", "wdth"],
-});
-
-const instrument = Instrument_Sans({
-  variable: "--font-instrument",
-  subsets: ["latin"],
-  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -31,17 +26,18 @@ export const metadata: Metadata = {
     template: "%s — ArtVibeCamer",
   },
   description:
-    "La scene des talents camerounais. Inscriptions des candidats, votes du public et billetterie de l'evenement.",
+    "La scène des talents camerounais. Inscriptions des candidats, votes du public et billetterie de l’événement.",
   openGraph: {
     title: "ArtVibeCamer",
-    description: "La scene des talents camerounais.",
+    description: "La scène des talents camerounais.",
     locale: "fr_CM",
     type: "website",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f2d1c",
+  // Le fond du site : la barre du navigateur mobile se fond dans l'entete.
+  themeColor: "#002612",
 };
 
 export default function RootLayout({
@@ -50,10 +46,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="fr"
-      className={`${bricolage.variable} ${instrument.variable} h-full antialiased`}
-    >
+    <html lang="fr" className={`${bricolage.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
