@@ -34,58 +34,53 @@ export default async function LayoutAdmin({
    */
   if (!utilisateur.capabilities.back_office) {
     return (
-      <div className="flex min-h-full items-center justify-center bg-ink px-5 py-16 text-paper">
-        <div className="max-w-md">
-          <h1 className="font-display text-display-sm font-extrabold">
-            Accès réservé
-          </h1>
-          <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-            Votre compte « {utilisateur.role_label} » donne accès au contrôle
-            des billets à l&apos;entrée, pas au suivi de l&apos;événement.
+      <main className="terrain-sombre flex min-h-dvh items-center px-4 py-16">
+        <div className="mx-auto w-full max-w-md">
+          <h1 className="text-4xl tracking-affiche">Accès réservé</h1>
+          <p className="mt-4">
+            Votre compte «&nbsp;{utilisateur.role_label}&nbsp;» donne accès au
+            contrôle des billets à l’entrée, pas au suivi de
+            l’événement.
           </p>
-          <div className="mt-7">
+          <div className="mt-6 -ml-3">
             <BoutonDeconnexion />
           </div>
         </div>
-      </div>
+      </main>
     );
   }
 
+  /*
+   * Coque de travail : barre laterale aux couleurs de la marque, zone de
+   * travail claire, lisible de jour. Sur telephone, la barre devient un
+   * bandeau et la navigation defile a l'horizontale.
+   */
   return (
-    <div className="flex min-h-dvh flex-col bg-paper text-ink lg:flex-row">
-      {/* Chrome indigo : le back-office garde l'identite du site tout en
-          travaillant sur un fond papier, lisible de jour. */}
-      <aside className="bg-ink text-paper lg:w-60 lg:shrink-0">
-        <div className="flex items-center justify-between gap-4 px-5 py-5 lg:block">
-          <LogoEvenement hauteur={38} href="/admin" />
-          <p className="mt-0.5 hidden text-xs text-ink-soft lg:block">
-            Organisation
-          </p>
+    <div className="terrain-clair flex min-h-dvh flex-col bg-coque lg:flex-row">
+      <aside className="terrain-sombre flex flex-col border-bordure lg:sticky lg:top-0 lg:h-dvh lg:w-60 lg:shrink-0 lg:border-r">
+        <div className="flex h-16 items-center justify-between gap-4 px-4">
+          <LogoEvenement hauteur={40} href="/admin" />
+          <div className="lg:hidden">
+            <BoutonDeconnexion />
+          </div>
         </div>
 
-        <div className="px-3 pb-4 lg:mt-4">
+        <div className="px-2 pb-2 lg:flex-1 lg:pt-4">
           <NavAdmin />
         </div>
 
-        <div className="hidden border-t border-ink-line px-5 py-4 lg:block">
-          <p className="truncate text-sm font-medium">{utilisateur.name}</p>
-          <p className="text-xs text-ink-soft">{utilisateur.role_label}</p>
-          <div className="mt-2 -ml-2">
+        <div className="hidden border-t border-bordure p-4 lg:block">
+          <p className="truncate text-sm font-semibold text-fort" title={utilisateur.name}>
+            {utilisateur.name}
+          </p>
+          <p className="text-xs text-discret">{utilisateur.role_label}</p>
+          <div className="mt-2 -ml-3">
             <BoutonDeconnexion />
           </div>
         </div>
       </aside>
 
-      <div className="flex-1">
-        <div className="flex items-center justify-between gap-4 border-b border-rule px-5 py-3 lg:hidden">
-          <p className="truncate text-sm">{utilisateur.name}</p>
-          <div className="[&_button]:text-paper-soft">
-            <BoutonDeconnexion />
-          </div>
-        </div>
-
-        <main className="px-5 py-8 sm:px-8 lg:py-10">{children}</main>
-      </div>
+      <main className="min-w-0 flex-1 px-4 py-8 sm:px-8 lg:py-10">{children}</main>
     </div>
   );
 }
