@@ -370,7 +370,6 @@ export function FormulaireInscription({
                       onFichier={(nom) => majMembre(i, "photo", nom)}
                       libelle="Photo"
                       vide="Facultative"
-                      compact
                     />
                   </div>
                 </div>
