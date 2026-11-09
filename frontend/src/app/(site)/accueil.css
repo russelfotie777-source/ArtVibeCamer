@@ -1,662 +1,325 @@
-.avc-page {
-  overflow: clip;
-  background: var(--color-ink);
-}
+/*
+ * Accueil : l'ouverture, le tableau des disciplines et la piste
+ * d'inscription.
+ *
+ * Le seul mouvement d'arrivee du site est ici : le slogan se pose mot par mot
+ * sur la scene, et l'illustration se cale en meme temps. 40 ms entre deux
+ * mots, 600 ms par mot, douze mots echelonnes au plus : tout est en place
+ * avant 1,1 s.
+ */
 
-.avc-hero {
-  position: relative;
-  isolation: isolate;
-  /*
-   * Plafonne a 45rem plutot que de suivre la hauteur de l'ecran sans limite.
-   * Sur un portable 1080p, le plein ecran repoussait le titre si bas que
-   * l'entete et l'accroche semblaient sans rapport. Le hero occupe toujours
-   * l'ecran sur les petites hauteurs, ou le plafond ne s'applique pas.
-   */
-  min-height: min(42rem, calc(100svh - 6.75rem));
-  overflow: hidden;
-  background: var(--color-ink);
-}
+/* --- Ouverture ---------------------------------------------------------- */
 
-.avc-heroInner,
-.avc-conteneurClair,
-.avc-conteneurSombre,
-.avc-clotureInterieur {
-  width: min(100%, 76rem);
-  margin-inline: auto;
-  padding-inline: clamp(1.25rem, 4vw, 2rem);
-}
-
-.avc-heroInner {
+.avc-heroGrille {
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(25rem, 0.92fr);
-  align-items: center;
-  min-height: min(42rem, calc(100svh - 6.75rem));
-  gap: clamp(1rem, 4vw, 4rem);
-  /* L'accroche doit se lire des l'arrivee, sans avoir a descendre des yeux.
-     La respiration basse reste plus large que la haute : le regard entre par
-     le haut, il n'a pas besoin qu'on l'y retienne. */
-  padding-block: clamp(0.75rem, 2vh, 1.5rem) clamp(3.5rem, 7vh, 5rem);
+  grid-template-areas:
+    "copie"
+    "visuel";
+  gap: 2rem;
+  padding-top: 3rem;
 }
 
-.avc-heroCopy {
-  position: relative;
-  z-index: 3;
-  max-width: 46rem;
+/*
+ * L'illustration se tient sur le filet du bas, comme sur le bord d'une
+ * scene : aucune marge sous elle, c'est la copie qui garde sa respiration.
+ */
+@media (min-width: 64rem) {
+  .avc-heroGrille {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    grid-template-areas: "copie visuel";
+    align-items: end;
+    gap: 4rem;
+    padding-top: 4rem;
+  }
+
+  .avc-heroCopie {
+    padding-bottom: 4rem;
+  }
 }
 
-.avc-heroTitle {
-  max-width: 10.5ch;
-  /* Plus de marge haute : elle compensait un bandeau retire depuis, et ne
-     faisait qu'ajouter du vide sous l'entete. */
-  margin-top: 0;
-  color: var(--color-paper);
-  font-family: var(--font-display);
-  font-size: clamp(3.65rem, 7.6vw, 7.4rem);
-  font-weight: 780;
-  font-variation-settings: "wdth" 82;
-  letter-spacing: -0.02em;
-  line-height: 0.86;
-  text-wrap: balance;
+.avc-heroCopie {
+  grid-area: copie;
 }
 
-.avc-heroDisciplines {
-  /* Ligne d'appui, pas un second titre : meme fonte que le corps de texte,
-     graisse normale, couleur sourde. En gras dore et en fonte de titre, elle
-     entrait en concurrence avec le titre juste au-dessus. */
-  margin-top: 1.5rem;
-  color: var(--color-ink-soft);
-  font-size: 1rem;
-}
-
-.avc-heroIntro {
-  max-width: 34rem;
-  margin-top: 1.1rem;
-  color: #c2d4c9;
-  font-size: clamp(1rem, 1.5vw, 1.16rem);
-  line-height: 1.65;
-}
-
-.avc-heroActions {
+.avc-heroVisuel {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1.2rem;
-  margin-top: 2rem;
-}
-
-.avc-actionPrincipale,
-.avc-actionFinale {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  min-width: 13.5rem;
-  gap: 1.5rem;
-  border: 1px solid var(--color-brass);
-  background: var(--color-brass);
-  color: var(--color-ink);
-  font-size: 0.94rem;
-  font-weight: 700;
-  line-height: 1;
-  transition:
-    background-color 180ms ease,
-    border-color 180ms ease,
-    transform 180ms ease;
-}
-
-.avc-actionPrincipale {
-  padding: 1.1rem 1.25rem;
-}
-
-.avc-actionPrincipale:hover,
-.avc-actionFinale:hover {
-  border-color: var(--color-brass-lift);
-  background: var(--color-brass-lift);
-  transform: translateY(-2px);
-}
-
-.avc-actionSecondaire {
-  /* Une bordure basse sur un element en ligne flotte sous le texte sans
-     l'epouser, et se voit comme un bricolage. Le lien se signale par sa
-     couleur, et ne se souligne qu'au survol. */
-  color: var(--color-ink-soft);
-  font-size: 0.95rem;
-  text-decoration: none;
-  transition: color 180ms ease;
-}
-
-.avc-actionSecondaire:hover {
-  color: var(--color-brass-lift);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.3em;
-}
-
-.avc-heroVisual {
-  position: relative;
-  display: flex;
-  min-height: 39rem;
-  align-items: center;
-  justify-content: center;
-}
-
-.avc-illustrationCadre {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: center;
+  grid-area: visuel;
+  justify-content: flex-end;
 }
 
 .avc-illustration {
-  width: min(100%, 29rem);
+  display: block;
+  width: min(100%, 20rem);
   height: auto;
-  filter: drop-shadow(0 1.5rem 1.8rem rgb(0 0 0 / 24%));
+  animation: avc-caler 600ms var(--courbe) both;
 }
 
-.avc-disciplines,
-.avc-parcours {
-  background: var(--color-paper);
-  color: var(--color-ink);
+@media (min-width: 64rem) {
+  .avc-illustration {
+    width: min(100%, 28rem);
+  }
 }
 
-.avc-conteneurClair,
-.avc-conteneurSombre {
-  padding-block: clamp(5rem, 9vw, 8.5rem);
-}
-
-/* --- Disciplines -----------------------------------------------------
- *
- * Une liste editoriale, pas une grille de fiches. Quatre rectangles
- * identiques bordes font un catalogue de produits ; un filet franc et de
- * l'air laissent chaque discipline exister pour elle-meme.
+/*
+ * Le seul titre du site au-dessus de 600 : la fonte est variable, et a
+ * 96 px une graisse de texte paraitrait maigre. La chasse resserree a 85
+ * garde cinq lignes au lieu de sept sur un ecran de bureau.
  */
-
-/* Les tarifs se lisent comme une phrase : le montant porte, l'unite suit. */
-.avc-tarifDiscipline {
-  margin: 1.75rem 0 0;
-  color: var(--color-paper-soft);
-  font-size: 1rem;
-  line-height: 1.9;
+.avc-titre {
+  font-size: clamp(3rem, 1.8857rem + 4.5714vw, 6rem); /* 48 → 96, echelle d'affichage */
+  font-weight: 700;
+  font-variation-settings: "wdth" 85;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
 }
 
-@media (min-width: 52rem) {
-  .avc-listeDisciplines {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+/* Le masque deborde de la ligne : il ne coupe ni les accents ni les jambages. */
+.avc-mot {
+  display: inline-block;
+  overflow: clip;
+  padding-block: 0.12em 0.16em;
+  margin-block: -0.12em -0.16em;
+  vertical-align: top;
+}
+
+.avc-mot > span {
+  display: inline-block;
+  animation: avc-monter 600ms var(--courbe) both;
+  animation-delay: calc(var(--i) * 40ms);
+}
+
+@keyframes avc-monter {
+  from {
+    transform: translateY(110%);
   }
 }
 
-.avc-enteteSection h2,
-.avc-enteteCandidats h2,
-.avc-enteteParcours h2,
-.avc-rendezVous h2,
-.avc-appelFinal h2 {
-  margin-top: 1rem;
-  font-family: var(--font-display);
-  font-weight: 780;
-  letter-spacing: -0.02em;
-  line-height: 0.94;
-  text-wrap: balance;
+@keyframes avc-caler {
+  from {
+    opacity: 0;
+    transform: translateY(3%);
+  }
 }
 
-.avc-enteteSection h2,
-.avc-enteteCandidats h2,
-.avc-enteteParcours h2,
-.avc-rendezVous h2 {
-  font-size: clamp(2.75rem, 5.5vw, 5.2rem);
+/* Le retard echelonne survivrait a la regle globale : on retire l'animation. */
+@media (prefers-reduced-motion: reduce) {
+  .avc-mot > span,
+  .avc-illustration {
+    animation: none;
+  }
 }
 
-.avc-candidats {
-  position: relative;
-  background: #0b2517;
-  color: var(--color-paper);
-}
-
-.avc-enteteCandidats {
+.avc-faits {
   display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 2rem;
-}
-
-.avc-enteteCandidats > div {
-  max-width: 49rem;
-}
-
-.avc-lienToutVoir {
-  flex: none;
-  padding-bottom: 0.35rem;
-  border-bottom: 1px solid var(--color-brass);
-  color: var(--color-paper);
-  transition:
-    border-color 180ms ease,
-    color 180ms ease;
-}
-
-.avc-lienToutVoir:hover {
-  border-color: var(--color-brass-lift);
-  color: var(--color-brass-lift);
-}
-
-.avc-grilleCandidats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
-  margin-top: clamp(3rem, 6vw, 4.5rem);
-  padding: 1px;
-  background: var(--color-ink-line);
-  list-style: none;
-}
-
-.avc-grilleCandidats > li {
-  min-width: 0;
-  background: var(--color-ink);
-}
-
-.avc-parcours {
-  border-top: 1px solid var(--color-rule);
-}
-
-.avc-enteteParcours {
-  display: grid;
-  grid-template-columns: 1fr minmax(0, 2fr);
-  align-items: start;
-  gap: 2rem;
-}
-
-.avc-enteteParcours h2 {
-  max-width: 14ch;
-  margin-top: 0;
-}
-
-.avc-etapes {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: clamp(3.5rem, 7vw, 6rem);
-  padding: 0;
-  border-top: 1px solid var(--color-rule);
-  list-style: none;
-}
-
-.avc-etapes li {
-  position: relative;
-  min-width: 0;
-  padding: 2rem clamp(1.25rem, 3vw, 2.2rem) 0;
-  border-left: 1px solid var(--color-rule);
-}
-
-.avc-etapes li:first-child {
-  padding-left: 0;
-  border-left: 0;
-}
-
-.avc-numeroEtape {
-  color: var(--color-amber);
-  font-family: var(--font-display);
-  font-size: clamp(2.25rem, 5vw, 4rem);
-  font-weight: 760;
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-
-.avc-etapes h3 {
-  margin-top: 1.7rem;
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 760;
-  letter-spacing: -0.025em;
-  line-height: 1.05;
-}
-
-.avc-etapes p {
-  max-width: 20rem;
-  margin-top: 0.8rem;
-  color: var(--color-paper-soft);
-  font-size: 0.86rem;
-  line-height: 1.7;
-}
-
-.avc-cloture {
-  position: relative;
-  overflow: hidden;
-  background: var(--color-ink);
-  color: var(--color-paper);
-}
-
-.avc-clotureInterieur {
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(19rem, 0.7fr);
-  align-items: stretch;
-  gap: clamp(2rem, 6vw, 6rem);
-  padding-block: clamp(5rem, 10vw, 9rem);
-}
-
-.avc-rendezVous {
-  align-self: center;
-}
-
-.avc-rendezVous h2 {
-  max-width: 12ch;
-}
-
-.avc-introCastings {
-  max-width: 35rem;
-  margin-top: 1.5rem;
-  color: var(--color-ink-soft);
-  line-height: 1.65;
-}
-
-.avc-listeCastings {
-  max-width: 44rem;
-  margin-top: 2.5rem;
-  border-top: 1px solid var(--color-ink-line);
-}
-
-.avc-listeCastings > div {
-  display: grid;
-  grid-template-columns: 7rem 1fr;
-  gap: 1.25rem;
-  padding-block: 1.2rem;
-  border-bottom: 1px solid var(--color-ink-line);
-}
-
-.avc-listeCastings dt {
-  color: var(--color-brass-lift);
-  font-family: var(--font-display);
-  font-weight: 720;
-}
-
-.avc-listeCastings dd {
-  margin: 0;
-  color: #c2d4c9;
-  font-size: 0.86rem;
-  line-height: 1.6;
-}
-
-.avc-appelFinal {
-  position: relative;
-  display: flex;
-  min-height: 29rem;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: clamp(2rem, 5vw, 3.2rem);
-  overflow: hidden;
-  background: var(--color-brass);
-  color: var(--color-ink);
-}
-
-.avc-appelEtiquette {
-  position: relative;
-  font-size: 0.71rem;
-  font-weight: 750;
-}
-
-.avc-appelFinal h2 {
-  position: relative;
-  max-width: 9ch;
-  margin-top: 1.1rem;
-  font-size: clamp(2.4rem, 4vw, 3.9rem);
-}
-
-.avc-appelFinal > p:not(.avc-appelEtiquette) {
-  position: relative;
-  max-width: 28rem;
-  margin-top: 1.25rem;
-  font-size: 0.88rem;
-  line-height: 1.65;
-}
-
-.avc-actionFinale {
-  position: relative;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
   margin-top: 2rem;
-  padding: 1rem 1.15rem;
-  border-color: var(--color-ink);
-  background: var(--color-ink);
-  color: var(--color-paper);
 }
 
-.avc-actionFinale:hover {
-  border-color: var(--color-ink-raised);
-  background: var(--color-ink-raised);
+.avc-faits > div {
+  padding-left: 1rem;
+  border-left: 2px solid var(--accent);
 }
 
-.avc-actionFinale:focus-visible {
-  outline-color: var(--color-ink);
+.avc-faits dt {
+  color: var(--texte-discret);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
-@media (max-width: 68rem) {
-  .avc-heroInner {
-    grid-template-columns: minmax(0, 1fr) minmax(21rem, 0.75fr);
-  }
-
-  .avc-heroVisual {
-    min-height: 34rem;
-  }
-
-  .avc-illustration {
-    width: min(100%, 24rem);
-  }
-
+.avc-faits dd {
+  color: var(--texte-fort);
+  font-size: 1.125rem;
+  line-height: 1.75rem;
 }
 
-@media (max-width: 52rem) {
-  .avc-hero {
-    min-height: auto;
-  }
+/* --- Disciplines -------------------------------------------------------- */
 
-  .avc-heroInner {
-    grid-template-columns: 1fr;
-    min-height: auto;
-    gap: 1.5rem;
-    /* Le titre commence au plus pres de l'entete : sur un ecran de telephone,
-       chaque centimetre gagne en haut est une ligne lue en plus. L'entete a
-       sa propre respiration basse, inutile de la doubler ici. */
-    padding-block: 0.25rem 3rem;
-  }
+.avc-disciplines {
+  width: 100%;
+  margin-top: 3rem;
+  border-collapse: collapse;
+}
 
-  .avc-heroTitle {
-    max-width: 11ch;
-  }
+.avc-disciplines thead th {
+  padding: 0 1rem 0.5rem;
+  border-bottom: 1px solid var(--bordure);
+  color: var(--texte-discret);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+  text-align: right;
+}
 
-  /*
-   * L'illustration etait placee en absolu derriere le texte, pour qu'on la
-   * voie sans avoir a faire defiler. L'intention tenait tant que le texte
-   * restait court : des que l'accroche passe sur trois lignes et que les
-   * deux boutons s'affichent, titre, paragraphe et boutons se retrouvent
-   * poses sur le sujet, et plus rien ne se lit proprement.
-   *
-   * Elle revient donc dans le flux, sous le texte. Le debordement a droite
-   * est conserve : couper le sujet donne l'echelle, la ou un visuel
-   * entierement contenu la perd. `overflow: hidden` sur le hero retient ce
-   * qui depasse, sans defilement horizontal.
-   */
-  .avc-heroInner {
-    display: block;
-    position: relative;
-  }
+.avc-disciplines tbody tr {
+  border-bottom: 1px solid var(--bordure);
+}
 
-  .avc-heroCopy {
-    position: relative;
-    z-index: 2;
-    max-width: 34rem;
-    /*
-     * Hauteur reservee a l'illustration, calee sur la sienne : le bouton
-     * d'inscription doit se terminer au-dessus d'elle, pas la chevaucher.
-     * Toute reduction ici fait remonter l'image sous le bouton.
-     */
-    padding-bottom: 12rem;
-  }
+.avc-disciplines tbody th,
+.avc-disciplines tbody td {
+  padding: 1.5rem 1rem;
+  text-align: right;
+  vertical-align: middle;
+}
 
-  /*
-   * Un fond degrade, tire de la couleur du hero, posE derriere le seul texte.
-   * Il est invisible la ou il n'y a rien a couvrir, et garantit la lecture si
-   * une ligne arrive au-dessus du sujet — ce qui depend de la longueur de
-   * l'accroche, donc de reglages qu'on ne maitrise pas depuis le CSS.
-   *
-   * La version precedente s'en passait par parti pris, et c'est exactement ce
-   * qui a casse des que le texte s'est allonge.
-   */
-  .avc-heroCopy::before {
-    content: "";
+.avc-disciplines tbody th {
+  font-weight: 400;
+  text-align: left;
+}
+
+.avc-disciplines th:first-child {
+  padding-left: 0;
+  text-align: left;
+}
+
+.avc-disciplines td:last-child,
+.avc-disciplines th:last-child {
+  padding-right: 0;
+}
+
+/*
+ * Sur telephone, quatre colonnes ecraseraient les noms. Chaque discipline
+ * devient un bloc nomme ; les en-tetes passent dans les cellules.
+ */
+@media (max-width: 47.99rem) {
+  .avc-disciplines thead {
     position: absolute;
-    z-index: -1;
-    inset: -2rem -1.5rem 4rem -1.5rem;
-    background: linear-gradient(
-      to bottom,
-      var(--color-ink) 60%,
-      color-mix(in oklab, var(--color-ink) 70%, transparent) 85%,
-      transparent 100%
-    );
-    pointer-events: none;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
-  /* Le bouton quitte la pleine largeur : deux boutons cote a cote tiennent
-     sur une ligne, et l'un sous l'autre ils barreraient l'ecran. */
-  .avc-heroActions {
-    align-items: center;
-  }
-
-  .avc-actionPrincipale {
-    width: auto;
-  }
-
-  .avc-heroVisual {
-    position: absolute;
-    /*
-     * Trois reglages qui se tiennent, et qu'il faut bouger ensemble :
-     *   width   la largeur fixe aussi la hauteur, donc le haut du sujet ;
-     *   bottom  negatif, l'image descend et son sommet s'eloigne du bouton ;
-     *   right   l'ecart au bord droit, qui ecarte son flanc gauche du bouton.
-     * A 66 % calee en bas, son flanc gauche passait sous « Inscrire mon
-     * talent ».
-     */
-    right: -12%;
-    bottom: -3.5rem;
-    left: auto;
-    z-index: 0;
-    display: block;
-    width: 62%;
-    min-height: 0;
-    pointer-events: none;
-  }
-
-  .avc-illustrationCadre {
-    display: block;
-    width: 100%;
-  }
-
-  .avc-illustration {
-    width: 100%;
-    height: auto;
-  }
-
-  .avc-enteteSection,
-  .avc-enteteParcours,
-  .avc-clotureInterieur {
-    grid-template-columns: 1fr;
-  }
-
-  .avc-enteteSection {
-    align-items: start;
-    gap: 1.5rem;
-  }
-
-  .avc-enteteSection > p {
-    max-width: 36rem;
-  }
-
-  .avc-enteteCandidats {
-    align-items: start;
-    flex-direction: column;
-  }
-
-  .avc-enteteParcours {
-    gap: 1.25rem;
-  }
-
-  .avc-grilleCandidats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .avc-clotureInterieur {
-    gap: 3.5rem;
-  }
-
-  .avc-appelFinal {
-    min-height: 25rem;
-  }
-}
-
-@media (max-width: 40rem) {
-  .avc-heroInner {
-    padding-top: 3.25rem;
-  }
-
-  .avc-heroTitle {
-    margin-top: 1.25rem;
-    font-size: clamp(2.8rem, 12.5vw, 4.2rem);
-  }
-
-  .avc-heroDisciplines {
-    line-height: 1.6;
-  }
-
-  .avc-heroCopy {
-    padding-bottom: 6rem;
-  }
-
-  .avc-heroVisual {
-    right: -20%;
-    width: 82%;
-  }
-
-  .avc-grilleCandidats > li:not(:first-child) {
-    border-top: 1px solid var(--color-ink-line);
-  }
-
-  .avc-etapes {
-    /* La grille a trois colonnes du bureau restait active : sur un telephone,
-       les trois etapes se serraient a 110 px de large et debordaient de
-       l'ecran. Une etape par ligne. */
-    grid-template-columns: 1fr;
-    border-top: 0;
-  }
-
-  .avc-etapes li,
-  .avc-etapes li:first-child {
+  .avc-disciplines tbody tr {
     display: grid;
-    grid-template-columns: 4rem 1fr;
-    gap: 1.1rem;
-    padding: 1.7rem 0;
-    border-top: 1px solid var(--color-rule);
-    border-left: 0;
+    grid-template-areas:
+      "nom nom"
+      "solo groupe"
+      "action action";
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1rem;
+    padding-block: 1.5rem;
   }
 
-  .avc-etapes h3 {
-    margin-top: 0.2rem;
+  .avc-disciplines tbody tr:first-child {
+    border-top: 1px solid var(--bordure);
   }
 
-  .avc-listeCastings > div {
-    grid-template-columns: 1fr;
-    gap: 0.35rem;
+  .avc-disciplines tbody th,
+  .avc-disciplines tbody td {
+    display: block;
+    padding: 0;
+    text-align: left;
+  }
+
+  .avc-disciplines tbody th {
+    grid-area: nom;
+  }
+
+  .avc-disciplines tbody td:nth-of-type(1) {
+    grid-area: solo;
+  }
+
+  .avc-disciplines tbody td:nth-of-type(2) {
+    grid-area: groupe;
+  }
+
+  .avc-disciplines tbody td:nth-of-type(3) {
+    grid-area: action;
+  }
+
+  .avc-disciplines td[data-libelle]::before {
+    content: attr(data-libelle);
+    display: block;
+    color: var(--texte-discret);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
   }
 }
 
-@media (max-width: 25rem) {
+/* --- Piste d'inscription ------------------------------------------------ */
 
-  /*
-   * Le bouton du hero garde sa largeur propre, meme sur les petits ecrans :
-   * sa min-width lui assure deja une cible confortable, et barrer toute la
-   * largeur reviendrait a couper l'illustration qui monte derriere.
-   * Celui de la cloture, lui, est seul dans son bloc et peut s'etendre.
-   */
-  .avc-actionFinale {
-    width: 100%;
+/*
+ * Une vraie suite : les numeros disent l'ordre. Le noeud et le trait sont
+ * des pseudo-elements, la liste reste une liste.
+ */
+.avc-piste {
+  display: grid;
+  gap: 2rem;
+  margin-top: 3rem;
+  padding: 0;
+  counter-reset: etape;
+  list-style: none;
+}
+
+.avc-piste li {
+  position: relative;
+  padding-left: 3.5rem;
+  counter-increment: etape;
+}
+
+.avc-piste li::before {
+  content: counter(etape);
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  border-radius: 9999px;
+  background: var(--accent);
+  color: var(--sur-accent);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1.5rem;
+}
+
+/* Trait vertical, du bas d'un noeud au haut du suivant, a 8 px de chacun. */
+.avc-piste li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 3rem;
+  bottom: -1.5rem;
+  left: calc(1.25rem - 1px);
+  width: 2px;
+  background: var(--bordure);
+}
+
+.avc-piste h3 {
+  padding-top: 0.5rem;
+  font-size: clamp(1.125rem, 1.0786rem + 0.1905vw, 1.25rem); /* 18 → 20, comme text-xl */
+  line-height: 1.4;
+}
+
+.avc-piste p {
+  max-width: 24rem;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 48rem) {
+  .avc-piste {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .avc-actionPrincipale {
+  .avc-piste li {
+    padding-top: 4rem;
+    padding-left: 0;
+  }
+
+  /* Trait horizontal, du bord droit d'un noeud au gauche du suivant. */
+  .avc-piste li:not(:last-child)::after {
+    top: calc(1.25rem - 1px);
+    right: calc(-2rem + 0.5rem);
+    bottom: auto;
+    left: 3rem;
     width: auto;
+    height: 2px;
   }
 
+  .avc-piste h3 {
+    padding-top: 0;
+  }
 }
