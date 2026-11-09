@@ -78,7 +78,7 @@ export function LogoEvenement({
     </>
   );
 
-  const classes = `flex items-center gap-3 ${className}`;
+  const classes = `flex items-center gap-2 ${className}`;
 
   if (href === null) {
     return (
@@ -89,7 +89,7 @@ export function LogoEvenement({
   }
 
   return (
-    <Link href={href} className={classes} style={{ height: hauteur }}>
+    <Link href={href} className={`${classes} rounded-controle`} style={{ height: hauteur }}>
       {contenu}
     </Link>
   );
@@ -98,52 +98,53 @@ export function LogoEvenement({
 /**
  * Organisateur et sponsors.
  *
- * Posee sur fond clair, et non sur le vert du site : le logo de
- * l'organisateur comporte du lettrage noir qui disparaitrait sur fond sombre.
- * Un partenaire se montre dans ses couleurs d'origine, pas retouche.
+ * Chaque logo est pose sur une plaque blanche, en clair comme en sombre : le
+ * logo de l'organisateur comporte du lettrage noir qui disparaitrait sur le
+ * vert. Un partenaire se montre dans ses couleurs d'origine, jamais retouche
+ * pour s'adapter au fond.
  */
-export function BandePartenaires() {
+export function BandePartenaires({ telephone }: { telephone?: string | null }) {
   return (
-    <section className="border-t border-ink-line/60">
-      <div className="mx-auto w-full max-w-6xl px-5 py-16 sm:px-8">
-        <div className="grid gap-10 sm:grid-cols-[auto_1fr] sm:gap-16">
-          <div>
-            <h2 className="text-sm text-ink-soft">Un événement porté par</h2>
-            {/*
-              Tuile blanche : le logo de l'organisateur comporte du lettrage
-              noir, illisible sur le vert. Un partenaire se montre dans ses
-              couleurs d'origine, jamais retouche pour s'adapter au fond.
-            */}
-            <div className="controle mt-4 inline-flex items-center justify-center bg-paper-raised px-7 py-5">
-              <Image
-                src="/marque/organisateur.png"
-                alt="SAM BIAI — La force de l'art"
-                width={360}
-                height={296}
-                className="h-20 w-auto"
-              />
-            </div>
+    <section aria-label="Partenaires" className="border-t border-bordure">
+      <div className="cadre flex flex-wrap items-start gap-x-16 gap-y-8 py-12">
+        <figure>
+          <figcaption className="text-sm text-discret">Organisé par</figcaption>
+          <div className="mt-2 inline-flex h-24 items-center rounded-region bg-plaque px-6">
+            <Image
+              src="/marque/organisateur.png"
+              alt="SAM BIAI — La force de l’art"
+              width={360}
+              height={296}
+              className="h-16 w-auto"
+            />
           </div>
+        </figure>
 
-          <div>
-            <h2 className="text-sm text-ink-soft">Avec le soutien de</h2>
-            <div className="mt-4 flex flex-wrap items-stretch gap-4">
-              <div className="controle inline-flex items-center justify-center bg-paper-raised px-7 py-5">
-                <Image
-                  src="/marque/sponsor-zamara.png"
-                  alt="Zamara"
-                  width={420}
-                  height={420}
-                  className="controle h-20 w-auto"
-                />
-              </div>
-            </div>
-            <p className="mt-5 text-sm text-ink-soft">
-              Vous souhaitez soutenir l&apos;événement&nbsp;? Écrivez à
-              l&apos;organisation.
-            </p>
+        <figure>
+          <figcaption className="text-sm text-discret">Avec le soutien de</figcaption>
+          <div className="mt-2 inline-flex h-24 items-center rounded-region bg-plaque px-6">
+            <Image
+              src="/marque/sponsor-zamara.png"
+              alt="Zamara"
+              width={420}
+              height={420}
+              className="h-16 w-auto"
+            />
           </div>
-        </div>
+        </figure>
+
+        {telephone ? (
+          <p className="max-w-xs self-end text-sm text-discret">
+            Pour soutenir l’événement, appelez l’organisation au{" "}
+            <a
+              href={`tel:${telephone.replace(/\s/g, "")}`}
+              className="chiffre whitespace-nowrap text-texte underline decoration-bordure-forte underline-offset-4 transition-colors hover:text-lien hover:decoration-lien"
+            >
+              {telephone}
+            </a>
+            .
+          </p>
+        ) : null}
       </div>
     </section>
   );
