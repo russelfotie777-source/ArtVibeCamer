@@ -52,37 +52,47 @@ export default async function PageVote({
   const ouverts = c.is_votable && (c.category?.is_voting_open ?? false);
 
   return (
-    <div className="mx-auto w-full max-w-xl px-5 py-16">
-      <Link
-        href={`/candidats/${c.slug}`}
-        className="text-sm text-paper-soft underline decoration-rule underline-offset-4 hover:decoration-ink"
-      >
-        Retour à la fiche
-      </Link>
+    <div className="terrain-clair">
+      <div className="cadre py-12 md:py-16">
+        <nav aria-label="Fil d’Ariane" className="text-sm">
+          <Link
+            href={`/candidats/${c.slug}`}
+            className="text-discret underline decoration-bordure-forte underline-offset-4 transition-colors hover:text-lien hover:decoration-lien"
+          >
+            {c.display_name}
+          </Link>
+        </nav>
 
-      <h1 className="mt-6 font-display text-display-sm font-extrabold">
-        Voter pour {c.display_name}
-      </h1>
+        <div className="max-w-xl">
+          <h1 className="mt-6 text-5xl tracking-affiche">
+            Voter pour {c.display_name}
+          </h1>
 
-      <p className="prose-etroit mt-2 text-paper-soft">
-        {c.category?.name}
-        {c.city ? `, ${c.city}` : ""} · {nombre(c.votes_count)} voix reçues
-      </p>
+          <p className="mt-4 text-discret">
+            {c.candidate_number ? (
+              <>
+                <span className="chiffre">{c.candidate_number}</span> ·{" "}
+              </>
+            ) : null}
+            {c.category?.name}
+            {c.city ? `, ${c.city}` : ""} ·{" "}
+            <span className="chiffre">{nombre(c.votes_count)}</span> voix reçues
+          </p>
 
-      <div className="mt-10">
-        {ouverts ? (
-          <FormulaireVote candidat={c} />
-        ) : (
-          <div className="panneau border border-rule bg-paper-raised p-8">
-            <h2 className="font-display text-xl font-extrabold">
-              Les votes sont fermés
-            </h2>
-            <p className="prose-etroit mt-2 text-paper-soft">
-              Le scrutin n&apos;est pas ouvert pour cette catégorie. Revenez à
-              l&apos;ouverture des votes.
-            </p>
+          <div className="mt-10">
+            {ouverts ? (
+              <FormulaireVote candidat={c} />
+            ) : (
+              <div className="rounded-region border border-bordure p-6">
+                <h2 className="text-xl">Les votes sont fermés</h2>
+                <p className="mt-2 text-discret">
+                  Le scrutin n’est pas ouvert pour cette catégorie. Revenez à
+                  l’ouverture des votes, annoncée après les castings.
+                </p>
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
