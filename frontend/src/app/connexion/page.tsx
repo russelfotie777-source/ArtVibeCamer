@@ -34,29 +34,24 @@ export default async function PageConnexion() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-ink text-paper">
+    <main className="terrain-sombre flex min-h-dvh items-center px-4 py-16">
+      <div className="mx-auto w-full max-w-sm">
+        <LogoEvenement hauteur={48} priorite />
 
-      <div className="flex flex-1 items-center justify-center px-5 py-16">
-        <div className="w-full max-w-sm">
-          <LogoEvenement hauteur={44} priorite />
+        <h1 className="mt-12 text-4xl tracking-affiche">Espace organisation</h1>
+        <p className="mt-2 text-discret">
+          Inscriptions, paiements et dossiers des candidats.
+        </p>
 
-          <h1 className="mt-10 font-display text-display-sm font-extrabold">
-            Espace organisation
-          </h1>
-          <p className="mt-3 text-sm text-ink-soft">
-            Suivi des inscriptions, des paiements et des candidats.
-          </p>
-
-          <div className="mt-9">
-            <FormulaireConnexion />
-          </div>
-
-          <p className="mt-8 text-xs leading-relaxed text-ink-soft/80">
-            Les comptes sont créés par l&apos;administrateur. Si vous n&apos;en
-            avez pas, demandez-lui de vous en ouvrir un.
-          </p>
+        <div className="mt-8">
+          <FormulaireConnexion />
         </div>
+
+        <p className="mt-8 text-sm text-discret">
+          Pas de compte&nbsp;? Demandez à l’administrateur de vous en
+          ouvrir un.
+        </p>
       </div>
-    </div>
+    </main>
   );
 }
