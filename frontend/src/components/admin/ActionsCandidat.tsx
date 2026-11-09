@@ -22,32 +22,32 @@ export function ActionsCandidat({ candidat }: { candidat: Candidat }) {
   const succes = etatValidation.succes ?? etatRejet.succes;
 
   return (
-    <div className="panneau border border-rule bg-paper-raised">
-      <div className="border-b border-rule px-5 py-4">
-        <h2 className="font-display text-lg font-extrabold">Validation</h2>
+    <div className="rounded-region border border-bordure bg-surface">
+      <div className="border-b border-bordure px-4 py-4">
+        <h2 className="text-base">Validation</h2>
       </div>
 
-      <div className="px-5 py-5">
+      <div className="px-4 py-4">
         {retour ? (
-          <p role="alert" className="mb-4 border-l-2 border-oxblood bg-oxblood-wash px-4 py-3 text-sm text-oxblood">
+          <p role="alert" className="mb-4 rounded-region border border-danger bg-danger-fond px-4 py-3 text-sm text-danger">
             {retour}
           </p>
         ) : null}
 
         {succes ? (
-          <p role="status" className="mb-4 border-l-2 border-sage bg-sage-wash px-4 py-3 text-sm text-sage">
+          <p role="status" className="mb-4 rounded-region border border-succes bg-succes-fond px-4 py-3 text-sm text-succes">
             {succes}
           </p>
         ) : null}
 
         {!paye ? (
-          <p className="text-sm leading-relaxed text-paper-soft">
-            Les frais d&apos;inscription ne sont pas encore encaissés. Un
-            dossier ne peut être validé qu&apos;une fois le paiement confirmé.
+          <p className="text-sm text-discret">
+            Les frais d’inscription ne sont pas encore encaissés. Un
+            dossier ne peut être validé qu’une fois le paiement confirmé.
           </p>
         ) : candidat.status === "active" ? (
           <>
-            <p className="text-sm leading-relaxed text-paper-soft">
+            <p className="text-sm text-discret">
               Ce candidat est validé. Sa page est visible du public.
             </p>
             {!formulaireRejet ? (
@@ -63,28 +63,34 @@ export function ActionsCandidat({ candidat }: { candidat: Candidat }) {
           </>
         ) : candidat.status === "rejected" ? (
           <>
-            <p className="text-sm leading-relaxed text-paper-soft">
+            <p className="text-sm text-discret">
               Dossier rejeté
-              {candidat.rejection_reason ? ` : ${candidat.rejection_reason}` : "."}
+              {candidat.rejection_reason ? ` : ${candidat.rejection_reason}` : "."}
             </p>
             <form action={valider} className="mt-4">
               <input type="hidden" name="id" value={candidat.id} />
-              <Bouton type="submit" disabled={validationEnCours} taille="petit">
-                {validationEnCours ? "Validation" : "Revenir sur le rejet"}
+              <Bouton
+                type="submit"
+                taille="petit"
+                chargement={validationEnCours}
+                disabled={validationEnCours}
+              >
+                {validationEnCours ? "Validation…" : "Revenir sur le rejet"}
               </Bouton>
             </form>
           </>
         ) : (
-          <div className="grid gap-3">
+          <div className="grid gap-4">
             <form action={valider}>
               <input type="hidden" name="id" value={candidat.id} />
               <Bouton
                 type="submit"
                 taille="grand"
+                chargement={validationEnCours}
                 disabled={validationEnCours}
                 className="w-full"
               >
-                {validationEnCours ? "Validation en cours" : "Valider le candidat"}
+                {validationEnCours ? "Validation…" : "Valider le candidat"}
               </Bouton>
             </form>
 
@@ -97,12 +103,12 @@ export function ActionsCandidat({ candidat }: { candidat: Candidat }) {
         )}
 
         {formulaireRejet ? (
-          <form action={rejeter} className="mt-5 border-t border-rule pt-5">
+          <form action={rejeter} className="mt-4 border-t border-bordure pt-4">
             <input type="hidden" name="id" value={candidat.id} />
-            <label htmlFor="reason" className="block text-sm font-medium">
+            <label htmlFor="reason" className="block text-sm font-semibold text-fort">
               Motif du rejet
             </label>
-            <p className="mt-1 text-xs text-paper-soft">
+            <p className="mt-1 text-sm text-discret">
               Le candidat doit pouvoir comprendre la décision.
             </p>
             <Zone
@@ -114,13 +120,18 @@ export function ActionsCandidat({ candidat }: { candidat: Candidat }) {
               className="mt-2"
               placeholder="Dossier incomplet, hors catégorie, pièce manquante…"
             />
-            <div className="mt-3 flex gap-2">
-              <Bouton type="submit" ton="danger" disabled={rejetEnCours}>
-                {rejetEnCours ? "Rejet en cours" : "Rejeter"}
+            <div className="mt-4 flex gap-2">
+              <Bouton
+                type="submit"
+                ton="danger"
+                chargement={rejetEnCours}
+                disabled={rejetEnCours}
+              >
+                {rejetEnCours ? "Rejet…" : "Rejeter le dossier"}
               </Bouton>
               <Bouton
                 type="button"
-                ton="contour"
+                ton="secondaire"
                 onClick={() => setFormulaireRejet(false)}
               >
                 Annuler

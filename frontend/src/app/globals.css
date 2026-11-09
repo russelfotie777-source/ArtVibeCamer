@@ -3,136 +3,281 @@
 /*
  * ArtVibeCamer — systeme de design
  *
- * Les couleurs viennent du logotype de l'evenement : le vert forêt profond de
- * la typographie sert de fond, l'or de l'etoile sert d'accent. Le site
- * appartient ainsi visuellement a la marque, au lieu d'habiller celle-ci
- * d'une couleur arbitraire.
+ * Toutes les couleurs sont relevees sur le logo de l'evenement
+ * (public/marque/evenement-*.png), a la mediane des pixels :
  *
- * Choix assume : on ne reprend pas les bandes vert-rouge-jaune du drapeau.
- * Elles sont deja dans le logo, ou elles ont leur place ; repetees sur toute
- * la page, elles entreraient en concurrence avec lui et donneraient une
- * plateforme institutionnelle plutot qu'un evenement culturel. Le fond reste
- * sobre et laisse les logos, puis les photos des candidats, porter la
- * couleur.
+ *   lettrage          #013c20   vert profond, sert de texte fort sur clair
+ *   etoile            #e29111   or, accent et action principale
+ *   etoile, ombre     #a95c13   base de l'alerte sur clair
+ *   jaune du pagne    #fabc0c   focus et liens sur sombre
+ *   rouge du pagne    #c70e20   danger
+ *   vert du pagne     #11953f   focus sur clair, base du succes
  *
- * Deux terrains, un seul jeu de jetons :
- *   - site public : fond vert profond, registre de soiree
- *   - back-office : fond papier, registre de travail diurne
+ * Les neutres sont tires de la teinte du lettrage (oklch, teinte 156) : ils
+ * penchent tous vers ce vert, aucun n'est un gris plat.
+ *
+ * Deux terrains, un seul jeu de roles. Un composant ecrit `bg-surface
+ * text-texte border-bordure` et s'adapte au terrain qui l'entoure :
+ *   - terrain-sombre : le vert de la marque, grain a 6 %, registre de soiree ;
+ *   - terrain-clair  : blanc pur, formulaires et back-office. Il passe au
+ *     sombre quand le systeme le demande.
  */
 
 @theme {
-  /* --- Vert forêt, tire du logotype ArtVibeCamer --- */
-  --color-ink: #0f2d1c;
-  --color-ink-raised: #17402a;
-  --color-ink-line: #26563a;
-  --color-ink-soft: #9cbca9;
+  /* Pas de palette par defaut : une couleur hors des roles ne compile pas. */
+  --color-*: initial;
+  --font-weight-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --ease-*: initial;
+  --tracking-*: initial;
 
-  /* --- Or, repris de l'etoile du logo --- */
-  --color-brass: #d9a527;
-  --color-brass-lift: #f0be45;
-  --color-brass-wash: #1b3a26;
+  --font-weight-normal: 400;
+  --font-weight-semibold: 600;
 
-  /* --- Papier : terrain du back-office et des sections claires ---
-   *
-   * Le fond est un gris teinte, pas un presque-blanc. C'est ce qui permet
-   * aux panneaux en blanc pur de s'en detacher sans bordure : la hierarchie
-   * vient du rapport entre deux surfaces, pas d'un filet trace autour.
-   *
-   * A #f3f4f7, le fond et les panneaux etaient trop proches pour qu'on
-   * distingue l'un de l'autre, et tout flottait sur un meme plan blanc.
+  /* Approche : nulle sur le texte, serree a mesure que la taille monte. */
+  --tracking-titre: -0.01em;
+  --tracking-affiche: -0.02em;
+  --tracking-serre: -0.03em;
+
+  /*
+   * Echelle fermee 12 · 14 · 16 · 18, puis fluide de 390 a 1 440 px de large.
+   * Les interlignages tombent sur la grille de 4 px.
    */
-  --color-paper: #e2e8ef;
-  --color-paper-raised: #ffffff;
-  --color-rule: #ccd6e2;
-  --color-paper-soft: #4f5b68;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: clamp(1.125rem, 1.0786rem + 0.1905vw, 1.25rem); /* 18 → 20 */
+  --text-xl--line-height: 1.4;
+  --text-2xl: clamp(1.25rem, 1.1571rem + 0.381vw, 1.5rem); /* 20 → 24 */
+  --text-2xl--line-height: 1.3333;
+  --text-3xl: clamp(1.5rem, 1.3607rem + 0.5714vw, 1.875rem); /* 24 → 30 */
+  --text-3xl--line-height: 1.2;
+  --text-4xl: clamp(1.875rem, 1.7357rem + 0.5714vw, 2.25rem); /* 30 → 36 */
+  --text-4xl--line-height: 1.1111;
+  --text-5xl: clamp(2.25rem, 1.9714rem + 1.1429vw, 3rem); /* 36 → 48 */
+  --text-5xl--line-height: 1.0833;
+  --text-6xl: clamp(3rem, 2.6286rem + 1.5238vw, 4rem); /* 48 → 64 */
+  --text-6xl--line-height: 1.0625;
+  --text-7xl: clamp(3rem, 1.8857rem + 4.5714vw, 6rem); /* 48 → 96 */
+  --text-7xl--line-height: 1.04;
 
-  /* --- Etats --- */
-  /* Sur un site deja vert, le vert perd sa valeur de signal : les etats
-     reussis se distinguent par une teinte nettement plus claire que le fond,
-     jamais par la seule couleur. Le libelle porte toujours l'information. */
-  --color-sage: #2f6b46;
-  --color-sage-wash: #d8ebdf;
-  --color-sage-clair: #8fd3a8;
-  --color-oxblood: #a3231c;
-  --color-oxblood-wash: #f7e1de;
-  --color-amber: #8a6410;
-  --color-amber-wash: #f7ebd2;
+  /*
+   * Le rayon depend de l'imbrication, pas de la taille. Un enfant pose dans
+   * un controle a 4 px de son bord prend 8 − 4 = 4 px.
+   */
+  --radius-enfant: 0.25rem;
+  --radius-controle: 0.5rem;
+  --radius-region: 0.75rem;
+  --radius-surface: 1rem;
+  --radius-page: 1.5rem;
+  --radius-pilule: 9999px;
 
-  /* --- Familles --- */
-  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-instrument), ui-sans-serif, system-ui, sans-serif;
-
-  /* --- Echelle typographique --- */
-  --text-2xs: 0.75rem;
-  --text-xs: 0.8125rem;
-  --text-sm: 0.9375rem;
-  --text-base: 1.0625rem;
-  --text-lg: 1.1875rem;
-  --text-xl: 1.4375rem;
-  --text-2xl: 1.75rem;
-
-  --text-display-sm: 2.125rem;
-  --text-display: clamp(2.5rem, 6vw, 4.25rem);
-  --text-display-lg: clamp(3.25rem, 11vw, 8.5rem);
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
+/*
+ * `inline` : les utilitaires recoivent `var(--fond)` tel quel, resolu sur
+ * l'element. Sans lui, la valeur serait figee sur :root et un bloc
+ * terrain-sombre pose dans un terrain clair garderait les couleurs claires.
+ */
+@theme inline {
+  --font-sans: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+
+  --color-fond: var(--fond);
+  --color-coque: var(--coque);
+  --color-surface: var(--surface);
+  --color-appui: var(--appui);
+  --color-bordure: var(--bordure);
+  --color-bordure-forte: var(--bordure-forte);
+  --color-fort: var(--texte-fort);
+  --color-texte: var(--texte);
+  --color-discret: var(--texte-discret);
+  --color-accent: var(--accent);
+  --color-accent-survol: var(--accent-survol);
+  --color-sur-accent: var(--sur-accent);
+  --color-lien: var(--lien);
+  --color-focus: var(--focus);
+  --color-succes: var(--succes);
+  --color-succes-fond: var(--succes-fond);
+  --color-alerte: var(--alerte);
+  --color-alerte-fond: var(--alerte-fond);
+  --color-danger: var(--danger);
+  --color-danger-fond: var(--danger-fond);
+  /* Plaque des logos partenaires : leur lettrage noir l'exige, en clair comme en sombre. */
+  --color-plaque: #ffffff;
+
+  /* Trois ombres, pour ce qui est reellement au-dessus de la page. */
+  --shadow-sm: 0 0 2px 0 var(--ombre), 0 1px 4px 0 var(--ombre);
+  --shadow-md: 0 0 1px 0 var(--ombre), 0 0 2px 0 var(--ombre), 0 2px 8px 0 var(--ombre);
+  --shadow-lg: 0 0 2px 0 var(--ombre), 0 0 2px 0 var(--ombre), 0 4px 12px 0 var(--ombre);
+}
+
+/* --- Mouvement ---------------------------------------------------------- */
+
+/*
+ * Une courbe pour le focus et les actions : rapide au depart, posee a
+ * l'arrivee. Les durees vont de 100 ms (survol dans une liste) a 600 ms
+ * (changement de place).
+ */
+:root {
+  --courbe: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* --- Terrains ------------------------------------------------------------ */
+
+:root,
+.terrain-clair {
+  color-scheme: light;
+  --fond: #ffffff;
+  --coque: #f7fbf8;
+  --surface: #ffffff;
+  --appui: #ebf3ed;
+  --bordure: #d9e3dc;
+  --bordure-forte: #7d8a81; /* 3,6:1 sur blanc, contour des champs */
+  --texte-fort: #013c20;
+  --texte: #334539;
+  --texte-discret: #5e6d63; /* 4,8:1 sur --appui */
+  --accent: #e29111;
+  --accent-survol: #fabc0c;
+  --sur-accent: #002612; /* 6,5:1 sur l'or */
+  --lien: #074f23;
+  --focus: #11953f;
+  --succes: #1c6c31;
+  --succes-fond: #e4fae7;
+  --alerte: #954e02;
+  --alerte-fond: #fff3d0;
+  --danger: #c70e20;
+  --danger-fond: #ffece9;
+  --ombre: rgb(0 38 18 / 16%);
+  --grain: none;
+  --grain-motif: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .12 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/*
+ * Le grain : un bruit blanc dont l'opacite suit le canal rouge (6 % en
+ * moyenne). Il donne une matiere au vert sans le recouvrir, et ne passe
+ * jamais au-dessus du texte puisqu'il vit dans le fond.
+ */
+.terrain-sombre {
+  color-scheme: dark;
+  --fond: #002612;
+  --coque: #002612;
+  --surface: #05301a;
+  --appui: #0e3a22;
+  --bordure: #244b33;
+  --bordure-forte: #688a74; /* 4,3:1 sur --fond */
+  --texte-fort: #ffffff;
+  --texte: #dfece3;
+  --texte-discret: #aac6b3; /* 6,9:1 sur --appui */
+  --accent: #e29111;
+  --accent-survol: #fabc0c;
+  --sur-accent: #002612;
+  --lien: #fabc0c;
+  --focus: #fabc0c;
+  --succes: #6dd17f;
+  --succes-fond: #0f3718;
+  --alerte: #fabc0c;
+  --alerte-fond: #402c05;
+  --danger: #fd736d;
+  --danger-fond: #4f1a18;
+  --ombre: rgb(0 10 4 / 48%);
+  --grain: var(--grain-motif);
+}
+
+/* Le terrain clair rejoint le sombre quand le systeme le demande : memes valeurs. */
+@media (prefers-color-scheme: dark) {
+  :root,
+  .terrain-clair {
+    color-scheme: dark;
+    --fond: #002612;
+    --coque: #011f0e;
+    --surface: #05301a;
+    --appui: #0e3a22;
+    --bordure: #244b33;
+    --bordure-forte: #688a74;
+    --texte-fort: #ffffff;
+    --texte: #dfece3;
+    --texte-discret: #aac6b3;
+    --accent: #e29111;
+    --accent-survol: #fabc0c;
+    --sur-accent: #002612;
+    --lien: #fabc0c;
+    --focus: #fabc0c;
+    --succes: #6dd17f;
+    --succes-fond: #0f3718;
+    --alerte: #fabc0c;
+    --alerte-fond: #402c05;
+    --danger: #fd736d;
+    --danger-fond: #4f1a18;
+    --ombre: rgb(0 10 4 / 48%);
+    --grain: var(--grain-motif);
+  }
+}
+
+/* --- Base ---------------------------------------------------------------- */
+
 @layer base {
+  /* En couche de base : un `bg-surface` pose sur le meme element l'emporte. */
+  .terrain-clair,
+  .terrain-sombre {
+    background-color: var(--fond);
+    background-image: var(--grain);
+    color: var(--texte);
+  }
+
   html {
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    background: var(--color-paper);
-    color: var(--color-ink);
+    background-color: var(--fond);
+    color: var(--texte);
     font-family: var(--font-sans);
-    font-size: var(--text-base);
-    line-height: 1.6;
-    text-rendering: optimizeLegibility;
+    font-size: 1rem;
+    line-height: 1.5rem;
   }
 
-  /*
-   * Les titres portent la personnalite de la page : grotesque etroit, suivi
-   * resserre, graisse haute. Jamais de capitales pour un simple libelle.
-   */
   h1,
   h2,
   h3 {
-    font-family: var(--font-display);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 0.95;
+    color: var(--texte-fort);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
     text-wrap: balance;
   }
 
-  /* Les montants sont la decision : ils se lisent dans la fonte de titre. */
-  .montant {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
+  p {
+    text-wrap: pretty;
   }
 
-  .chiffre {
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* Longueur de ligne : en dessous de 72 caracteres pour le corps de texte. */
-  .prose-etroit {
-    max-width: 34rem;
-  }
-
+  /*
+   * Anneau a deux couleurs : un liseré du fond, puis la couleur de focus.
+   * Il reste visible sur un bouton or comme sur un champ blanc, et arrive en
+   * 200 ms pour qu'on voie d'ou il part.
+   */
   :focus-visible {
-    outline: 2px solid var(--color-brass-lift);
-    outline-offset: 2px;
-    border-radius: 2px;
+    outline: none;
+    box-shadow:
+      0 0 0 1px var(--fond),
+      0 0 0 3px var(--focus);
+    animation: anneau-focus 200ms var(--courbe);
   }
 
   ::selection {
-    background: var(--color-brass);
-    color: var(--color-ink);
+    background: var(--accent);
+    color: var(--sur-accent);
   }
 
   @media (prefers-reduced-motion: reduce) {
+    /* 0,01 ms et non `none` : du JavaScript peut attendre la fin d'une transition. */
     *,
     *::before,
     *::after {
@@ -143,31 +288,54 @@
   }
 }
 
+@keyframes anneau-focus {
+  from {
+    box-shadow:
+      0 0 0 1px var(--fond),
+      0 0 0 1px var(--focus);
+  }
+}
+
 @layer components {
   /*
-   * Rayon de bordure porteur de sens : nul sur les panneaux structurels,
-   * faible sur les controles manipulables. Pas de rayon uniforme partout.
+   * Gabarit de page. L'entete, le contenu et le pied partagent la meme
+   * largeur et la meme gouttiere : le logo tombe sur le bord du titre.
    */
-  .panneau {
-    border-radius: 0;
+  .cadre {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
   }
 
-  .controle {
-    border-radius: 3px;
-  }
-
-  /* Attente d'un paiement : la seule animation non declenchee du site. */
-  @keyframes battement {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.35;
+  @media (min-width: 40rem) {
+    .cadre {
+      padding-inline: 2rem;
     }
   }
 
-  .en-attente {
-    animation: battement 1.6s ease-in-out infinite;
+  .chiffre {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Les montants sont la decision : chiffres tabulaires, graisse de titre. */
+  .montant {
+    color: var(--texte-fort);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  /* Reponse a l'appui, pas au relachement. */
+  .appui {
+    transition:
+      background-color 200ms ease,
+      border-color 200ms ease,
+      color 200ms ease,
+      transform 100ms var(--courbe);
+  }
+
+  .appui:active:not(:disabled) {
+    transform: scale(0.97);
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Bouton } from "@/components/ui/Bouton";
@@ -112,8 +113,8 @@ export function FormulaireInscription({
           setErreurs(charge?.errors ?? {});
           setMessage(
             charge?.errors
-              ? "Quelques champs demandent une correction."
-              : (charge?.message ?? "L'inscription a été refusée."),
+              ? "Corrigez les champs signalés ci-dessous."
+              : (charge?.message ?? "L’inscription a été refusée."),
           );
         } else if (reponse.status === 429) {
           setMessage(
@@ -122,7 +123,7 @@ export function FormulaireInscription({
         } else {
           setMessage(
             charge?.message ??
-              "L'inscription n'a pas pu être enregistrée. Réessayez dans un instant.",
+              "L’inscription n’a pas pu être enregistrée. Réessayez dans un instant.",
           );
         }
 
@@ -165,27 +166,34 @@ export function FormulaireInscription({
 
   if (ouvertes.length === 0) {
     return (
-      <div className="panneau border border-rule bg-paper-raised p-8">
-        <h2 className="font-display text-xl font-extrabold">
-          Les inscriptions sont fermées
-        </h2>
-        <p className="prose-etroit mt-2 text-paper-soft">
-          Aucune catégorie n&apos;accepte de candidature pour le moment.
-          Revenez à l&apos;ouverture de la prochaine édition.
+      <div className="max-w-xl rounded-region border border-bordure p-6">
+        <h2 className="text-xl">Les inscriptions sont fermées</h2>
+        <p className="mt-2 text-discret">
+          Revenez à l’ouverture de la prochaine édition. En attendant,
+          retrouvez les talents déjà validés.
         </p>
+        <Link
+          href="/candidats"
+          className="mt-4 inline-block text-lien underline decoration-1 underline-offset-4"
+        >
+          Voir les candidats
+        </Link>
       </div>
     );
   }
 
   return (
-    <form onSubmit={envoyer} className="grid gap-12 lg:grid-cols-[1fr_20rem]">
-      <div className="grid gap-9">
+    <form
+      onSubmit={envoyer}
+      className="grid items-start gap-12 lg:grid-cols-[minmax(0,40rem)_minmax(0,20rem)] lg:gap-16"
+    >
+      <div className="grid gap-8">
         {message ? (
           <div
             role="alert"
-            className="panneau border-l-2 border-oxblood bg-oxblood-wash px-5 py-4"
+            className="rounded-region border border-danger bg-danger-fond px-4 py-3"
           >
-            <p className="text-sm font-medium text-oxblood">{message}</p>
+            <p className="text-sm font-semibold text-danger">{message}</p>
           </div>
         ) : null}
 
@@ -221,16 +229,11 @@ export function FormulaireInscription({
             dont on decouvrirait le cout plus tard.
           */}
           <fieldset>
-            <legend className="text-sm font-medium text-ink">
-              Formule
-              <span className="ml-1 text-oxblood" aria-hidden="true">
-                *
-              </span>
-            </legend>
+            <legend className="text-sm font-semibold text-fort">Formule</legend>
 
             <input type="hidden" name="registration_type" value={enGroupe ? "group" : "solo"} />
 
-            <div className="mt-2 grid gap-3 sm:grid-cols-2">
+            <div className="mt-2 grid gap-4 sm:grid-cols-2">
               {(
                 [
                   {
@@ -244,7 +247,7 @@ export function FormulaireInscription({
                     valeur: "group" as const,
                     titre: "En groupe",
                     detail: categorie?.allows_group
-                      ? `Jusqu'à ${categorie.max_group_members} membres`
+                      ? `Jusqu’à ${categorie.max_group_members} membres`
                       : "Non proposé dans cette catégorie",
                     prix: categorie?.group_fee ?? null,
                     possible: categorie?.allows_group === true,
@@ -256,12 +259,12 @@ export function FormulaireInscription({
                 return (
                   <label
                     key={option.valeur}
-                    className={`controle flex cursor-pointer flex-col gap-1 border p-4 transition-colors ${
+                    className={`flex flex-col gap-1 rounded-controle border p-4 transition-colors ${
                       !option.possible
-                        ? "cursor-not-allowed border-rule bg-paper opacity-55"
+                        ? "cursor-not-allowed border-bordure bg-appui opacity-60"
                         : actif
-                          ? "border-ink bg-ink/5"
-                          : "border-rule bg-paper-raised hover:border-ink/40"
+                          ? "cursor-pointer border-fort bg-appui ring-1 ring-fort ring-inset"
+                          : "cursor-pointer border-bordure-forte bg-surface hover:border-fort"
                     }`}
                   >
                     <span className="flex items-center gap-2">
@@ -272,23 +275,21 @@ export function FormulaireInscription({
                         checked={actif}
                         disabled={!option.possible}
                         onChange={() => setFormule(option.valeur)}
-                        className="size-4 accent-brass"
+                        className="size-4 accent-focus"
                       />
-                      <span className="font-medium">{option.titre}</span>
+                      <span className="font-semibold text-fort">{option.titre}</span>
                     </span>
                     <span className="montant text-xl">
                       {option.prix !== null ? fcfa(option.prix) : "—"}
                     </span>
-                    <span className="text-xs text-paper-soft">
-                      {option.detail}
-                    </span>
+                    <span className="text-sm text-discret">{option.detail}</span>
                   </label>
                 );
               })}
             </div>
 
             {err("registration_type") ? (
-              <p className="mt-1.5 text-sm text-oxblood">
+              <p className="mt-2 text-sm text-danger">
                 {err("registration_type")}
               </p>
             ) : null}
@@ -306,7 +307,7 @@ export function FormulaireInscription({
               pour="group_name"
               obligatoire
               erreur={err("group_name")}
-              aide="C'est ce nom qui sera affiché au public."
+              aide="C’est ce nom qui sera affiché au public."
             >
               <Saisie
                 id="group_name"
@@ -343,7 +344,7 @@ export function FormulaireInscription({
               {membres.map((membre, i) => (
                 <div
                   key={i}
-                  className="grid gap-3 border-t border-rule pt-4 sm:grid-cols-[1fr_auto] sm:items-end"
+                  className="grid gap-2 border-t border-bordure pt-4 sm:grid-cols-[minmax(0,1fr)_13rem] sm:items-end sm:gap-4"
                 >
                   <Champ
                     etiquette={`Membre ${i + 1}`}
@@ -362,17 +363,14 @@ export function FormulaireInscription({
                     />
                   </Champ>
 
-                  <div className="sm:pb-0.5">
-                    <ChampFichier
-                      id={`membre-photo-${i}`}
-                      name={`members[${i}][photo]`}
-                      fichier={membre.photo}
-                      onFichier={(nom) => majMembre(i, "photo", nom)}
-                      libelle="Photo"
-                      vide="Facultative"
-                      compact
-                    />
-                  </div>
+                  <ChampFichier
+                    id={`membre-photo-${i}`}
+                    name={`members[${i}][photo]`}
+                    fichier={membre.photo}
+                    onFichier={(nom) => majMembre(i, "photo", nom)}
+                    libelle="Photo"
+                    vide="Facultative"
+                  />
                 </div>
               ))}
             </div>
@@ -383,11 +381,11 @@ export function FormulaireInscription({
           titre={enGroupe ? "Responsable du groupe" : "Votre identité"}
           description={
             enGroupe
-              ? "La personne que l'organisation contactera, et dont le numéro sera débité."
+              ? "La personne que l’organisation contactera, et dont le numéro sera débité."
               : undefined
           }
         >
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             <Champ
               etiquette="Prénom"
               pour="first_name"
@@ -424,7 +422,7 @@ export function FormulaireInscription({
               etiquette="Nom de scène"
               pour="stage_name"
               erreur={err("stage_name")}
-              aide="C'est ce nom qui sera affiché au public. Sans nom de scène, votre prénom et nom seront utilisés."
+              aide="C’est ce nom qui sera affiché au public. Sans nom de scène, votre prénom et nom seront utilisés."
             >
               <Saisie
                 id="stage_name"
@@ -434,7 +432,7 @@ export function FormulaireInscription({
             </Champ>
           ) : null}
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             <Champ etiquette="Ville" pour="city" erreur={err("city")}>
               <Saisie
                 id="city"
@@ -463,9 +461,9 @@ export function FormulaireInscription({
 
         <Groupe
           titre="Vous joindre"
-          description="L'organisation utilise ces coordonnées pour vous confirmer l'inscription. Elles ne sont pas publiées."
+          description="L’organisation utilise ces coordonnées pour vous confirmer l’inscription. Elles ne sont pas publiées."
         >
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             <Champ
               etiquette="Téléphone"
               pour="phone"
@@ -505,7 +503,7 @@ export function FormulaireInscription({
             etiquette="Email"
             pour="email"
             erreur={err("email")}
-            aide="Si vous n'en avez pas, laissez vide : le téléphone suffit."
+            aide="Si vous n’en avez pas, laissez vide : le téléphone suffit."
           >
             <Saisie
               id="email"
@@ -550,7 +548,7 @@ export function FormulaireInscription({
             />
           </Champ>
 
-          <div className="grid gap-5 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-2">
             <Champ
               etiquette="Facebook"
               pour="socials-facebook"
@@ -609,7 +607,7 @@ export function FormulaireInscription({
 
         <Groupe
           titre="Paiement des frais"
-          description="Le numéro qui sera débité. La demande de paiement arrive dessus juste après l'envoi du formulaire."
+          description="Le numéro qui sera débité. La demande de paiement arrive dessus juste après l’envoi du formulaire."
         >
           <Champ
             etiquette="Numéro Mobile Money"
@@ -627,21 +625,21 @@ export function FormulaireInscription({
           </Champ>
 
           <div>
-            <label className="flex items-start gap-3 text-sm">
+            <label className="flex cursor-pointer items-start gap-2 text-sm text-fort">
               <input
                 type="checkbox"
                 name="accepts_terms"
                 value="1"
                 required
-                className="controle mt-0.5 size-4 shrink-0 border-rule accent-brass"
+                className="mt-0.5 size-4 shrink-0 accent-focus"
               />
               <span>
-                J&apos;accepte le règlement du concours et je confirme que les
+                J’accepte le règlement du concours et je confirme que les
                 informations fournies sont exactes.
               </span>
             </label>
             {err("accepts_terms") ? (
-              <p className="mt-1.5 text-sm text-oxblood">
+              <p className="mt-2 text-sm text-danger">
                 {err("accepts_terms")}
               </p>
             ) : null}
@@ -649,54 +647,49 @@ export function FormulaireInscription({
         </Groupe>
       </div>
 
-      {/* --- Recapitulatif ------------------------------------------- */}
-      <aside className="lg:sticky lg:top-8 lg:h-fit">
-        <div className="panneau border border-rule bg-paper-raised">
-          <div className="border-b border-rule px-6 py-5">
-            <h2 className="font-display text-lg font-extrabold">
-              Votre inscription
-            </h2>
-          </div>
+      {/* --- Recapitulatif : il suit le defilement, le montant reste sous les yeux. */}
+      <aside className="lg:sticky lg:top-8">
+        <div className="overflow-hidden rounded-region border border-bordure bg-surface">
+          <h2 className="border-b border-bordure px-4 py-3 text-base">Votre inscription</h2>
 
-          <dl className="divide-y divide-rule">
-            <div className="flex items-baseline justify-between gap-4 px-6 py-4">
-              <dt className="text-sm text-paper-soft">Catégorie</dt>
-              <dd className="text-right text-sm font-medium">
-                {categorie?.name ?? "—"}
-              </dd>
+          <dl className="divide-y divide-bordure text-sm">
+            <div className="flex items-baseline justify-between gap-4 px-4 py-3">
+              <dt className="text-discret">Catégorie</dt>
+              <dd className="text-right text-fort">{categorie?.name ?? "—"}</dd>
             </div>
-            <div className="flex items-baseline justify-between gap-4 px-6 py-4">
-              <dt className="text-sm text-paper-soft">Formule</dt>
-              <dd className="text-right text-sm font-medium">
+            <div className="flex items-baseline justify-between gap-4 px-4 py-3">
+              <dt className="text-discret">Formule</dt>
+              <dd className="text-right text-fort">
                 {enGroupe ? `Groupe de ${membres.length}` : "Individuel"}
               </dd>
             </div>
-            <div className="flex items-baseline justify-between gap-4 px-6 py-4">
-              <dt className="text-sm text-paper-soft">Frais</dt>
-              <dd className="montant text-xl">
+            <div className="flex items-baseline justify-between gap-4 px-4 py-3">
+              <dt className="text-discret">Frais</dt>
+              <dd className="montant text-2xl">
                 {montant !== null ? fcfa(montant) : "—"}
               </dd>
             </div>
           </dl>
 
-          <div className="border-t border-rule px-6 py-5">
+          <div className="border-t border-bordure p-4">
             <Bouton
               type="submit"
               taille="grand"
+              chargement={envoi}
               disabled={envoi || !categorie}
               className="w-full"
             >
               {envoi
-                ? "Envoi en cours"
+                ? "Envoi…"
                 : montant !== null
                   ? `Payer ${fcfa(montant)}`
                   : "Payer les frais"}
             </Bouton>
 
-            <p className="mt-3 text-xs leading-relaxed text-paper-soft">
-              Vous recevrez une demande de paiement sur votre téléphone. Votre
-              inscription est enregistrée dès maintenant : si le paiement
-              échoue, vous pourrez le relancer sans ressaisir le formulaire.
+            <p className="mt-4 text-sm text-discret">
+              La demande de paiement arrive sur votre téléphone. Votre dossier
+              est enregistré dès l’envoi&nbsp;: si le paiement échoue, vous
+              le relancerez sans ressaisir le formulaire.
             </p>
           </div>
         </div>

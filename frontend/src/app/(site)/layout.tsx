@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { BandePartenaires, LogoEvenement } from "@/components/Marque";
+import { NavSite } from "@/components/NavSite";
 import { lirePublic } from "@/lib/api";
 import type { Enveloppe, Reglages } from "@/lib/types";
 
@@ -21,82 +21,84 @@ export default async function LayoutSite({
 }) {
   const r = await reglages();
 
+  const lieu = [r?.event_venue, r?.event_city].filter(Boolean).join(", ");
+  const telephones = [r?.contact_phone, r?.contact_phone_2].filter(
+    (t): t is string => Boolean(t),
+  );
+
   return (
-    <div className="flex min-h-dvh flex-col bg-ink text-paper">
+    <div className="terrain-sombre flex min-h-dvh flex-col">
+      <a
+        href="#contenu"
+        className="sr-only rounded-controle bg-accent px-3 py-2 text-sm font-semibold text-sur-accent focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-10"
+      >
+        Aller au contenu
+      </a>
 
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 px-4 py-3 min-[30rem]:gap-4 sm:px-8 sm:py-6">
-        <LogoEvenement hauteur={36} priorite className="shrink-0" />
-
-        <nav
-          aria-label="Navigation principale"
-          className="flex items-center gap-2 text-xs min-[30rem]:gap-4 min-[30rem]:text-sm"
-        >
-          <Link
-            href="/candidats"
-            className="py-3 text-ink-soft transition-colors hover:text-brass"
-          >
-            Candidats
-          </Link>
-          <Link
-            href="/inscription"
-            className="py-3 text-ink-soft transition-colors hover:text-brass"
-          >
-            S&apos;inscrire
-          </Link>
-          <Link
-            href="/admin"
-            className="hidden py-3 text-ink-soft transition-colors hover:text-brass min-[30rem]:inline"
-          >
-            Organisation
-          </Link>
-        </nav>
+      <header className="border-b border-bordure">
+        <div className="cadre flex h-16 items-center justify-between gap-4">
+          <LogoEvenement hauteur={40} priorite className="shrink-0" />
+          <NavSite />
+        </div>
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main id="contenu" className="flex-1">
+        {children}
+      </main>
 
-      <BandePartenaires />
+      <BandePartenaires telephone={r?.contact_phone} />
 
-      <footer className="border-t border-ink-line/60">
-        <div className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <LogoEvenement hauteur={36} href={null} />
-              {r?.event_tagline ? (
-                <p className="prose-etroit mt-3 text-sm text-ink-soft">
-                  {r.event_tagline}
-                </p>
-              ) : null}
-            </div>
-
-            <dl className="grid gap-x-10 gap-y-2 text-sm sm:grid-cols-2">
-              {r?.event_city ? (
-                <div className="flex gap-2">
-                  <dt className="text-ink-soft">Ville</dt>
-                  <dd>{r.event_city}</dd>
-                </div>
-              ) : null}
-              {r?.contact_phone ? (
-                <div className="flex gap-2">
-                  <dt className="text-ink-soft">Téléphone</dt>
-                  <dd>
-                    <a href={`tel:${r.contact_phone}`} className="hover:text-brass">
-                      {r.contact_phone}
-                    </a>
-                  </dd>
-                </div>
-              ) : null}
-              {r?.contact_email ? (
-                <div className="flex gap-2">
-                  <dt className="text-ink-soft">Email</dt>
-                  <dd>
-                    <a href={`mailto:${r.contact_email}`} className="hover:text-brass">
-                      {r.contact_email}
-                    </a>
-                  </dd>
-                </div>
-              ) : null}
-            </dl>
+      <footer className="border-t border-bordure">
+        <div className="cadre grid gap-8 py-12 md:grid-cols-[minmax(0,1fr)_auto]">
+          <div>
+            <LogoEvenement hauteur={40} href={null} />
+            {r?.event_tagline ? (
+              <p className="mt-4 max-w-sm text-sm text-discret">
+                {r.event_tagline}
+              </p>
+            ) : null}
           </div>
+
+          <dl className="grid content-start gap-x-8 gap-y-2 text-sm sm:grid-cols-[auto_minmax(0,1fr)]">
+            {lieu ? (
+              <>
+                <dt className="text-discret">Lieu</dt>
+                <dd>{lieu}</dd>
+              </>
+            ) : null}
+            {telephones.length > 0 ? (
+              <>
+                <dt className="text-discret">Téléphone</dt>
+                <dd className="flex flex-wrap gap-x-4">
+                  {telephones.map((t) => (
+                    <a
+                      key={t}
+                      href={`tel:${t.replace(/\s/g, "")}`}
+                      className="chiffre whitespace-nowrap transition-colors hover:text-lien"
+                    >
+                      {t}
+                    </a>
+                  ))}
+                </dd>
+              </>
+            ) : null}
+            {r?.contact_email ? (
+              <>
+                <dt className="text-discret">Email</dt>
+                <dd>
+                  <a href={`mailto:${r.contact_email}`} className="transition-colors hover:text-lien">
+                    {r.contact_email}
+                  </a>
+                </dd>
+              </>
+            ) : null}
+            {r?.registration_window ? (
+              <>
+                <dt className="text-discret">Inscriptions</dt>
+                <dd>{r.registration_window}</dd>
+              </>
+            ) : null}
+          </dl>
         </div>
       </footer>
     </div>

@@ -69,17 +69,44 @@ export default async function PageCandidat({
   const reseaux = Object.entries(c.socials ?? {}).filter(([, url]) => Boolean(url));
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-5 py-14 sm:px-8 sm:py-20">
-      <Link
-        href="/candidats"
-        className="text-sm text-ink-soft underline decoration-ink-line underline-offset-4 transition-colors hover:text-brass hover:decoration-brass"
-      >
-        Tous les candidats
-      </Link>
+    <div className="cadre py-12 md:py-16">
+      <nav aria-label="Fil d’Ariane" className="text-sm">
+        <Link
+          href="/candidats"
+          className="text-discret underline decoration-bordure-forte underline-offset-4 transition-colors hover:text-lien hover:decoration-lien"
+        >
+          Les candidats
+        </Link>
+      </nav>
 
-      <div className="mt-8 grid gap-12 lg:grid-cols-[22rem_1fr]">
-        <div>
-          <div className="panneau relative aspect-4/5 overflow-hidden border border-ink-line bg-ink-raised">
+      <div className="mt-8 grid gap-12 lg:grid-cols-[22rem_minmax(0,1fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:gap-y-8">
+        {/* Sur telephone, l'identite passe avant la photo : on sait qui on regarde. */}
+        <header className="lg:col-start-2 lg:row-start-1">
+          {c.candidate_number ? (
+            <p className="chiffre text-base font-semibold text-accent">
+              {c.candidate_number}
+            </p>
+          ) : null}
+
+          <h1 className="mt-2 text-6xl tracking-affiche">{c.display_name}</h1>
+
+          <p className="mt-4 text-lg">
+            {c.category?.name}
+            {c.is_group ? `, groupe de ${c.members_count}` : ""}
+            {c.city ? `, ${c.city}` : ""}
+          </p>
+
+          {reponse.meta && c.votes_count > 0 ? (
+            <p className="mt-1 text-sm text-discret">
+              {reponse.meta.rank === 1
+                ? "En tête de sa catégorie"
+                : `${reponse.meta.rank}ᵉ de sa catégorie`}
+            </p>
+          ) : null}
+        </header>
+
+        <div className="lg:col-start-1 lg:row-span-2 lg:row-start-1">
+          <div className="relative aspect-4/5 overflow-hidden rounded-region border border-bordure bg-surface">
             {c.photo_url ? (
               <Image
                 src={c.photo_url}
@@ -91,7 +118,7 @@ export default async function PageCandidat({
                 unoptimized
               />
             ) : (
-              <span className="flex h-full items-center justify-center text-sm text-ink-soft">
+              <span className="flex h-full items-center justify-center text-sm text-discret">
                 Sans photo
               </span>
             )}
@@ -99,113 +126,86 @@ export default async function PageCandidat({
 
           {/* Bloc de vote : l'etat reel plutot qu'un bouton qui ne mene nulle
               part tant que les votes ne sont pas ouverts. */}
-          <div className="panneau mt-6 border border-ink-line bg-ink-raised p-6">
-            <p className="text-sm text-ink-soft">Voix reçues</p>
-            <p className="montant mt-1 text-4xl text-brass">
-              {nombre(c.votes_count)}
-            </p>
+          <div className="mt-4 rounded-region border border-bordure bg-surface p-6">
+            <p className="text-sm text-discret">Voix reçues</p>
+            <p className="montant mt-1 text-4xl text-accent">{nombre(c.votes_count)}</p>
 
             {votesOuverts ? (
               <LienBouton
                 href={`/candidats/${c.slug}/voter`}
                 taille="grand"
-                className="mt-5 w-full"
+                className="mt-6 w-full"
               >
                 Voter pour {c.display_name}
               </LienBouton>
             ) : (
-              <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-                Les votes du public ouvriront après les castings. Revenez à ce
-                moment-là pour soutenir ce candidat.
+              <p className="mt-4 text-sm text-discret">
+                Les votes ouvriront après les castings. Revenez à ce moment-là
+                pour soutenir {c.is_group ? "ce groupe" : "ce candidat"}.
               </p>
             )}
           </div>
         </div>
 
-        <div>
-          {c.candidate_number ? (
-            <p className="chiffre text-sm text-brass">{c.candidate_number}</p>
-          ) : null}
-
-          <h1 className="mt-2 font-display text-display font-extrabold">
-            {c.display_name}
-          </h1>
-
-          <p className="mt-3 text-lg text-ink-soft">
-            {c.category?.name}
-            {c.is_group ? ` — groupe de ${c.members_count}` : ""}
-            {c.city ? `, ${c.city}` : ""}
-          </p>
-
-          {reponse.meta && c.votes_count > 0 ? (
-            <p className="mt-2 text-sm text-ink-soft">
-              {reponse.meta.rank === 1
-                ? "En tête de sa catégorie"
-                : `${reponse.meta.rank}ᵉ de sa catégorie`}
-            </p>
-          ) : null}
-
+        <div className="grid content-start gap-8 lg:col-start-2">
           {c.presentation ? (
-            <div className="mt-10 border-t border-ink-line pt-8">
-              <h2 className="font-display text-xl font-extrabold">
-                {c.is_group ? "Le groupe" : "Son parcours"}
-              </h2>
-              <p className="prose-etroit mt-3 leading-relaxed whitespace-pre-line text-ink-soft">
-                {c.presentation}
-              </p>
-            </div>
+            <section className="border-t border-bordure pt-8">
+              <h2 className="text-xl">{c.is_group ? "Le groupe" : "Son parcours"}</h2>
+              <p className="mt-2 max-w-2xl whitespace-pre-line">{c.presentation}</p>
+            </section>
           ) : null}
 
           {c.is_group && c.members && c.members.length > 0 ? (
-            <div className="mt-10 border-t border-ink-line pt-8">
-              <h2 className="font-display text-xl font-extrabold">
-                La formation
-              </h2>
-              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            <section className="border-t border-bordure pt-8">
+              <h2 className="text-xl">La formation</h2>
+              <ul className="mt-4 grid gap-4 sm:grid-cols-2">
                 {c.members.map((membre, i) => (
-                  <li
-                    key={`${membre.full_name}-${i}`}
-                    className="flex items-center gap-3"
-                  >
+                  <li key={`${membre.full_name}-${i}`} className="flex items-center gap-3">
                     {membre.photo_url ? (
                       <Image
                         src={membre.photo_url}
                         alt=""
                         width={40}
                         height={40}
-                        className="controle size-10 shrink-0 border border-ink-line object-cover"
+                        className="size-10 shrink-0 rounded-pilule border border-bordure object-cover"
                         unoptimized
                       />
                     ) : (
-                      <span className="controle chiffre flex size-10 shrink-0 items-center justify-center border border-ink-line text-xs text-ink-soft">
-                        {i + 1}
+                      <span className="chiffre flex size-10 shrink-0 items-center justify-center rounded-pilule bg-appui text-sm text-discret">
+                        {membre.full_name.charAt(0).toUpperCase()}
                       </span>
                     )}
-                    <span className="text-sm">{membre.full_name}</span>
+                    <span className="min-w-0 truncate" title={membre.full_name}>
+                      {membre.full_name}
+                    </span>
                   </li>
                 ))}
               </ul>
-            </div>
+            </section>
           ) : null}
 
           {reseaux.length > 0 ? (
-            <div className="mt-10 border-t border-ink-line pt-8">
-              <h2 className="font-display text-xl font-extrabold">Le suivre</h2>
-              <ul className="mt-4 flex flex-wrap gap-3">
+            <section className="border-t border-bordure pt-8">
+              <h2 className="text-xl">{c.is_group ? "Les suivre" : "Le suivre"}</h2>
+              <ul className="mt-4 flex flex-wrap gap-2">
                 {reseaux.map(([nom, url]) => (
                   <li key={nom}>
                     <a
                       href={url as string}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="controle inline-block border border-ink-line px-4 py-2 text-sm capitalize transition-colors hover:border-brass hover:text-brass"
+                      className="appui inline-flex h-8 items-center gap-2 rounded-controle border border-bordure-forte px-3 text-sm text-fort capitalize hover:border-fort hover:bg-appui"
                     >
                       {nom}
+                      <svg aria-hidden="true" viewBox="0 0 16 16" className="size-3 fill-none stroke-current" strokeWidth="1.5">
+                        <path d="M6 3h7v7M13 3 4 12" />
+                      </svg>
+                      <span className="sr-only">(nouvel onglet)</span>
                     </a>
                   </li>
                 ))}
               </ul>
-            </div>
+            </section>
           ) : null}
         </div>
       </div>

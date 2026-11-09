@@ -27,30 +27,26 @@ export default async function PageInscription({
   }
 
   return (
-    <div className="bg-paper text-ink">
-      <div className="mx-auto w-full max-w-5xl px-5 py-14 sm:px-8 sm:py-20">
-        <header className="prose-etroit">
-          <h1 className="font-display text-display font-extrabold">
-            Inscrire mon talent
-          </h1>
-          <p className="mt-5 text-lg text-paper-soft">
-            Comptez cinq minutes. Votre dossier est enregistré dès l&apos;envoi,
-            et le paiement des frais se fait depuis votre téléphone.
+    <div className="terrain-clair">
+      <div className="cadre py-12 md:py-16">
+        <header className="max-w-2xl">
+          <h1 className="text-6xl tracking-affiche">Inscrire mon talent</h1>
+          <p className="mt-4 text-lg">
+            Comptez cinq minutes. Votre dossier est enregistré dès l’envoi,
+            et les frais se paient depuis votre téléphone.
           </p>
         </header>
 
-        <div className="mt-14">
+        <div className="mt-12">
           {injoignable ? (
             <div
               role="alert"
-              className="panneau border-l-2 border-oxblood bg-oxblood-wash px-6 py-5"
+              className="max-w-xl rounded-region border border-danger bg-danger-fond px-4 py-3"
             >
-              <h2 className="font-display text-lg font-extrabold text-oxblood">
-                Les inscriptions ne sont pas joignables
-              </h2>
-              <p className="prose-etroit mt-2 text-sm text-ink">
-                Le serveur ne répond pas pour le moment. Réessayez dans
-                quelques minutes.
+              <h2 className="text-base text-danger">Le formulaire ne répond pas</h2>
+              <p className="mt-1 text-sm text-fort">
+                Le serveur des inscriptions est injoignable. Rechargez la page
+                dans quelques minutes.
               </p>
             </div>
           ) : (

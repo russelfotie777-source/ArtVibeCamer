@@ -7,7 +7,7 @@ export function BoutonDeconnexion() {
     <form action={seDeconnecter}>
       <button
         type="submit"
-        className="controle px-2 py-1 text-xs text-ink-soft transition-colors hover:text-brass"
+        className="appui h-8 rounded-controle px-3 text-sm text-discret hover:bg-appui hover:text-fort"
       >
         Se déconnecter
       </button>

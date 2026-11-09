@@ -162,7 +162,7 @@ export function SuiviPaiement({
         setErreurRelance(
           charge?.errors?.payer_phone?.[0] ??
             charge?.message ??
-            "La demande de paiement n'a pas pu être renvoyée.",
+            "La demande de paiement n’a pas pu être renvoyée.",
         );
         setRelance(false);
         return;
@@ -193,98 +193,117 @@ export function SuiviPaiement({
     }
   }
 
+  const estVote = transaction.type === "vote";
+
   /* --- Paiement encaisse ------------------------------------------- */
   if (transaction.status === "succeeded") {
     return (
-      <div className="panneau border border-ink-line bg-ink-raised">
-        <div className="border-b border-ink-line px-7 py-8">
-          <p className="text-sm text-sage-clair">Paiement reçu</p>
-          <h1 className="mt-2 font-display text-display-sm font-extrabold">
-            Votre inscription est enregistrée
+      <section className="overflow-hidden rounded-region border border-bordure bg-surface">
+        <div className="border-b border-bordure p-6">
+          <p className="text-sm font-semibold text-succes">Paiement reçu</p>
+          <h1 className="mt-2 text-4xl tracking-affiche">
+            {estVote ? "Vos voix sont comptées" : "Votre inscription est enregistrée"}
           </h1>
         </div>
 
         {candidat?.candidate_number ? (
-          <div className="border-b border-ink-line px-7 py-7">
-            <p className="text-sm text-ink-soft">Votre numéro de candidat</p>
-            <p className="montant mt-1 text-4xl text-brass">
+          <div className="border-b border-bordure p-6">
+            <p className="text-sm text-discret">Votre numéro de candidat</p>
+            <p className="montant mt-1 text-5xl tracking-affiche text-accent">
               {candidat.candidate_number}
             </p>
-            <p className="mt-3 text-sm text-ink-soft">
+            <p className="mt-2 text-sm text-discret">
               {candidat.display_name}
-              {candidat.category ? ` — ${candidat.category}` : ""}
+              {candidat.category ? `, ${candidat.category}` : ""}
             </p>
           </div>
         ) : null}
 
-        <dl className="divide-y divide-ink-line border-b border-ink-line text-sm">
-          <div className="flex items-baseline justify-between gap-4 px-7 py-4">
-            <dt className="text-ink-soft">Montant réglé</dt>
+        <dl className="divide-y divide-bordure border-b border-bordure text-sm">
+          <div className="flex items-baseline justify-between gap-4 px-6 py-3">
+            <dt className="text-discret">Montant réglé</dt>
             <dd className="montant text-lg">{fcfa(transaction.amount)}</dd>
           </div>
-          <div className="flex items-baseline justify-between gap-4 px-7 py-4">
-            <dt className="text-ink-soft">Référence</dt>
-            <dd className="chiffre">{transaction.reference}</dd>
+          <div className="flex items-baseline justify-between gap-4 px-6 py-3">
+            <dt className="text-discret">Référence</dt>
+            <dd className="chiffre text-fort">{transaction.reference}</dd>
           </div>
           {transaction.payment_method_label ? (
-            <div className="flex items-baseline justify-between gap-4 px-7 py-4">
-              <dt className="text-ink-soft">Moyen</dt>
-              <dd>{transaction.payment_method_label}</dd>
+            <div className="flex items-baseline justify-between gap-4 px-6 py-3">
+              <dt className="text-discret">Moyen</dt>
+              <dd className="text-fort">{transaction.payment_method_label}</dd>
             </div>
           ) : null}
         </dl>
 
-        <div className="px-7 py-7">
-          <h2 className="font-display text-lg font-extrabold">Et maintenant</h2>
-          <p className="prose-etroit mt-2 text-sm leading-relaxed text-ink-soft">
-            L&apos;organisation vérifie votre dossier. Dès qu&apos;il est
-            validé, votre page de candidat devient visible et le public peut
-            voter pour vous. Conservez votre numéro et votre référence : ils
-            serviront en cas de question.
-          </p>
+        <div className="p-6">
+          {estVote ? null : (
+            <>
+              <h2 className="text-lg">La suite</h2>
+              <p className="mt-2 text-sm">
+                L’organisation vérifie votre dossier. Une fois validé, votre
+                page de candidat devient visible et le public peut voter pour
+                vous. Gardez votre numéro et votre référence&nbsp;: ils servent
+                en cas de question.
+              </p>
+            </>
+          )}
 
-          {/*
-            Lien direct vers l'API plutot qu'un appel depuis le navigateur :
-            le PDF arrive en piece jointe, le navigateur le telecharge ou
-            l'ouvre selon son reglage, et rien n'est a garder en memoire.
-          */}
-          <a
-            href={`${BASE_PUBLIQUE}/payments/${transaction.reference}/recu`}
-            className="mt-6 inline-flex items-center gap-2 border border-brass px-5 py-3 text-sm font-medium text-brass transition-colors hover:bg-brass hover:text-ink"
-          >
-            Télécharger le reçu (PDF)
-          </a>
+          <div className={`flex flex-wrap items-center gap-4 ${estVote ? "" : "mt-6"}`}>
+            {/*
+              Lien direct vers l'API plutot qu'un appel depuis le navigateur :
+              le PDF arrive en piece jointe, le navigateur le telecharge ou
+              l'ouvre selon son reglage, et rien n'est a garder en memoire.
+            */}
+            <a
+              href={`${BASE_PUBLIQUE}/payments/${transaction.reference}/recu`}
+              className="appui inline-flex h-10 items-center rounded-controle border border-bordure-forte px-3 text-sm text-fort hover:border-fort hover:bg-appui"
+            >
+              Télécharger le reçu (PDF)
+            </a>
 
-          <Link
-            href="/"
-            className="mt-6 block text-sm text-brass underline decoration-brass/40 underline-offset-4 hover:decoration-brass"
-          >
-            Revenir à l&apos;accueil
-          </Link>
+            <Link
+              href={estVote ? "/candidats" : "/"}
+              className="text-sm text-lien underline decoration-1 underline-offset-4"
+            >
+              {estVote ? "Voir les candidats" : "Revenir à l’accueil"}
+            </Link>
+          </div>
         </div>
-      </div>
+      </section>
     );
   }
 
   /* --- Paiement non abouti ----------------------------------------- */
   if (transaction.is_final) {
     return (
-      <div className="panneau border border-ink-line bg-ink-raised">
-        <div className="border-b border-ink-line px-7 py-8">
-          <p className="text-sm text-brass">{transaction.status_label}</p>
-          <h1 className="mt-2 font-display text-display-sm font-extrabold">
-            Le paiement n&apos;a pas abouti
-          </h1>
-          <p className="prose-etroit mt-4 text-sm leading-relaxed text-ink-soft">
-            {transaction.failure_reason ??
-              "La transaction a été interrompue avant la validation."}{" "}
-            Votre dossier est conservé : renvoyez simplement une demande de
-            paiement, sans ressaisir le formulaire.
+      <section className="overflow-hidden rounded-region border border-bordure bg-surface">
+        <div className="border-b border-bordure p-6">
+          <p className="text-sm font-semibold text-danger">{transaction.status_label}</p>
+          <h1 className="mt-2 text-4xl tracking-affiche">Le paiement n’a pas abouti</h1>
+          <p className="mt-4 text-sm">
+            {/* Le motif vient de l'operateur, souvent sans point final. */}
+            {transaction.failure_reason
+              ? transaction.failure_reason.replace(/([^.!?])\s*$/, "$1.")
+              : "La transaction a été interrompue avant la validation."}{" "}
+            {estVote
+              ? "Aucune voix n’a été débitée ni comptée."
+              : "Votre dossier est conservé : renvoyez la demande de paiement, sans ressaisir le formulaire."}
           </p>
         </div>
 
-        <form onSubmit={relancerPaiement} className="px-7 py-7">
-          <div className="[&_label]:text-paper [&_p]:text-ink-soft">
+        {/* La relance n'existe que pour une inscription : un vote se refait depuis la fiche. */}
+        {estVote ? (
+          <div className="p-6">
+            <Link
+              href="/candidats"
+              className="text-sm text-lien underline decoration-1 underline-offset-4"
+            >
+              Revenir aux candidats
+            </Link>
+          </div>
+        ) : (
+          <form onSubmit={relancerPaiement} className="p-6">
             {/*
               Le numero est redemande a chaque relance plutot que repris en
               silence. Une relance fait suite a un echec, et la premiere cause
@@ -296,7 +315,7 @@ export function SuiviPaiement({
               etiquette="Numéro Mobile Money"
               pour="payer_phone"
               erreur={erreurRelance ?? undefined}
-              aide="MTN ou Orange. C'est sur ce numéro qu'arrivera la demande de paiement."
+              aide="MTN ou Orange. La demande de paiement arrivera sur ce numéro."
               obligatoire
             >
               <Saisie
@@ -310,68 +329,83 @@ export function SuiviPaiement({
                 erreur={erreurRelance ?? undefined}
               />
             </Champ>
-          </div>
 
-          <Bouton type="submit" taille="grand" disabled={relance} className="mt-5 w-full">
-            {relance ? "Envoi en cours" : `Payer ${fcfa(transaction.amount)}`}
-          </Bouton>
-        </form>
-      </div>
+            <Bouton
+              type="submit"
+              taille="grand"
+              chargement={relance}
+              disabled={relance}
+              className="mt-6 w-full"
+            >
+              {relance ? "Envoi…" : `Payer ${fcfa(transaction.amount)}`}
+            </Bouton>
+          </form>
+        )}
+      </section>
     );
   }
 
   /* --- Attente de validation par le payeur -------------------------- */
   return (
-    <div className="panneau border border-ink-line bg-ink-raised">
-      <div className="border-b border-ink-line px-7 py-8">
-        <p className="en-attente text-sm text-brass">
-          {abandonne ? "Vérification interrompue" : "En attente de votre validation"}
+    <section className="overflow-hidden rounded-region border border-bordure bg-surface">
+      <div className="border-b border-bordure p-6">
+        <p
+          role="status"
+          className={`flex items-center gap-2 text-sm font-semibold ${abandonne ? "text-alerte" : "text-lien"}`}
+        >
+          {abandonne ? null : (
+            <span
+              aria-hidden="true"
+              className="size-4 animate-spin rounded-pilule border-2 border-current border-r-transparent"
+            />
+          )}
+          {abandonne ? "Vérification interrompue" : "En attente de votre validation…"}
         </p>
-        <h1 className="mt-2 font-display text-display-sm font-extrabold">
-          {abandonne
-            ? "Toujours pas de confirmation"
-            : "Validez le paiement sur votre téléphone"}
+        <h1 className="mt-2 text-4xl tracking-affiche">
+          {abandonne ? "Toujours pas de confirmation" : "Validez sur votre téléphone"}
         </h1>
       </div>
 
-      <div className="border-b border-ink-line px-7 py-7">
-        <p className="text-sm text-ink-soft">Montant à régler</p>
-        <p className="montant mt-1 text-4xl text-brass">{fcfa(transaction.amount)}</p>
+      <div className="border-b border-bordure p-6">
+        <p className="text-sm text-discret">Montant à régler</p>
+        <p className="montant mt-1 text-5xl tracking-affiche text-accent">
+          {fcfa(transaction.amount)}
+        </p>
       </div>
 
-      <div className="px-7 py-7">
+      <div className="p-6">
         {abandonne ? (
           <>
-            <p className="prose-etroit text-sm leading-relaxed text-ink-soft">
-              Nous n&apos;avons pas reçu de confirmation de l&apos;opérateur.
-              Si vous avez été débité, votre inscription sera enregistrée
-              automatiquement : revenez sur cette page dans quelques minutes.
+            <p className="text-sm">
+              L’opérateur n’a pas encore confirmé. Si vous avez été
+              débité, le paiement sera enregistré automatiquement&nbsp;: revenez
+              sur cette page dans quelques minutes.
             </p>
             <Bouton
-              ton="contour-clair"
+              ton="secondaire"
               onClick={() => {
                 depart.current = Date.now();
                 setAbandonne(false);
                 void interroger();
               }}
-              className="mt-5"
+              className="mt-4"
             >
               Vérifier à nouveau
             </Bouton>
           </>
         ) : (
           <>
-            <p className="prose-etroit text-sm leading-relaxed text-ink-soft">
+            <p className="text-sm">
               {instructions ??
-                "Une demande de paiement a été envoyée sur votre téléphone. Saisissez votre code secret Mobile Money pour la valider. Cette page se met à jour automatiquement."}
+                "Une demande de paiement est arrivée sur votre téléphone. Saisissez votre code secret Mobile Money pour la valider. Cette page se met à jour toute seule."}
             </p>
-            <p className="mt-5 text-xs text-ink-soft/80">
-              Ne fermez pas cette page. Référence&nbsp;
-              <span className="chiffre text-ink-soft">{transaction.reference}</span>
+            <p className="mt-4 text-sm text-discret">
+              Gardez cette page ouverte. Référence{" "}
+              <span className="chiffre text-texte">{transaction.reference}</span>
             </p>
           </>
         )}
       </div>
-    </div>
+    </section>
   );
 }

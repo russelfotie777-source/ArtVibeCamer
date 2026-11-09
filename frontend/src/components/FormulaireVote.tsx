@@ -86,7 +86,7 @@ export function FormulaireVote({ candidat }: { candidat: Candidat }) {
         } else {
           setMessage(
             charge?.message ??
-              "Le vote n'a pas pu être enregistré. Réessayez dans un instant.",
+              "Le vote n’a pas pu être enregistré. Réessayez dans un instant.",
           );
         }
 
@@ -131,26 +131,26 @@ export function FormulaireVote({ candidat }: { candidat: Candidat }) {
       {message ? (
         <div
           role="alert"
-          className="panneau border-l-2 border-oxblood bg-oxblood-wash px-5 py-4"
+          className="rounded-region border border-danger bg-danger-fond px-4 py-3"
         >
-          <p className="text-sm font-medium text-oxblood">{message}</p>
+          <p className="text-sm font-semibold text-danger">{message}</p>
         </div>
       ) : null}
 
-      <fieldset className="grid gap-3">
-        <legend className="text-sm font-medium">Combien de voix ?</legend>
+      <fieldset className="grid gap-4">
+        <legend className="text-sm font-semibold text-fort">Nombre de voix</legend>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-wrap gap-2">
           {PALIERS.map((n) => (
             <button
               key={n}
               type="button"
               onClick={() => setQuantite(n)}
               aria-pressed={quantite === n}
-              className={`border px-4 py-2 text-sm transition-colors ${
+              className={`appui chiffre h-10 min-w-12 rounded-controle px-3 text-sm ${
                 quantite === n
-                  ? "border-laiton bg-laiton text-ink"
-                  : "border-rule hover:border-ink"
+                  ? "bg-accent font-semibold text-sur-accent"
+                  : "border border-bordure-forte text-fort hover:border-fort hover:bg-appui"
               }`}
             >
               {nombre(n)}
@@ -162,7 +162,7 @@ export function FormulaireVote({ candidat }: { candidat: Candidat }) {
           etiquette="Ou saisissez un nombre"
           pour="quantity"
           erreur={erreurs.quantity?.[0]}
-          aide={`${fcfa(prix)} la voix`}
+          aide={`${fcfa(prix)} la voix.`}
           obligatoire
         >
           <Saisie
@@ -174,6 +174,8 @@ export function FormulaireVote({ candidat }: { candidat: Candidat }) {
             max={1000}
             value={Number.isFinite(quantite) ? quantite : ""}
             onChange={(e) => setQuantite(Number.parseInt(e.target.value, 10))}
+            erreur={erreurs.quantity?.[0]}
+            className="chiffre max-w-40"
           />
         </Champ>
       </fieldset>
@@ -182,7 +184,7 @@ export function FormulaireVote({ candidat }: { candidat: Candidat }) {
         etiquette="Votre numéro Mobile Money"
         pour="voter_phone"
         erreur={erreurs.voter_phone?.[0]}
-        aide="MTN ou Orange. C'est sur ce numéro que la demande de paiement arrivera."
+        aide="MTN ou Orange. La demande de paiement arrivera sur ce numéro."
         obligatoire
       >
         <Saisie
@@ -191,9 +193,11 @@ export function FormulaireVote({ candidat }: { candidat: Candidat }) {
           type="tel"
           inputMode="tel"
           autoComplete="tel"
-          placeholder="6XX XX XX XX"
+          placeholder="671 23 45 67"
+          required
           value={telephone}
           onChange={(e) => setTelephone(e.target.value)}
+          erreur={erreurs.voter_phone?.[0]}
         />
       </Champ>
 
@@ -201,7 +205,7 @@ export function FormulaireVote({ candidat }: { candidat: Candidat }) {
         etiquette="Votre nom"
         pour="voter_name"
         erreur={erreurs.voter_name?.[0]}
-        aide="Facultatif. Il n'est jamais affiché publiquement."
+        aide="Il n’est jamais affiché publiquement."
       >
         <Saisie
           id="voter_name"
@@ -209,24 +213,23 @@ export function FormulaireVote({ candidat }: { candidat: Candidat }) {
           autoComplete="name"
           value={nom}
           onChange={(e) => setNom(e.target.value)}
+          erreur={erreurs.voter_name?.[0]}
         />
       </Champ>
 
-      <div className="panneau border border-rule bg-paper-raised px-5 py-4">
+      <div className="rounded-region border border-bordure bg-appui px-4 py-3">
         <div className="flex items-baseline justify-between gap-4">
-          <span className="text-sm text-paper-soft">À payer</span>
-          <span className="montant font-display text-2xl font-extrabold">
-            {fcfa(total)}
-          </span>
+          <span className="text-sm text-discret">À payer</span>
+          <span className="montant text-2xl">{fcfa(total)}</span>
         </div>
-        <p className="prose-etroit mt-2 text-xs text-paper-soft">
-          Les voix ne sont comptabilisées qu&apos;une fois le paiement validé
-          sur votre téléphone. Rien n&apos;est débité avant.
+        <p className="mt-1 text-sm text-discret">
+          Les voix comptent une fois le paiement validé sur votre téléphone.
+          Rien n’est débité avant.
         </p>
       </div>
 
-      <Bouton type="submit" taille="grand" disabled={envoi}>
-        {envoi ? "Envoi en cours…" : `Payer ${fcfa(total)}`}
+      <Bouton type="submit" taille="grand" chargement={envoi} disabled={envoi}>
+        {envoi ? "Envoi…" : `Payer ${fcfa(total)}`}
       </Bouton>
     </form>
   );

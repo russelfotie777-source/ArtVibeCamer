@@ -17,8 +17,8 @@ function Ligne({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 px-5 py-3">
-      <dt className="text-sm text-paper-soft">{terme}</dt>
+    <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 px-4 py-3">
+      <dt className="text-sm text-discret">{terme}</dt>
       <dd className="text-right text-sm">{children}</dd>
     </div>
   );
@@ -50,44 +50,44 @@ export default async function PageCandidat({
     <div className="mx-auto w-full max-w-5xl">
       <Link
         href="/admin/candidats"
-        className="text-sm text-paper-soft underline decoration-rule underline-offset-4 hover:text-ink hover:decoration-ink"
+        className="text-sm text-discret underline decoration-bordure-forte underline-offset-4 hover:text-fort hover:decoration-fort"
       >
         Retour aux candidats
       </Link>
 
-      <header className="mt-5 flex flex-wrap items-start justify-between gap-5">
-        <div className="flex items-start gap-5">
+      <header className="mt-4 flex flex-wrap items-start justify-between gap-4">
+        <div className="flex items-start gap-4">
           {candidat.photo_url ? (
             <Image
               src={candidat.photo_url}
               alt={`Photo de ${candidat.display_name}`}
               width={96}
               height={96}
-              className="panneau size-24 border border-rule object-cover"
+              className="rounded-region size-24 border border-bordure object-cover"
               unoptimized
             />
           ) : (
-            <div className="panneau flex size-24 items-center justify-center border border-rule bg-paper text-xs text-paper-soft">
+            <div className="rounded-region flex size-24 items-center justify-center border border-bordure bg-appui text-xs text-discret">
               Sans photo
             </div>
           )}
 
           <div>
-            <p className="chiffre text-sm text-brass">
+            <p className="chiffre text-sm text-lien">
               {candidat.candidate_number ?? "Numéro non attribué"}
             </p>
-            <h1 className="mt-1 font-display text-display-sm font-extrabold">
+            <h1 className="mt-1 text-3xl">
               {candidat.display_name}
             </h1>
-            <p className="mt-1 text-sm text-paper-soft">
-              {candidat.category?.name ?? "Sans catégorie"} —{" "}
+            <p className="mt-1 text-sm text-discret">
+              {candidat.category?.name ?? "Sans catégorie"},{" "}
               {candidat.is_group
                 ? `groupe de ${candidat.members_count}`
                 : "individuel"}
             </p>
             {candidat.full_name && candidat.stage_name ? (
-              <p className="text-sm text-paper-soft">
-                À l&apos;état civil : {candidat.full_name}
+              <p className="text-sm text-discret">
+                À l’état civil&nbsp;: {candidat.full_name}
               </p>
             ) : null}
           </div>
@@ -101,13 +101,13 @@ export default async function PageCandidat({
 
       <div className="mt-10 grid items-start gap-8 lg:grid-cols-[1fr_22rem]">
         <div className="grid content-start gap-8">
-          <section className="panneau border border-rule bg-paper-raised">
-            <div className="border-b border-rule px-5 py-4">
-              <h2 className="font-display text-lg font-extrabold">Coordonnées</h2>
+          <section className="rounded-region border border-bordure bg-surface">
+            <div className="border-b border-bordure px-4 py-4">
+              <h2 className="text-base">Coordonnées</h2>
             </div>
-            <dl className="divide-y divide-rule">
+            <dl className="divide-y divide-bordure">
               <Ligne terme="Téléphone">
-                <a href={`tel:${candidat.phone}`} className="chiffre hover:text-brass">
+                <a href={`tel:${candidat.phone}`} className="chiffre hover:text-lien">
                   {telephone(candidat.phone)}
                 </a>
               </Ligne>
@@ -118,7 +118,7 @@ export default async function PageCandidat({
               ) : null}
               {candidat.email ? (
                 <Ligne terme="Email">
-                  <a href={`mailto:${candidat.email}`} className="hover:text-brass">
+                  <a href={`mailto:${candidat.email}`} className="hover:text-lien">
                     {candidat.email}
                   </a>
                 </Ligne>
@@ -134,12 +134,12 @@ export default async function PageCandidat({
           </section>
 
           {candidat.presentation ? (
-            <section className="panneau border border-rule bg-paper-raised">
-              <div className="border-b border-rule px-5 py-4">
-                <h2 className="font-display text-lg font-extrabold">Présentation</h2>
+            <section className="rounded-region border border-bordure bg-surface">
+              <div className="border-b border-bordure px-4 py-4">
+                <h2 className="text-base">Présentation</h2>
               </div>
-              <div className="px-5 py-5">
-                <p className="prose-etroit text-sm leading-relaxed whitespace-pre-line">
+              <div className="px-4 py-4">
+                <p className="max-w-xl text-sm whitespace-pre-line">
                   {candidat.presentation}
                 </p>
               </div>
@@ -147,23 +147,23 @@ export default async function PageCandidat({
           ) : null}
 
           {candidat.is_group ? (
-            <section className="panneau border border-rule bg-paper-raised">
-              <div className="border-b border-rule px-5 py-4">
-                <h2 className="font-display text-lg font-extrabold">
+            <section className="rounded-region border border-bordure bg-surface">
+              <div className="border-b border-bordure px-4 py-4">
+                <h2 className="text-base">
                   Composition du groupe
                 </h2>
-                <p className="mt-1 text-sm text-paper-soft">
-                  Liste déclarée à l&apos;inscription. Elle sert au contrôle le
+                <p className="mt-1 text-sm text-discret">
+                  Liste déclarée à l’inscription. Elle sert au contrôle le
                   jour du casting.
                 </p>
               </div>
 
               {candidat.members && candidat.members.length > 0 ? (
-                <ol className="divide-y divide-rule">
+                <ol className="divide-y divide-bordure">
                   {candidat.members.map((membre, i) => (
                     <li
                       key={`${membre.full_name}-${i}`}
-                      className="flex items-center gap-4 px-5 py-3"
+                      className="flex items-center gap-4 px-4 py-3"
                     >
                       {membre.photo_url ? (
                         <Image
@@ -171,22 +171,22 @@ export default async function PageCandidat({
                           alt=""
                           width={40}
                           height={40}
-                          className="controle size-10 shrink-0 border border-rule object-cover"
+                          className="size-10 shrink-0 rounded-pilule border border-bordure object-cover"
                           unoptimized
                         />
                       ) : (
-                        <span className="controle flex size-10 shrink-0 items-center justify-center border border-rule bg-paper text-xs text-paper-soft">
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-pilule bg-appui text-sm text-discret">
                           {i + 1}
                         </span>
                       )}
-                      <span className="text-sm font-medium">
+                      <span className="text-sm font-semibold">
                         {membre.full_name}
                       </span>
                     </li>
                   ))}
                 </ol>
               ) : (
-                <p className="px-5 py-5 text-sm text-paper-soft">
+                <p className="px-4 py-4 text-sm text-discret">
                   Aucun membre déclaré.
                 </p>
               )}
@@ -194,18 +194,18 @@ export default async function PageCandidat({
           ) : null}
 
           {reseaux.length > 0 ? (
-            <section className="panneau border border-rule bg-paper-raised">
-              <div className="border-b border-rule px-5 py-4">
-                <h2 className="font-display text-lg font-extrabold">Réseaux</h2>
+            <section className="rounded-region border border-bordure bg-surface">
+              <div className="border-b border-bordure px-4 py-4">
+                <h2 className="text-base">Réseaux</h2>
               </div>
-              <dl className="divide-y divide-rule">
+              <dl className="divide-y divide-bordure">
                 {reseaux.map(([nom, url]) => (
                   <Ligne key={nom} terme={nom}>
                     <a
                       href={url as string}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="break-all underline decoration-rule underline-offset-4 hover:decoration-ink"
+                      className="break-all underline decoration-bordure-forte underline-offset-4 hover:decoration-fort"
                     >
                       {url}
                     </a>
@@ -219,15 +219,15 @@ export default async function PageCandidat({
         <div className="grid content-start gap-8 lg:sticky lg:top-8">
           <ActionsCandidat candidat={candidat} />
 
-          <section className="panneau border border-rule bg-paper-raised">
-            <div className="border-b border-rule px-5 py-4">
-              <h2 className="font-display text-lg font-extrabold">
-                Frais d&apos;inscription
+          <section className="rounded-region border border-bordure bg-surface">
+            <div className="border-b border-bordure px-4 py-4">
+              <h2 className="text-base">
+                Frais d’inscription
               </h2>
             </div>
 
             {paiement ? (
-              <dl className="divide-y divide-rule">
+              <dl className="divide-y divide-bordure">
                 <Ligne terme="Montant">
                   <span className="montant text-base">
                     {fcfa(paiement.amount)}
@@ -245,7 +245,7 @@ export default async function PageCandidat({
                 <Ligne terme="Référence">
                   <Link
                     href={`/admin/paiements?search=${paiement.reference}`}
-                    className="chiffre underline decoration-rule underline-offset-4 hover:decoration-ink"
+                    className="chiffre underline decoration-bordure-forte underline-offset-4 hover:decoration-fort"
                   >
                     {paiement.reference}
                   </Link>
@@ -255,22 +255,22 @@ export default async function PageCandidat({
                 ) : null}
               </dl>
             ) : (
-              <p className="px-5 py-5 text-sm leading-relaxed text-paper-soft">
+              <p className="px-4 py-4 text-sm text-discret">
                 Aucun encaissement rattaché. Le candidat a commencé son
                 inscription sans aller au bout du paiement.
                 {candidat.category
-                  ? ` Frais attendus : ${fcfa(candidat.category.registration_fee)}.`
+                  ? ` Frais attendus : ${fcfa(candidat.category.registration_fee)}.`
                   : ""}
               </p>
             )}
           </section>
 
           {candidat.reviewed_at ? (
-            <section className="panneau border border-rule bg-paper-raised">
-              <div className="border-b border-rule px-5 py-4">
-                <h2 className="font-display text-lg font-extrabold">Décision</h2>
+            <section className="rounded-region border border-bordure bg-surface">
+              <div className="border-b border-bordure px-4 py-4">
+                <h2 className="text-base">Décision</h2>
               </div>
-              <dl className="divide-y divide-rule">
+              <dl className="divide-y divide-bordure">
                 <Ligne terme="Traité le">{dateHeure(candidat.reviewed_at)}</Ligne>
                 {candidat.reviewer ? (
                   <Ligne terme="Par">{candidat.reviewer}</Ligne>

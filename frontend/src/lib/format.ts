@@ -34,6 +34,24 @@ export function dateCourte(iso: string | null | undefined): string {
   });
 }
 
+/**
+ * « 30 novembre 2026 », a l'heure de Douala : une cloture fixee a 23 h 59
+ * reste le 30, quel que soit le fuseau du serveur qui rend la page.
+ */
+export function dateLongue(iso: string, avecAnnee = true): string {
+  return new Date(iso).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    ...(avecAnnee ? { year: "numeric" } : {}),
+    timeZone: "Africa/Douala",
+  });
+}
+
+/** Jours entiers avant une echeance, le jour en cours compris. */
+export function joursRestants(iso: string): number {
+  return Math.max(0, Math.ceil((new Date(iso).getTime() - Date.now()) / 86_400_000));
+}
+
 export function dateHeure(iso: string | null | undefined): string {
   if (!iso) return "—";
   return new Date(iso).toLocaleString("fr-FR", {

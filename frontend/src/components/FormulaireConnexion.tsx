@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { seConnecter, type EtatConnexion } from "@/app/connexion/actions";
 import { Bouton } from "@/components/ui/Bouton";
+import { Champ, Saisie } from "@/components/ui/Champ";
 
 export function FormulaireConnexion() {
   const [etat, action, enCours] = useActionState<EtatConnexion, FormData>(
@@ -10,49 +11,47 @@ export function FormulaireConnexion() {
     {},
   );
 
-  const bordure = etat.message ? "border-oxblood" : "border-ink-line";
+  // Le message ne dit pas lequel des deux champs est faux : les deux le signalent.
+  const decrit = etat.message ? "connexion-erreur" : undefined;
 
   return (
-    <form action={action} className="grid gap-5">
+    <form action={action} className="grid gap-6">
       {etat.message ? (
         <p
+          id="connexion-erreur"
           role="alert"
-          className="panneau border-l-2 border-oxblood bg-oxblood/15 px-4 py-3 text-sm text-paper"
+          className="rounded-region border border-danger bg-danger-fond px-4 py-3 text-sm font-semibold text-danger"
         >
           {etat.message}
         </p>
       ) : null}
 
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium">
-          Email
-        </label>
-        <input
+      <Champ etiquette="Email" pour="email" obligatoire>
+        <Saisie
           id="email"
           name="email"
           type="email"
           autoComplete="username"
           required
-          className={`controle mt-1.5 w-full border ${bordure} bg-ink-raised px-3 py-2.5 text-base text-paper placeholder:text-ink-soft/60 focus:border-brass focus:outline-none`}
+          erreur={etat.message}
+          aria-describedby={decrit}
         />
-      </div>
+      </Champ>
 
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium">
-          Mot de passe
-        </label>
-        <input
+      <Champ etiquette="Mot de passe" pour="password" obligatoire>
+        <Saisie
           id="password"
           name="password"
           type="password"
           autoComplete="current-password"
           required
-          className={`controle mt-1.5 w-full border ${bordure} bg-ink-raised px-3 py-2.5 text-base text-paper focus:border-brass focus:outline-none`}
+          erreur={etat.message}
+          aria-describedby={decrit}
         />
-      </div>
+      </Champ>
 
-      <Bouton type="submit" taille="grand" disabled={enCours}>
-        {enCours ? "Connexion en cours" : "Se connecter"}
+      <Bouton type="submit" taille="grand" chargement={enCours} disabled={enCours}>
+        {enCours ? "Connexion…" : "Se connecter"}
       </Bouton>
     </form>
   );

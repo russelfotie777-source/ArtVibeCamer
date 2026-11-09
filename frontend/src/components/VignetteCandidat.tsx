@@ -21,9 +21,9 @@ export function VignetteCandidat({
   return (
     <Link
       href={`/candidats/${candidat.slug}`}
-      className="group flex h-full flex-col transition-colors hover:bg-ink-raised"
+      className="group flex h-full flex-col transition-colors duration-100 hover:bg-surface"
     >
-      <div className="relative aspect-4/5 overflow-hidden bg-ink-raised">
+      <div className="relative aspect-4/5 overflow-hidden bg-surface">
         {candidat.photo_url ? (
           <Image
             src={candidat.photo_url}
@@ -34,33 +34,29 @@ export function VignetteCandidat({
             unoptimized
           />
         ) : (
-          <span className="flex h-full items-center justify-center text-sm text-ink-soft">
+          <span className="flex h-full items-center justify-center text-sm text-discret">
             Sans photo
           </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col justify-between gap-3 p-5">
+      <div className="flex flex-1 flex-col justify-between gap-4 p-4">
         <div>
           {candidat.candidate_number ? (
-            <p className="chiffre text-sm text-brass">
-              {candidat.candidate_number}
-            </p>
+            <p className="chiffre text-sm text-accent">{candidat.candidate_number}</p>
           ) : null}
-          <Titre className="mt-1 font-display text-lg font-extrabold group-hover:text-brass">
+          <Titre className="mt-1 text-xl group-hover:text-lien">
             {candidat.display_name}
           </Titre>
-          <p className="mt-1 text-sm text-ink-soft">
+          <p className="mt-1 text-sm text-discret">
             {candidat.category?.name}
             {candidat.is_group ? `, groupe de ${candidat.members_count}` : ""}
           </p>
         </div>
 
         {candidat.votes_count > 0 ? (
-          <p className="text-sm text-ink-soft">
-            <span className="chiffre text-paper">
-              {nombre(candidat.votes_count)}
-            </span>{" "}
+          <p className="text-sm text-discret">
+            <span className="chiffre text-fort">{nombre(candidat.votes_count)}</span>{" "}
             voix
           </p>
         ) : null}

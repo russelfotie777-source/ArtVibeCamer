@@ -6,34 +6,35 @@ import type { StatutCandidat, StatutTransaction } from "@/lib/types";
  * que la renforcer.
  */
 
-type Teinte = "sage" | "amber" | "oxblood" | "neutre" | "indigo";
+type Teinte = "succes" | "alerte" | "danger" | "neutre" | "examen";
 
 const teintes: Record<Teinte, string> = {
-  sage: "bg-sage-wash text-sage border-sage/25",
-  amber: "bg-amber-wash text-amber border-amber/25",
-  oxblood: "bg-oxblood-wash text-oxblood border-oxblood/25",
-  neutre: "bg-paper text-paper-soft border-rule",
-  indigo: "bg-ink/6 text-ink border-ink/20",
+  succes: "bg-succes-fond text-succes",
+  alerte: "bg-alerte-fond text-alerte",
+  danger: "bg-danger-fond text-danger",
+  neutre: "bg-appui text-discret",
+  // Un dossier a examiner attend une personne, pas un systeme : contour plein.
+  examen: "border border-fort text-fort",
 };
 
 const candidat: Record<StatutCandidat, Teinte> = {
   draft: "neutre",
-  awaiting_payment: "amber",
-  pending_review: "indigo",
-  active: "sage",
-  rejected: "oxblood",
+  awaiting_payment: "alerte",
+  pending_review: "examen",
+  active: "succes",
+  rejected: "danger",
   withdrawn: "neutre",
   eliminated: "neutre",
 };
 
 const transaction: Record<StatutTransaction, Teinte> = {
-  pending: "amber",
-  processing: "amber",
-  succeeded: "sage",
-  failed: "oxblood",
+  pending: "alerte",
+  processing: "alerte",
+  succeeded: "succes",
+  failed: "danger",
   cancelled: "neutre",
   expired: "neutre",
-  refunded: "indigo",
+  refunded: "examen",
 };
 
 export function Statut({
@@ -45,7 +46,7 @@ export function Statut({
 }) {
   return (
     <span
-      className={`controle inline-flex shrink-0 items-center border px-2 py-0.5 text-xs font-medium whitespace-nowrap ${teintes[teinte]}`}
+      className={`inline-flex h-6 shrink-0 items-center rounded-pilule px-2 text-xs whitespace-nowrap ${teintes[teinte]}`}
     >
       {libelle}
     </span>
