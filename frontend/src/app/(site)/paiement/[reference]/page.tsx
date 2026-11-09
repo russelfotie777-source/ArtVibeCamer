@@ -41,8 +41,10 @@ export default async function PagePaiement({
   }
 
   return (
-    <div className="mx-auto w-full max-w-xl px-5 py-14 sm:px-8 sm:py-20">
-      <SuiviPaiement initiale={transaction} candidatInitial={candidat} />
+    <div className="cadre py-12 md:py-16">
+      <div className="max-w-xl">
+        <SuiviPaiement initiale={transaction} candidatInitial={candidat} />
+      </div>
     </div>
   );
 }
