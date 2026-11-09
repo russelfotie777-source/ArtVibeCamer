@@ -120,7 +120,7 @@ export function ActionsCandidat({ candidat }: { candidat: Candidat }) {
               </Bouton>
               <Bouton
                 type="button"
-                ton="contour"
+                ton="secondaire"
                 onClick={() => setFormulaireRejet(false)}
               >
                 Annuler

@@ -348,7 +348,7 @@ export function SuiviPaiement({
               automatiquement : revenez sur cette page dans quelques minutes.
             </p>
             <Bouton
-              ton="contour-clair"
+              ton="secondaire"
               onClick={() => {
                 depart.current = Date.now();
                 setAbandonne(false);

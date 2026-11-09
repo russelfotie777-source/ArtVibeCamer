@@ -23,11 +23,11 @@ export function Filtres({
         {children}
 
         <div className="flex gap-2">
-          <Bouton type="submit" ton="indigo" taille="normal">
+          <Bouton type="submit" ton="secondaire" taille="normal">
             Filtrer
           </Bouton>
           {actifs ? (
-            <LienBouton href={base} ton="contour" taille="normal">
+            <LienBouton href={base} ton="secondaire" taille="normal">
               Effacer
             </LienBouton>
           ) : null}
@@ -80,7 +80,7 @@ export function Pagination({
           {meta.current_page > 1 ? (
             <LienBouton
               href={construire(meta.current_page - 1)}
-              ton="contour"
+              ton="secondaire"
               taille="petit"
             >
               Précédent
@@ -92,7 +92,7 @@ export function Pagination({
           {meta.current_page < meta.last_page ? (
             <LienBouton
               href={construire(meta.current_page + 1)}
-              ton="contour"
+              ton="secondaire"
               taille="petit"
             >
               Suivant

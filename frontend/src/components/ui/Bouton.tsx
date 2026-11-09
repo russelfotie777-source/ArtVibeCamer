@@ -1,70 +1,85 @@
 import Link from "next/link";
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps } from "react";
 
 /*
  * Un libelle de bouton dit exactement ce qui va se passer : « Payer les frais
  * d'inscription », pas « Valider ». Le meme mot est repris dans le message de
  * confirmation.
+ *
+ * Les tons sont des roles, pas des couleurs : ils prennent les valeurs du
+ * terrain (clair ou sombre) qui entoure le bouton.
  */
 
-type Ton = "laiton" | "indigo" | "contour" | "contour-clair" | "danger";
+type Ton = "principal" | "secondaire" | "danger";
 
 const tons: Record<Ton, string> = {
-  laiton:
-    "bg-brass text-ink hover:bg-brass-lift border border-brass hover:border-brass-lift",
-  indigo:
-    "bg-ink text-paper hover:bg-ink-raised border border-ink",
-  contour:
-    "bg-transparent text-ink border border-ink/25 hover:border-ink hover:bg-ink/5",
-  "contour-clair":
-    "bg-transparent text-paper border border-ink-soft/40 hover:border-brass hover:text-brass",
+  principal: "bg-accent font-semibold text-sur-accent hover:bg-accent-survol",
+  secondaire:
+    "border border-bordure-forte text-fort hover:border-fort hover:bg-appui",
   danger:
-    "bg-transparent text-oxblood border border-oxblood/35 hover:bg-oxblood hover:text-paper hover:border-oxblood",
+    "border border-danger text-danger hover:bg-danger hover:text-fond",
 };
 
+/*
+ * 32, 40 et 48 px de haut ; 12 px de rembourrage, 24 pour l'action d'une
+ * page. Hauteurs minimales : un nom de candidat long passe a la ligne au lieu
+ * de deborder du bouton.
+ */
 const tailles = {
-  normal: "px-5 py-2.5 text-sm",
-  grand: "px-7 py-3.5 text-base",
-  petit: "px-3 py-1.5 text-xs",
+  petit: "min-h-8 px-3 py-1 text-sm",
+  normal: "min-h-10 px-3 py-2 text-sm",
+  grand: "min-h-12 px-6 py-2 text-base",
 };
 
 const base =
-  "controle inline-flex items-center justify-center gap-2 font-medium transition-colors " +
-  "disabled:cursor-not-allowed disabled:opacity-45";
+  "appui inline-flex items-center justify-center gap-2 rounded-controle text-center " +
+  "disabled:cursor-not-allowed disabled:opacity-50";
 
-export function Bouton({
-  ton = "laiton",
-  taille = "normal",
-  className = "",
-  ...props
-}: ComponentProps<"button"> & { ton?: Ton; taille?: keyof typeof tailles }) {
+/** Petit indicateur pose devant le libelle pendant un envoi. */
+function Indicateur() {
   return (
-    <button
-      {...props}
-      className={`${base} ${tons[ton]} ${tailles[taille]} ${className}`}
+    <span
+      aria-hidden="true"
+      className="size-4 shrink-0 animate-spin rounded-pilule border-2 border-current border-r-transparent"
     />
   );
 }
 
-export function LienBouton({
-  ton = "laiton",
+export function Bouton({
+  ton = "principal",
   taille = "normal",
+  chargement = false,
   className = "",
   children,
-  href,
-}: {
+  ...props
+}: ComponentProps<"button"> & {
   ton?: Ton;
   taille?: keyof typeof tailles;
-  className?: string;
-  children: ReactNode;
-  href: string;
+  /** Affiche l'indicateur ; le libelle passe au present continu (« Envoi… »). */
+  chargement?: boolean;
 }) {
   return (
-    <Link
-      href={href}
+    <button
+      {...props}
+      aria-busy={chargement || undefined}
       className={`${base} ${tons[ton]} ${tailles[taille]} ${className}`}
     >
+      {chargement ? <Indicateur /> : null}
       {children}
-    </Link>
+    </button>
+  );
+}
+
+export function LienBouton({
+  ton = "principal",
+  taille = "normal",
+  className = "",
+  ...props
+}: ComponentProps<typeof Link> & { ton?: Ton; taille?: keyof typeof tailles }) {
+  return (
+    <Link
+      {...props}
+      className={`${base} ${tons[ton]} ${tailles[taille]} ${className}`}
+    />
   );
 }

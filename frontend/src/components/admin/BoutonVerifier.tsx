@@ -18,7 +18,7 @@ export function BoutonVerifier({ reference }: { reference: string }) {
   return (
     <form action={action} className="inline-flex flex-col items-end gap-1">
       <input type="hidden" name="reference" value={reference} />
-      <Bouton type="submit" ton="contour" taille="petit" disabled={enCours}>
+      <Bouton type="submit" ton="secondaire" taille="petit" disabled={enCours}>
         {enCours ? "Vérification" : "Vérifier"}
       </Bouton>
 

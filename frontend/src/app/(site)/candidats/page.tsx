@@ -126,7 +126,7 @@ export default async function PageCandidats({
                 {candidats.meta.current_page > 1 ? (
                   <LienBouton
                     href={lien({ page: String(candidats.meta.current_page - 1) })}
-                    ton="contour-clair"
+                    ton="secondaire"
                     taille="petit"
                   >
                     Précédent
@@ -138,7 +138,7 @@ export default async function PageCandidats({
                 {candidats.meta.current_page < candidats.meta.last_page ? (
                   <LienBouton
                     href={lien({ page: String(candidats.meta.current_page + 1) })}
-                    ton="contour-clair"
+                    ton="secondaire"
                     taille="petit"
                   >
                     Suivant
