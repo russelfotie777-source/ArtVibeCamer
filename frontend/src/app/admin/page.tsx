@@ -28,10 +28,10 @@ export default async function PageTableauDeBord() {
   return (
     <div className="mx-auto w-full max-w-5xl">
       <header className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="font-display text-display-sm font-extrabold">
+        <h1 className="text-3xl">
           Tableau de bord
         </h1>
-        <p className="text-xs text-paper-soft">
+        <p className="text-xs text-discret">
           Arrêté au {dateHeure(bord.generated_at)}
         </p>
       </header>
@@ -40,22 +40,22 @@ export default async function PageTableauDeBord() {
       {alertes.length > 0 ? (
         <div
           role="alert"
-          className="panneau mt-7 border-l-2 border-amber bg-amber-wash px-5 py-4"
+          className="rounded-region mt-6 border border-alerte bg-alerte-fond px-4 py-4"
         >
-          <h2 className="font-display text-base font-extrabold text-amber">
+          <h2 className="text-base text-alerte">
             À regarder
           </h2>
-          <ul className="mt-2 grid gap-1 text-sm text-ink">
+          <ul className="mt-2 grid gap-1 text-sm text-fort">
             {alertes.map(([cle, valeur]) => (
               <li key={cle}>
-                <span className="chiffre font-medium">{valeur}</span>{" "}
+                <span className="chiffre font-semibold">{valeur}</span>{" "}
                 {libelleAlerte[cle] ?? cle}
               </li>
             ))}
           </ul>
           <Link
             href="/admin/paiements?status=processing"
-            className="mt-3 inline-block text-sm text-amber underline decoration-amber/40 underline-offset-4"
+            className="mt-4 inline-block text-sm text-alerte underline decoration-alerte underline-offset-4"
           >
             Ouvrir le suivi des paiements
           </Link>
@@ -66,15 +66,15 @@ export default async function PageTableauDeBord() {
           cartes identiques. */}
       <section className="mt-10">
         <h2 className="sr-only">Inscriptions</h2>
-        <dl className="grid gap-px border border-rule bg-rule sm:grid-cols-2 lg:grid-cols-4">
+        <dl className="overflow-hidden rounded-region grid gap-px border border-bordure bg-bordure sm:grid-cols-2 lg:grid-cols-4">
           {[
             { terme: "Candidats inscrits", valeur: nombre(candidates.total) },
             { terme: "Inscriptions payées", valeur: nombre(candidates.paid) },
             { terme: "Dossiers à valider", valeur: nombre(candidates.pending_review) },
             { terme: "Candidats en lice", valeur: nombre(candidates.active) },
           ].map((item) => (
-            <div key={item.terme} className="bg-paper-raised px-5 py-5">
-              <dt className="text-sm text-paper-soft">{item.terme}</dt>
+            <div key={item.terme} className="bg-surface px-4 py-4">
+              <dt className="text-sm text-discret">{item.terme}</dt>
               <dd className="montant mt-1 text-3xl">{item.valeur}</dd>
             </div>
           ))}
@@ -82,10 +82,10 @@ export default async function PageTableauDeBord() {
       </section>
 
       <section className="mt-10">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="font-display text-xl font-extrabold">Recettes</h2>
-          <p className="text-xs text-paper-soft">
-            La passerelle prélève sa commission à l&apos;encaissement.
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <h2 className="text-xl">Recettes</h2>
+          <p className="text-xs text-discret">
+            La passerelle prélève sa commission à l’encaissement.
           </p>
         </div>
 
@@ -94,47 +94,51 @@ export default async function PageTableauDeBord() {
           touche, et donc le chiffre qu'elle communique à l'organisateur et
           aux sponsors. Le brut reste visible pour la réconciliation.
         */}
-        <dl className="mt-4 grid gap-px border border-rule bg-rule sm:grid-cols-3">
-          <div className="bg-ink px-5 py-5 text-paper">
-            <dt className="text-sm text-ink-soft">Net reçu</dt>
-            <dd className="montant mt-1 text-3xl text-brass">
+        <dl className="overflow-hidden rounded-region mt-4 grid gap-px border border-bordure bg-bordure sm:grid-cols-3">
+          <div className="terrain-sombre px-4 py-4">
+            <dt className="text-sm text-discret">Net reçu</dt>
+            <dd className="montant mt-1 text-3xl text-accent">
               {fcfa(revenue.net)}
             </dd>
           </div>
-          <div className="bg-paper-raised px-5 py-5">
-            <dt className="text-sm text-paper-soft">Encaissé (brut)</dt>
+          <div className="bg-surface px-4 py-4">
+            <dt className="text-sm text-discret">Encaissé (brut)</dt>
             <dd className="montant mt-1 text-2xl">{fcfa(revenue.total)}</dd>
           </div>
-          <div className="bg-paper-raised px-5 py-5">
-            <dt className="text-sm text-paper-soft">Commission</dt>
+          <div className="bg-surface px-4 py-4">
+            <dt className="text-sm text-discret">Commission</dt>
             <dd className="montant mt-1 text-2xl">
               {revenue.fees > 0 ? `− ${fcfa(revenue.fees)}` : fcfa(0)}
             </dd>
             {revenue.total > 0 && revenue.fees > 0 ? (
-              <dd className="chiffre mt-1 text-xs text-paper-soft">
-                soit {((revenue.fees / revenue.total) * 100).toFixed(1)} %
+              <dd className="chiffre mt-1 text-xs text-discret">
+                soit{" "}
+                {((revenue.fees / revenue.total) * 100).toLocaleString("fr-FR", {
+                  maximumFractionDigits: 1,
+                })}
+                &#8239;%
               </dd>
             ) : null}
           </div>
         </dl>
 
-        <h3 className="mt-8 text-sm font-medium text-paper-soft">
+        <h3 className="mt-8 text-sm font-semibold text-discret">
           Détail par flux, en brut
         </h3>
-        <dl className="mt-3 grid gap-px border border-rule bg-rule sm:grid-cols-3">
+        <dl className="overflow-hidden rounded-region mt-4 grid gap-px border border-bordure bg-bordure sm:grid-cols-3">
           {[
             { terme: "Inscriptions", valeur: revenue.registrations },
             { terme: "Votes", valeur: revenue.votes },
             { terme: "Billets", valeur: revenue.tickets },
           ].map((item) => (
-            <div key={item.terme} className="bg-paper-raised px-5 py-4">
-              <dt className="text-sm text-paper-soft">{item.terme}</dt>
+            <div key={item.terme} className="bg-surface px-4 py-4">
+              <dt className="text-sm text-discret">{item.terme}</dt>
               <dd className="montant mt-1 text-xl">{fcfa(item.valeur)}</dd>
             </div>
           ))}
         </dl>
 
-        <p className="mt-3 text-sm text-paper-soft">
+        <p className="mt-4 text-sm text-discret">
           <span className="chiffre">{nombre(payments.succeeded)}</span> paiement
           {payments.succeeded > 1 ? "s" : ""} encaissé
           {payments.succeeded > 1 ? "s" : ""},{" "}
@@ -146,14 +150,14 @@ export default async function PageTableauDeBord() {
 
       {/* --- Dossiers a valider ---------------------------------------- */}
       <section className="mt-12">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="font-display text-xl font-extrabold">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <h2 className="text-xl">
             Dossiers à valider
           </h2>
           {candidates.pending_review > 0 ? (
             <Link
               href="/admin/candidats?status=pending_review"
-              className="text-sm text-ink underline decoration-rule underline-offset-4 hover:decoration-ink"
+              className="text-sm text-fort underline decoration-bordure-forte underline-offset-4 hover:decoration-fort"
             >
               {candidates.pending_review === 1
                 ? "Voir le dossier"
@@ -163,23 +167,23 @@ export default async function PageTableauDeBord() {
         </div>
 
         {aValider.data.length === 0 ? (
-          <p className="mt-4 border border-rule bg-paper-raised px-5 py-8 text-sm text-paper-soft">
-            Aucun dossier n&apos;attend de validation. Les inscriptions payées
+          <p className="rounded-region mt-4 border border-bordure bg-surface px-4 py-8 text-sm text-discret">
+            Aucun dossier n’attend de validation. Les inscriptions payées
             apparaîtront ici.
           </p>
         ) : (
-          <ul className="mt-4 divide-y divide-rule border border-rule bg-paper-raised">
+          <ul className="overflow-hidden rounded-region mt-4 divide-y divide-bordure border border-bordure bg-surface">
             {aValider.data.map((candidat) => (
               <li key={candidat.id}>
                 <Link
                   href={`/admin/candidats/${candidat.id}`}
-                  className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 transition-colors hover:bg-paper"
+                  className="flex flex-wrap items-center justify-between gap-4 px-4 py-4 transition-colors hover:bg-appui"
                 >
                   <span className="min-w-0">
-                    <span className="block truncate font-medium">
+                    <span className="block truncate font-semibold">
                       {candidat.display_name}
                     </span>
-                    <span className="text-xs text-paper-soft">
+                    <span className="text-xs text-discret">
                       <span className="chiffre">
                         {candidat.candidate_number ?? "sans numéro"}
                       </span>
@@ -199,33 +203,33 @@ export default async function PageTableauDeBord() {
 
       {/* --- Repartition par categorie --------------------------------- */}
       <section className="mt-12">
-        <h2 className="font-display text-xl font-extrabold">Par catégorie</h2>
+        <h2 className="text-xl">Par catégorie</h2>
 
-        <div className="mt-4 overflow-x-auto border border-rule bg-paper-raised">
-          <table className="w-full min-w-[36rem] text-sm">
+        <div className="rounded-region mt-4 overflow-x-auto border border-bordure bg-surface">
+          <table className="w-full min-w-xl text-sm">
             <thead>
-              <tr className="border-b border-rule text-left text-paper-soft">
-                <th scope="col" className="px-5 py-3 font-medium">Catégorie</th>
-                <th scope="col" className="px-5 py-3 text-right font-medium">Frais</th>
-                <th scope="col" className="px-5 py-3 text-right font-medium">Inscrits</th>
-                <th scope="col" className="px-5 py-3 text-right font-medium">En lice</th>
-                <th scope="col" className="px-5 py-3 text-right font-medium">Recettes</th>
+              <tr className="border-b border-bordure text-left text-discret">
+                <th scope="col" className="px-4 py-3 font-semibold">Catégorie</th>
+                <th scope="col" className="px-4 py-3 text-right font-semibold">Frais</th>
+                <th scope="col" className="px-4 py-3 text-right font-semibold">Inscrits</th>
+                <th scope="col" className="px-4 py-3 text-right font-semibold">En lice</th>
+                <th scope="col" className="px-4 py-3 text-right font-semibold">Recettes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-rule">
+            <tbody className="divide-y divide-bordure">
               {bord.by_category.map((c) => (
                 <tr key={c.id}>
-                  <td className="px-5 py-3 font-medium">{c.name}</td>
-                  <td className="chiffre px-5 py-3 text-right">
+                  <td className="px-4 py-3 font-semibold">{c.name}</td>
+                  <td className="chiffre px-4 py-3 text-right">
                     {nombre(c.registration_fee)}
                   </td>
-                  <td className="chiffre px-5 py-3 text-right">
+                  <td className="chiffre px-4 py-3 text-right">
                     {nombre(c.candidates_count)}
                   </td>
-                  <td className="chiffre px-5 py-3 text-right">
+                  <td className="chiffre px-4 py-3 text-right">
                     {nombre(c.active_candidates)}
                   </td>
-                  <td className="chiffre px-5 py-3 text-right">
+                  <td className="chiffre px-4 py-3 text-right">
                     {nombre(c.candidates_count * c.registration_fee)}
                   </td>
                 </tr>
@@ -233,7 +237,7 @@ export default async function PageTableauDeBord() {
             </tbody>
           </table>
         </div>
-        <p className="mt-2 text-xs text-paper-soft">
+        <p className="mt-2 text-xs text-discret">
           Les recettes par catégorie sont estimées à partir des inscriptions
           payées. Le montant réellement encaissé figure dans le suivi des
           paiements.

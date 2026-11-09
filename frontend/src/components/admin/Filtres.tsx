@@ -17,18 +17,16 @@ export function Filtres({
   return (
     <form
       method="get"
-      className="panneau mt-7 border border-rule bg-paper-raised px-5 py-4"
+      className="rounded-region mt-6 border border-bordure bg-surface px-4 py-4"
     >
       <div className="flex flex-wrap items-end gap-4">
         {children}
 
         <div className="flex gap-2">
-          <Bouton type="submit" ton="secondaire" taille="normal">
-            Filtrer
-          </Bouton>
+          <Bouton type="submit">Appliquer les filtres</Bouton>
           {actifs ? (
-            <LienBouton href={base} ton="secondaire" taille="normal">
-              Effacer
+            <LienBouton href={base} ton="secondaire">
+              Effacer les filtres
             </LienBouton>
           ) : null}
         </div>
@@ -50,10 +48,10 @@ export function ChampFiltre({
 }) {
   return (
     <div className={large ? "min-w-56 flex-1" : "min-w-40"}>
-      <label htmlFor={pour} className="block text-xs text-paper-soft">
+      <label htmlFor={pour} className="block text-sm font-semibold text-fort">
         {etiquette}
       </label>
-      <div className="mt-1">{children}</div>
+      <div className="mt-2">{children}</div>
     </div>
   );
 }
@@ -68,8 +66,8 @@ export function Pagination({
   if (meta.total === 0) return null;
 
   return (
-    <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm">
-      <p className="text-paper-soft">
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-4 text-sm">
+      <p className="text-discret">
         <span className="chiffre">{meta.from ?? 0}</span>–
         <span className="chiffre">{meta.to ?? 0}</span> sur{" "}
         <span className="chiffre">{meta.total}</span>
@@ -86,8 +84,8 @@ export function Pagination({
               Précédent
             </LienBouton>
           ) : null}
-          <span className="chiffre px-2 py-1.5 text-xs text-paper-soft">
-            Page {meta.current_page} / {meta.last_page}
+          <span className="chiffre flex items-center px-2 text-sm text-discret">
+            Page {meta.current_page} sur {meta.last_page}
           </span>
           {meta.current_page < meta.last_page ? (
             <LienBouton

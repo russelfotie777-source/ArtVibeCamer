@@ -48,13 +48,13 @@ export default async function PageCandidats({
   return (
     <div className="mx-auto w-full max-w-6xl">
       <header className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="font-display text-display-sm font-extrabold">Candidats</h1>
+        <h1 className="text-3xl">Candidats</h1>
         <a
           href={`/admin/exports/candidates${parametres({
             status: filtres.status,
             category_id: filtres.category_id,
           })}`}
-          className="text-sm text-ink underline decoration-rule underline-offset-4 hover:decoration-ink"
+          className="text-sm text-fort underline decoration-bordure-forte underline-offset-4 hover:decoration-fort"
         >
           Exporter en CSV
         </a>
@@ -97,55 +97,55 @@ export default async function PageCandidats({
       </Filtres>
 
       {liste.data.length === 0 ? (
-        <p className="mt-7 border border-rule bg-paper-raised px-5 py-10 text-sm text-paper-soft">
+        <p className="rounded-region mt-6 border border-bordure bg-surface px-4 py-10 text-sm text-discret">
           {actifs
             ? "Aucun candidat ne correspond à ces filtres."
             : "Aucun candidat inscrit pour le moment. Les inscriptions apparaîtront ici dès le premier paiement."}
         </p>
       ) : (
         <>
-          <div className="mt-7 overflow-x-auto border border-rule bg-paper-raised">
-            <table className="w-full min-w-[54rem] text-sm">
+          <div className="rounded-region mt-6 overflow-x-auto border border-bordure bg-surface">
+            <table className="w-full min-w-4xl text-sm">
               <thead>
-                <tr className="border-b border-rule text-left text-paper-soft">
-                  <th scope="col" className="px-5 py-3 font-medium">Numéro</th>
-                  <th scope="col" className="px-5 py-3 font-medium">Candidat</th>
-                  <th scope="col" className="px-5 py-3 font-medium">Catégorie</th>
-                  <th scope="col" className="px-5 py-3 font-medium">Formule</th>
-                  <th scope="col" className="px-5 py-3 font-medium">Téléphone</th>
-                  <th scope="col" className="px-5 py-3 font-medium">Statut</th>
-                  <th scope="col" className="px-5 py-3 font-medium">Inscrit le</th>
+                <tr className="border-b border-bordure text-left text-discret">
+                  <th scope="col" className="px-4 py-3 font-semibold">Numéro</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Candidat</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Catégorie</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Formule</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Téléphone</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Statut</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Inscrit le</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-rule">
+              <tbody className="divide-y divide-bordure">
                 {liste.data.map((c) => (
-                  <tr key={c.id} className="transition-colors hover:bg-paper">
-                    <td className="chiffre px-5 py-3 whitespace-nowrap">
+                  <tr key={c.id} className="transition-colors hover:bg-appui">
+                    <td className="chiffre px-4 py-3 whitespace-nowrap">
                       {c.candidate_number ?? (
-                        <span className="text-paper-soft">—</span>
+                        <span className="text-discret">—</span>
                       )}
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-4 py-3">
                       <Link
                         href={`/admin/candidats/${c.id}`}
-                        className="font-medium underline decoration-rule underline-offset-4 hover:decoration-ink"
+                        className="font-semibold underline decoration-bordure-forte underline-offset-4 hover:decoration-fort"
                       >
                         {c.display_name}
                       </Link>
                       {c.stage_name && c.full_name ? (
-                        <span className="block text-xs text-paper-soft">
+                        <span className="block text-xs text-discret">
                           {c.full_name}
                         </span>
                       ) : null}
                     </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       {c.category?.name ?? "—"}
                     </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       {c.is_group ? (
                         <>
                           Groupe
-                          <span className="chiffre ml-1 text-xs text-paper-soft">
+                          <span className="chiffre ml-1 text-xs text-discret">
                             ({c.members_count})
                           </span>
                         </>
@@ -153,16 +153,16 @@ export default async function PageCandidats({
                         "Individuel"
                       )}
                     </td>
-                    <td className="chiffre px-5 py-3 whitespace-nowrap">
+                    <td className="chiffre px-4 py-3 whitespace-nowrap">
                       {telephone(c.phone)}
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-4 py-3">
                       <StatutCandidatBadge
                         statut={c.status}
                         libelle={c.status_label}
                       />
                     </td>
-                    <td className="px-5 py-3 whitespace-nowrap text-paper-soft">
+                    <td className="px-4 py-3 whitespace-nowrap text-discret">
                       {dateCourte(c.created_at)}
                     </td>
                   </tr>
@@ -175,9 +175,9 @@ export default async function PageCandidats({
         </>
       )}
 
-      <p className="mt-6 text-xs text-paper-soft">
-        Un candidat sans numéro n&apos;a pas encore réglé ses frais
-        d&apos;inscription. Total affiché&nbsp;:{" "}
+      <p className="mt-6 text-xs text-discret">
+        Un candidat sans numéro n’a pas encore réglé ses frais
+        d’inscription. Total affiché&nbsp;:{" "}
         <span className="chiffre">{nombre(liste.meta.total)}</span>.
       </p>
     </div>

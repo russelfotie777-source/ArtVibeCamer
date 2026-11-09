@@ -18,17 +18,23 @@ export function BoutonVerifier({ reference }: { reference: string }) {
   return (
     <form action={action} className="inline-flex flex-col items-end gap-1">
       <input type="hidden" name="reference" value={reference} />
-      <Bouton type="submit" ton="secondaire" taille="petit" disabled={enCours}>
-        {enCours ? "Vérification" : "Vérifier"}
+      <Bouton
+        type="submit"
+        ton="secondaire"
+        taille="petit"
+        chargement={enCours}
+        disabled={enCours}
+      >
+        {enCours ? "Vérification…" : "Vérifier"}
       </Bouton>
 
       {etat.succes ? (
-        <span role="status" className="text-xs text-sage">
+        <span role="status" className="text-xs text-succes">
           {etat.succes}
         </span>
       ) : null}
       {etat.erreur ? (
-        <span role="alert" className="text-xs text-oxblood">
+        <span role="alert" className="text-xs text-danger">
           {etat.erreur}
         </span>
       ) : null}

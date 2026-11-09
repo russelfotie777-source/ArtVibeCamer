@@ -50,13 +50,13 @@ export default async function PagePaiements({
   return (
     <div className="mx-auto w-full max-w-6xl">
       <header className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="font-display text-display-sm font-extrabold">Paiements</h1>
+        <h1 className="text-3xl">Paiements</h1>
         <a
           href={`/admin/exports/transactions${parametres({
             type: filtres.type,
             status: filtres.status,
           })}`}
-          className="text-sm text-ink underline decoration-rule underline-offset-4 hover:decoration-ink"
+          className="text-sm text-fort underline decoration-bordure-forte underline-offset-4 hover:decoration-fort"
         >
           Exporter en CSV
         </a>
@@ -94,61 +94,61 @@ export default async function PagePaiements({
       </Filtres>
 
       {liste.data.length === 0 ? (
-        <p className="mt-7 border border-rule bg-paper-raised px-5 py-10 text-sm text-paper-soft">
+        <p className="rounded-region mt-6 border border-bordure bg-surface px-4 py-10 text-sm text-discret">
           {actifs
             ? "Aucun paiement ne correspond à ces filtres."
             : "Aucun paiement enregistré pour le moment."}
         </p>
       ) : (
         <>
-          <div className="mt-7 overflow-x-auto border border-rule bg-paper-raised">
+          <div className="rounded-region mt-6 overflow-x-auto border border-bordure bg-surface">
             <table className="w-full min-w-[56rem] text-sm">
               <thead>
-                <tr className="border-b border-rule text-left text-paper-soft">
-                  <th scope="col" className="px-5 py-3 font-medium">Référence</th>
-                  <th scope="col" className="px-5 py-3 font-medium">Flux</th>
-                  <th scope="col" className="px-5 py-3 text-right font-medium">Montant</th>
-                  <th scope="col" className="px-5 py-3 font-medium">Statut</th>
-                  <th scope="col" className="px-5 py-3 font-medium">Payeur</th>
-                  <th scope="col" className="px-5 py-3 font-medium">Date</th>
-                  <th scope="col" className="px-5 py-3 text-right font-medium">
+                <tr className="border-b border-bordure text-left text-discret">
+                  <th scope="col" className="px-4 py-3 font-semibold">Référence</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Flux</th>
+                  <th scope="col" className="px-4 py-3 text-right font-semibold">Montant</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Statut</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Payeur</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Date</th>
+                  <th scope="col" className="px-4 py-3 text-right font-semibold">
                     <span className="sr-only">Action</span>
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-rule">
+              <tbody className="divide-y divide-bordure">
                 {liste.data.map((t) => (
-                  <tr key={t.reference} className="transition-colors hover:bg-paper">
-                    <td className="chiffre px-5 py-3 whitespace-nowrap">
+                  <tr key={t.reference} className="transition-colors hover:bg-appui">
+                    <td className="chiffre px-4 py-3 whitespace-nowrap">
                       {t.reference}
                     </td>
-                    <td className="px-5 py-3 whitespace-nowrap">{t.type_label}</td>
-                    <td className="montant px-5 py-3 text-right whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">{t.type_label}</td>
+                    <td className="montant px-4 py-3 text-right whitespace-nowrap">
                       {nombre(t.amount)}
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-4 py-3">
                       <StatutTransactionBadge
                         statut={t.status}
                         libelle={t.status_label}
                       />
                       {t.failure_reason ? (
-                        <span className="mt-1 block text-xs text-paper-soft">
+                        <span className="mt-1 block text-xs text-discret">
                           {t.failure_reason}
                         </span>
                       ) : null}
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-4 py-3">
                       <span className="block max-w-40 truncate">
                         {t.payer_name ?? "—"}
                       </span>
-                      <span className="chiffre block text-xs text-paper-soft">
+                      <span className="chiffre block text-xs text-discret">
                         {telephone(t.payer_phone)}
                       </span>
                     </td>
-                    <td className="px-5 py-3 whitespace-nowrap text-paper-soft">
+                    <td className="px-4 py-3 whitespace-nowrap text-discret">
                       {dateHeure(t.paid_at ?? t.created_at)}
                     </td>
-                    <td className="px-5 py-3 text-right">
+                    <td className="px-4 py-3 text-right">
                       {/* La verification n'a de sens que sur un paiement non
                           tranche : un etat final ne change plus. */}
                       {t.is_final ? null : (
@@ -166,10 +166,10 @@ export default async function PagePaiements({
             construire={(page) => `/admin/paiements${parametres({ ...filtres, page })}`}
           />
 
-          <p className="mt-6 text-xs text-paper-soft">
+          <p className="mt-6 text-xs text-discret">
             Montants en FCFA. Encaissé sur cette page&nbsp;:{" "}
             <span className="chiffre">{fcfa(encaisse)}</span>. Le total de
-            l&apos;événement figure sur le tableau de bord.
+            l’événement figure sur le tableau de bord.
           </p>
         </>
       )}
