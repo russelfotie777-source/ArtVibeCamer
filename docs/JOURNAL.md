@@ -6,7 +6,7 @@ session.** C'est ce fichier qui permet a quelqu'un d'autre de reprendre sans
 avoir a reconstituer le contexte.
 
 - **Echeance MVP** : 10 octobre 2026
-- **Derniere mise a jour** : 11 octobre 2026
+- **Derniere mise a jour** : 9 novembre 2026
 
 ---
 
@@ -120,6 +120,69 @@ tableau de bord affichant 50 000 FCFA de recettes.
 
 ---
 
+## Interface : refonte du 9 novembre
+
+Le front a ete repris de bout en bout sur un systeme de jetons unique. Aucun
+changement d'API, de route ni de comportement metier : seules les couches de
+presentation et les libelles bougent.
+
+### Ce qui change
+
+- **Couleurs relevees sur le logo**, a la mediane des pixels de
+  `public/marque/` : lettrage `#013c20`, etoile `#e29111`, jaune `#fabc0c`,
+  rouge `#c70e20`, vert `#11953f`. Les neutres sont derives de la teinte du
+  lettrage (oklch, teinte 156). Plus aucun gris-bleu : l'ancien fond
+  `#e2e8ef` du back-office est remplace par un blanc pur et un fond de coque
+  `#f7fbf8`. Chaque paire texte/fond est verifiee a 4,5:1 au moins, les
+  contours de champ a 3:1.
+- **Deux terrains, un seul jeu de roles.** `terrain-sombre` (le vert de la
+  marque, grain a 6 %) et `terrain-clair` (blanc). Les composants ecrivent
+  `bg-surface text-texte border-bordure` et prennent les valeurs du terrain qui
+  les entoure. Le terrain clair passe au sombre avec
+  `prefers-color-scheme: dark`. Consequence directe : le formulaire de vote,
+  qui affichait ses etiquettes en vert sur vert, est lisible, et le hack
+  `[&_label]:text-paper` du suivi de paiement a disparu.
+- **Une seule famille**, Bricolage Grotesque, avec son axe de taille optique.
+  Instrument Sans est retiree. Deux graisses, 400 et 600 ; seul le titre
+  d'accueil monte a 700. Echelle fermee 12 · 14 · 16 · 18 puis fluide
+  jusqu'a 96 px.
+- **Rayons selon l'imbrication** (`rounded-controle` 8, `rounded-enfant` 4,
+  `rounded-region` 12), trois ombres seulement, anneau de focus a deux
+  couleurs sur tous les elements.
+- **Accueil** : tableau des disciplines avec leurs tarifs reels (il avait
+  disparu de la page), date de cloture et jours restants calcules depuis
+  `registration_closes_at` a l'heure de Douala, piste d'inscription en trois
+  etapes. Seule animation d'arrivee du site : le slogan qui se pose mot par
+  mot (40 ms d'ecart, tout est en place avant 1,1 s). Desactivee avec
+  `prefers-reduced-motion`.
+- **Back-office** : coque a barre laterale, regions bordees, etats de chargement
+  avec indicateur sur tous les boutons d'envoi.
+- **Libelles** : verbe et objet sur les boutons (« Appliquer les filtres »,
+  « Rejeter le dossier »), titres sans point final, apostrophes et espaces
+  insecables francais. Le suivi d'un paiement de **vote** n'annonce plus une
+  inscription et ne propose plus la relance, qui n'existe que pour les
+  inscriptions.
+
+### Verifie
+
+`tsc`, `eslint` et `next build` passent. Captures en 1 440 px, 390 px et en
+sombre sur toutes les pages publiques et le back-office, contre une base
+locale peuplee par le parcours de `docs/TESTER.md` (driver `fake`). Navigation
+au clavier controlee sur l'accueil et l'inscription.
+
+### Reste a faire sur l'interface
+
+- Relire l'accueil et les fiches avec de **vraies photos de candidats** : la
+  production n'avait encore aucun profil valide au 9 novembre.
+- Deployer, puis controler le rendu sur un telephone Android d'entree de
+  gamme (le grain est une image SVG en fond, a surveiller sur ces appareils).
+- L'ecran de vote est restyle mais appelle une route retiree de `main` le
+  2 novembre (voir « Backend des votes » plus bas) : il refonctionnera quand
+  ce backend sera reconstruit. Les captures ont ete faites sur l'etat
+  anterieur, qui avait encore la route.
+
+---
+
 ## Point d'arret actuel
 
 ### Pages disponibles
@@ -213,6 +276,40 @@ tests, et passer par le service metier dans le code applicatif.
 dev et en test. Une relation non chargee ou un attribut non fillable leve une
 exception. C'est voulu : ces erreurs-la, en production, donnent des requetes
 N+1 ou des ecritures partielles silencieuses sur des montants.
+
+### Jetons Tailwind lies au terrain : `@theme inline`
+
+Les couleurs de role (`--color-fond: var(--fond)`) sont declarees dans
+`@theme inline`. Sans `inline`, Tailwind pose la valeur sur `:root`, ou
+`var(--fond)` est resolu une fois pour toutes : un bloc `terrain-sombre` pose
+dans une page claire garderait alors les couleurs claires.
+
+La palette par defaut de Tailwind est retiree (`--color-*: initial`), comme
+les graisses et les rayons. Une classe `text-gray-500` ou `font-medium`
+compile donc vers **rien**, sans erreur. C'est voulu : une couleur hors des
+roles ne doit pas passer. Si un element perd sa couleur, verifier d'abord
+que la classe existe dans `globals.css`.
+
+### Une variable absente annule toute la declaration
+
+`animation: avc-monter 600ms var(--courbe) both` devient `animation: none`
+si `--courbe` n'est pas definie, sans aucun message. Toute `var(--x)` des
+feuilles de style doit avoir sa definition dans `globals.css`.
+
+### Cache Turbopack et manque de memoire
+
+Si la machine manque de memoire pendant `npm run dev`, Turbopack journalise
+« Persisting failed … Cannot allocate memory » et peut ensuite servir une
+**ancienne version compilee** de `globals.css`, meme apres redemarrage. Le
+symptome : la page affiche l'ancien style alors que le fichier est a jour.
+Arreter le serveur et supprimer `frontend/.next/dev/cache/turbopack`.
+
+### Pas de `light-dark()` pour l'instant
+
+Les valeurs sombres du terrain clair sont dupliquees dans une media query
+plutot que d'utiliser `light-dark()`. La fonction n'existe que depuis
+Chrome 123 : sur un navigateur integre plus ancien, encore courant sur les
+telephones du public, toutes les couleurs tomberaient.
 
 ### Total des voix
 
