@@ -9,6 +9,7 @@ use App\Http\Resources\TransactionResource;
 use App\Models\Candidate;
 use App\Models\Setting;
 use App\Models\Transaction;
+use App\Models\Vote;
 use App\Services\Payments\PaymentProcessor;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Component\HttpFoundation\Response;
@@ -55,9 +56,11 @@ class PaymentController extends Controller
     {
         abort_unless($transaction->status === TransactionStatus::Succeeded, 404);
 
-        $candidat = $transaction->type === TransactionType::Registration
-            ? $transaction->payable
-            : null;
+        $candidat = match ($transaction->type) {
+            TransactionType::Registration => $transaction->payable,
+            TransactionType::Vote => $transaction->payable?->candidate,
+            default => null,
+        };
 
         /*
          * Sans sous-ensemble de police, dompdf embarque la fonte entiere :
@@ -76,7 +79,9 @@ class PaymentController extends Controller
                 'contactTelephone' => Setting::get('contact_phone'),
                 'designation' => $this->designation($transaction),
                 'precision' => $candidat?->candidate_number
-                    ? 'Candidat n° '.$candidat->candidate_number
+                    ? ($transaction->type === TransactionType::Vote
+                        ? 'Vote pour le candidat n° '.$candidat->candidate_number
+                        : 'Candidat n° '.$candidat->candidate_number)
                     : null,
                 'montant' => $transaction->formattedAmount(),
                 'payeur' => $transaction->payer_name ?: 'Non renseigné',
@@ -110,34 +115,52 @@ class PaymentController extends Controller
     }
 
     /**
-     * Resume du candidat pour une transaction d'inscription, afin que le
-     * candidat voie son numero des la confirmation du paiement.
-     *
-     * Divulgation acceptable : la reference de transaction est aleatoire et
-     * n'est connue que de lui. On s'en tient malgre tout au strict
-     * necessaire, sans coordonnees personnelles.
+     * Resume du candidat pour une transaction d'inscription ou de vote, afin que le
+     * payeur voie les details sans divulguer de donnees personnelles.
      */
     private function candidat(Transaction $transaction): ?array
     {
-        if ($transaction->type !== TransactionType::Registration) {
-            return null;
+        if ($transaction->type === TransactionType::Registration) {
+            $candidate = $transaction->payable;
+
+            if (! $candidate instanceof Candidate) {
+                return null;
+            }
+
+            return [
+                'candidate_number' => $candidate->candidate_number,
+                'display_name' => $candidate->display_name,
+                'slug' => $candidate->slug,
+                'status' => $candidate->status->value,
+                'status_label' => $candidate->status->label(),
+                'category' => $candidate->loadMissing('category')->category?->name,
+                'registration_type_label' => $candidate->registration_type->label(),
+                'members_count' => $candidate->members_count,
+            ];
         }
 
-        $candidate = $transaction->payable;
+        if ($transaction->type === TransactionType::Vote) {
+            $vote = $transaction->payable;
 
-        if (! $candidate instanceof Candidate) {
-            return null;
+            if (! $vote instanceof Vote) {
+                return null;
+            }
+
+            $candidate = $vote->candidate;
+
+            return [
+                'candidate_number' => $candidate?->candidate_number,
+                'display_name' => $candidate?->display_name,
+                'slug' => $candidate?->slug,
+                'status' => $candidate?->status?->value,
+                'status_label' => $candidate?->status?->label(),
+                'category' => $candidate?->loadMissing('category')->category?->name,
+                'registration_type_label' => $candidate?->registration_type?->label(),
+                'members_count' => $candidate?->members_count,
+                'vote_quantity' => $vote->quantity,
+            ];
         }
 
-        return [
-            'candidate_number' => $candidate->candidate_number,
-            'display_name' => $candidate->display_name,
-            'slug' => $candidate->slug,
-            'status' => $candidate->status->value,
-            'status_label' => $candidate->status->label(),
-            'category' => $candidate->loadMissing('category')->category?->name,
-            'registration_type_label' => $candidate->registration_type->label(),
-            'members_count' => $candidate->members_count,
-        ];
+        return null;
     }
 }

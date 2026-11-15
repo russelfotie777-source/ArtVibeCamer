@@ -269,3 +269,44 @@ export type Page<T> = {
 };
 
 export type Enveloppe<T> = { data: T };
+
+export type LigneClassement = {
+  position: number;
+  candidate_number: string | null;
+  name: string;
+  slug: string;
+  photo_url: string | null;
+  votes_count: number | null;
+};
+
+export type ResultatCategorie = {
+  category: {
+    id: number;
+    name: string;
+    slug: string;
+    candidates_count: number;
+    votes_count: number | null;
+  };
+  ranking: LigneClassement[];
+};
+
+export type ReponseResultats = {
+  data: ResultatCategorie[];
+  meta: {
+    show_vote_counts: boolean;
+    updated_at: string;
+  };
+};
+
+export type ResumeCandidatPaiement = {
+  candidate_number: string | null;
+  display_name: string;
+  slug: string;
+  status: string;
+  status_label: string;
+  category: string | null;
+  registration_type_label?: string | null;
+  members_count?: number;
+  vote_quantity?: number | null;
+};
+

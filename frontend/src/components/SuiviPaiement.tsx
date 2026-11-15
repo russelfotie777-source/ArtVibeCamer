@@ -13,18 +13,9 @@ import { Bouton } from "@/components/ui/Bouton";
 import { Champ, Saisie } from "@/components/ui/Champ";
 import { BASE_PUBLIQUE } from "@/lib/config";
 import { fcfa } from "@/lib/format";
-import type { Transaction } from "@/lib/types";
+import type { ResumeCandidatPaiement, Transaction } from "@/lib/types";
 
-type ResumeCandidat = {
-  candidate_number: string | null;
-  display_name: string;
-  slug: string;
-  status: string;
-  status_label: string;
-  category: string | null;
-};
-
-type Reponse = { data: Transaction; meta?: { candidate: ResumeCandidat | null } };
+type Reponse = { data: Transaction; meta?: { candidate: ResumeCandidatPaiement | null } };
 
 const DUREE_MAX = 3 * 60 * 1000;
 
@@ -48,7 +39,7 @@ export function SuiviPaiement({
   candidatInitial,
 }: {
   initiale: Transaction;
-  candidatInitial: ResumeCandidat | null;
+  candidatInitial: ResumeCandidatPaiement | null;
 }) {
   const router = useRouter();
 
@@ -206,7 +197,31 @@ export function SuiviPaiement({
           </h1>
         </div>
 
-        {candidat?.candidate_number ? (
+        {estVote && candidat ? (
+          <div className="border-b border-bordure p-6">
+            <p className="text-sm text-discret">Candidat soutenu</p>
+            <p className="mt-1 text-2xl font-semibold text-fort">
+              {candidat.display_name}
+            </p>
+            <p className="mt-1 text-sm text-discret">
+              {candidat.candidate_number ? (
+                <>
+                  Candidat n°{" "}
+                  <span className="chiffre font-semibold">{candidat.candidate_number}</span> ·{" "}
+                </>
+              ) : null}
+              {candidat.category}
+            </p>
+            {candidat.vote_quantity ? (
+              <div className="mt-4 rounded-region border border-succes/20 bg-succes-fond/30 p-4">
+                <p className="text-xs uppercase tracking-wider text-discret">Attribution confirmée</p>
+                <p className="montant mt-1 text-4xl text-accent">
+                  +{candidat.vote_quantity} {candidat.vote_quantity > 1 ? "voix" : "voix"}
+                </p>
+              </div>
+            ) : null}
+          </div>
+        ) : !estVote && candidat?.candidate_number ? (
           <div className="border-b border-bordure p-6">
             <p className="text-sm text-discret">Votre numéro de candidat</p>
             <p className="montant mt-1 text-5xl tracking-affiche text-accent">
@@ -220,6 +235,12 @@ export function SuiviPaiement({
         ) : null}
 
         <dl className="divide-y divide-bordure border-b border-bordure text-sm">
+          {estVote && candidat?.vote_quantity ? (
+            <div className="flex items-baseline justify-between gap-4 px-6 py-3">
+              <dt className="text-discret">Nombre de voix</dt>
+              <dd className="chiffre text-fort">{candidat.vote_quantity}</dd>
+            </div>
+          ) : null}
           <div className="flex items-baseline justify-between gap-4 px-6 py-3">
             <dt className="text-discret">Montant réglé</dt>
             <dd className="montant text-lg">{fcfa(transaction.amount)}</dd>
@@ -262,11 +283,20 @@ export function SuiviPaiement({
               Télécharger le reçu (PDF)
             </a>
 
+            {estVote && candidat?.slug ? (
+              <Link
+                href={`/candidats/${candidat.slug}`}
+                className="text-sm text-lien underline decoration-1 underline-offset-4"
+              >
+                Fiche du candidat
+              </Link>
+            ) : null}
+
             <Link
-              href={estVote ? "/candidats" : "/"}
+              href={estVote ? "/resultats" : "/"}
               className="text-sm text-lien underline decoration-1 underline-offset-4"
             >
-              {estVote ? "Voir les candidats" : "Revenir à l’accueil"}
+              {estVote ? "Voir le classement" : "Revenir à l’accueil"}
             </Link>
           </div>
         </div>
@@ -294,12 +324,26 @@ export function SuiviPaiement({
 
         {/* La relance n'existe que pour une inscription : un vote se refait depuis la fiche. */}
         {estVote ? (
-          <div className="p-6">
+          <div className="flex flex-wrap items-center gap-4 p-6">
+            {candidat?.slug ? (
+              <Link
+                href={`/candidats/${candidat.slug}/voter`}
+                className="appui inline-flex h-10 items-center rounded-controle bg-accent px-4 text-sm font-semibold text-sur-accent hover:bg-accent-survol"
+              >
+                Réessayer de voter
+              </Link>
+            ) : null}
             <Link
               href="/candidats"
               className="text-sm text-lien underline decoration-1 underline-offset-4"
             >
-              Revenir aux candidats
+              Voir les candidats
+            </Link>
+            <Link
+              href="/resultats"
+              className="text-sm text-lien underline decoration-1 underline-offset-4"
+            >
+              Voir les résultats
             </Link>
           </div>
         ) : (
@@ -397,7 +441,9 @@ export function SuiviPaiement({
           <>
             <p className="text-sm">
               {instructions ??
-                "Une demande de paiement est arrivée sur votre téléphone. Saisissez votre code secret Mobile Money pour la valider. Cette page se met à jour toute seule."}
+                (estVote
+                  ? "Une demande de paiement est arrivée sur votre téléphone. Saisissez votre code secret Mobile Money pour valider vos voix. Cette page se met à jour toute seule."
+                  : "Une demande de paiement est arrivée sur votre téléphone. Saisissez votre code secret Mobile Money pour la valider. Cette page se met à jour toute seule.")}
             </p>
             <p className="mt-4 text-sm text-discret">
               Gardez cette page ouverte. Référence{" "}
