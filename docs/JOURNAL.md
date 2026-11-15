@@ -6,7 +6,7 @@ session.** C'est ce fichier qui permet a quelqu'un d'autre de reprendre sans
 avoir a reconstituer le contexte.
 
 - **Echeance MVP** : 10 octobre 2026
-- **Derniere mise a jour** : 9 novembre 2026
+- **Derniere mise a jour** : 15 novembre 2026
 
 ---
 
@@ -707,24 +707,19 @@ Date actuelle : **30 novembre 2026**. Les castings sont annonces les 8 et
 16 novembre : ils tombent donc avant la cloture, a reconcilier avec
 l'organisation si les dossiers doivent etre valides avant.
 
-### Backend des votes : retire de `main`, a reconstruire
+### Backend des votes : reconstruit et valide (15 novembre 2026)
 
-Le 2 novembre, la logique metier des votes a ete retiree de `main` pour etre
-reconstruite par un autre developpeur : achat, credit apres paiement,
-moderation. Le cahier des charges est dans
-[EXERCICE-VOTE.md](EXERCICE-VOTE.md).
+La logique metier des votes a ete reconstruite conformement a
+[EXERCICE-VOTE.md](EXERCICE-VOTE.md) :
+- `StoreVoteRequest` avec normalisation du telephone camerounais et validation de quantite ;
+- `VoteService` avec calcul serveur du montant unitaire, atomicite SQL, empreinte anti-fraude et annulation sous verrou ;
+- `VoteFulfilment` idempotent implementant `Fulfilment` (credit des voix au candidat et a la categorie a la confirmation du paiement, retrait a l'invalidation) ;
+- Raccordement dans `PaymentProcessor::fulfilmentFor(TransactionType::Vote)` ;
+- Controleurs `Site\VoteController` et `Admin\VoteController` (liste filtree, detection `suspicious`, `cancel`) ;
+- Ressource `VoteResource` avec masquage des champs sensibles hors back-office ;
+- Restauration des quatre routes publiques et d'administration dans `routes/api.php`.
 
-**La production n'est pas concernee pour l'instant** : le serveur execute la
-branche `feature/GlobalPush`, qui contient encore les votes. Mais tout
-redeploiement depuis `main` les supprimerait du site. Avant cela :
-
-- desactiver `voting_enabled`, sinon le bouton « Voter » des fiches candidats
-  mene a une API qui repond en 404 ;
-- verifier que la reconstruction est terminee.
-
-Etat de depart mesure : 50 tests au vert, 20 en echec (les 7 de `VotingTest`
-et 13 de `ElgiopayTest`, qui utilise l'achat de voix comme vehicule). Le
-chantier est termine quand la suite repasse a 70 sur 70.
+**Critere atteint** : 70 tests sur 70 passent au vert (282 assertions). Code formate sous Pint (PSR-12).
 
 ## Decisions prises, et pourquoi
 

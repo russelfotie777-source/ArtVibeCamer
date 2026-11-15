@@ -67,23 +67,23 @@ class PaymentController extends Controller
          */
         $pdf = Pdf::setOption(['isFontSubsettingEnabled' => true])
             ->loadView('recus.paiement', [
-            'transaction' => $transaction,
-            'evenement' => Setting::get('event_name', config('app.name')),
-            'sousTitre' => Setting::get('event_tagline'),
-            'lieu' => collect([Setting::get('event_venue'), Setting::get('event_city')])
-                ->filter()->implode(', ') ?: null,
-            'contactEmail' => Setting::get('contact_email'),
-            'contactTelephone' => Setting::get('contact_phone'),
-            'designation' => $this->designation($transaction),
-            'precision' => $candidat?->candidate_number
-                ? 'Candidat n° '.$candidat->candidate_number
-                : null,
-            'montant' => $transaction->formattedAmount(),
-            'payeur' => $transaction->payer_name ?: 'Non renseigné',
-            'payeLe' => $transaction->paid_at?->timezone(config('app.timezone'))
-                ->translatedFormat('j F Y à H\\hi') ?? '—',
-            'emisLe' => now()->timezone(config('app.timezone'))->translatedFormat('j F Y'),
-        ]);
+                'transaction' => $transaction,
+                'evenement' => Setting::get('event_name', config('app.name')),
+                'sousTitre' => Setting::get('event_tagline'),
+                'lieu' => collect([Setting::get('event_venue'), Setting::get('event_city')])
+                    ->filter()->implode(', ') ?: null,
+                'contactEmail' => Setting::get('contact_email'),
+                'contactTelephone' => Setting::get('contact_phone'),
+                'designation' => $this->designation($transaction),
+                'precision' => $candidat?->candidate_number
+                    ? 'Candidat n° '.$candidat->candidate_number
+                    : null,
+                'montant' => $transaction->formattedAmount(),
+                'payeur' => $transaction->payer_name ?: 'Non renseigné',
+                'payeLe' => $transaction->paid_at?->timezone(config('app.timezone'))
+                    ->translatedFormat('j F Y à H\\hi') ?? '—',
+                'emisLe' => now()->timezone(config('app.timezone'))->translatedFormat('j F Y'),
+            ]);
 
         /*
          * Nom de fichier bati sur la reference : un payeur qui telecharge

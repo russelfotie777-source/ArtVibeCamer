@@ -34,7 +34,7 @@
         <env name="DB_DATABASE" value="artvibecamer_test"/>
         <env name="DB_USERNAME" value="root"/>
         <env name="DB_PASSWORD" value=""/>
-        <env name="DB_SOCKET" value="/opt/lampp/var/mysql/mysql.sock"/>
+        <env name="DB_SOCKET" value=""/>
         <env name="DB_URL" value=""/>
         <env name="PAYMENT_DRIVER" value="fake"/>
         <env name="MAIL_MAILER" value="array"/>
