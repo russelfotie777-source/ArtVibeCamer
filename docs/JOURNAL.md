@@ -43,7 +43,7 @@ avoir a reconstituer le contexte.
 | Paiement, suivi et relance | Fait | Fait |
 | Liste et fiche publiques des candidats | Fait | Fait |
 | Achat de voix | Fait | Fait |
-| Resultats publics | Fait | A faire |
+| Resultats publics | Fait | Fait |
 | Tableau de bord, candidats, paiements et exports | Fait | Fait |
 | Billetterie et QR codes | Fait | A faire |
 | Controle des billets a l'entree | Fait | A faire |
@@ -720,6 +720,15 @@ La logique metier des votes a ete reconstruite conformement a
 - Restauration des quatre routes publiques et d'administration dans `routes/api.php`.
 
 **Critere atteint** : 70 tests sur 70 passent au vert (282 assertions). Code formate sous Pint (PSR-12).
+
+### Parcours vote et classements frontend (15 novembre 2026)
+
+Mise en place et validation du parcours complet de vote et de la page de resultats conformement a la Phase 2 :
+- **Ecran d'achat de voix** : verification du raccordement de `/candidats/[slug]/voter` avec `FormulaireVote.tsx`, gestion des paliers de voix, validation des coordonnees et redirection fluide vers le suivi de paiement.
+- **Suivi de paiement de vote** : enrichissement de `PaymentController::candidat` pour retourner les metadonnees du candidat et la quantite de voix attribuees (`vote_quantity`). Adaptation de `SuiviPaiement.tsx` pour afficher le candidat soutenu et les voix creditees en lieu et place du formulaire d'inscription.
+- **Page publique de resultats (`/resultats`)** : consommation de `GET /api/v1/results`, ecran d'attente soigné en cas de 403 / `results_public: false`, masquage du decompte exact si `show_vote_counts: false`, podium avec estrades stylisees pour les 3 premiers et tableau des rangs suivants par categorie.
+- **Navigation** : ajout du lien direct vers `/resultats` dans `NavSite.tsx`.
+- **Qualite et tests** : 71 tests PHPUnit valides (287 assertions), verification TypeScript sans erreur (`npx tsc --noEmit`), ESLint et Pint au vert.
 
 ## Decisions prises, et pourquoi
 
