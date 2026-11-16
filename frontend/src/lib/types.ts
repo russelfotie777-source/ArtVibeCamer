@@ -310,3 +310,64 @@ export type ResumeCandidatPaiement = {
   vote_quantity?: number | null;
 };
 
+export type TypeBillet = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  price: number;
+  is_on_sale: boolean;
+  is_sold_out: boolean;
+  max_purchasable: number;
+  display_order: number;
+};
+
+export type BilletIndividuel = {
+  code: string;
+  holder_name: string | null;
+  status: string;
+  status_label: string;
+  type?: TypeBillet | null;
+  used_at: string | null;
+  qr_token?: string | null;
+};
+
+export type LigneCommandeBillet = {
+  ticket_type: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+};
+
+export type CommandeBillets = {
+  reference: string;
+  buyer_name: string;
+  quantity: number;
+  total_amount: number;
+  formatted_total: string;
+  status: string;
+  status_label: string;
+  paid_at: string | null;
+  expires_at: string | null;
+  created_at: string | null;
+  items?: LigneCommandeBillet[];
+  tickets?: BilletIndividuel[];
+  transaction?: Transaction | null;
+};
+
+export type ReponseCommandeBillets = {
+  message: string;
+  order: CommandeBillets;
+  transaction: Transaction;
+  payment: Paiement;
+};
+
+export type ResumeCommandePaiement = {
+  reference: string;
+  quantity: number;
+  total_amount: number;
+  status: string;
+  status_label: string;
+};
+
+

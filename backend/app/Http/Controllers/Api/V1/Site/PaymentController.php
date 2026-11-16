@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\TransactionResource;
 use App\Models\Candidate;
 use App\Models\Setting;
+use App\Models\TicketOrder;
 use App\Models\Transaction;
 use App\Models\Vote;
 use App\Services\Payments\PaymentProcessor;
@@ -40,7 +41,10 @@ class PaymentController extends Controller
         }
 
         return TransactionResource::make($transaction)->additional([
-            'meta' => ['candidate' => $this->candidat($transaction)],
+            'meta' => [
+                'candidate' => $this->candidat($transaction),
+                'ticket_order' => $this->ticketOrder($transaction),
+            ],
         ]);
     }
 
@@ -62,6 +66,10 @@ class PaymentController extends Controller
             default => null,
         };
 
+        $order = $transaction->type === TransactionType::Ticket
+            ? $transaction->payable
+            : null;
+
         /*
          * Sans sous-ensemble de police, dompdf embarque la fonte entiere :
          * 879 Ko pour un recu d'une page, contre 24 Ko une fois reduite aux
@@ -78,11 +86,11 @@ class PaymentController extends Controller
                 'contactEmail' => Setting::get('contact_email'),
                 'contactTelephone' => Setting::get('contact_phone'),
                 'designation' => $this->designation($transaction),
-                'precision' => $candidat?->candidate_number
-                    ? ($transaction->type === TransactionType::Vote
-                        ? 'Vote pour le candidat n° '.$candidat->candidate_number
-                        : 'Candidat n° '.$candidat->candidate_number)
-                    : null,
+                'precision' => match ($transaction->type) {
+                    TransactionType::Registration => $candidat?->candidate_number ? 'Candidat n° '.$candidat->candidate_number : null,
+                    TransactionType::Vote => $candidat?->candidate_number ? 'Vote pour le candidat n° '.$candidat->candidate_number : null,
+                    TransactionType::Ticket => $order?->reference ? 'Commande n° '.$order->reference : null,
+                },
                 'montant' => $transaction->formattedAmount(),
                 'payeur' => $transaction->payer_name ?: 'Non renseigné',
                 'payeLe' => $transaction->paid_at?->timezone(config('app.timezone'))
@@ -162,5 +170,30 @@ class PaymentController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Resume de la commande de billets pour une transaction de billetterie,
+     * afin de guider le client vers ses e-billets des la validation.
+     */
+    private function ticketOrder(Transaction $transaction): ?array
+    {
+        if ($transaction->type !== TransactionType::Ticket) {
+            return null;
+        }
+
+        $order = $transaction->payable;
+
+        if (! $order instanceof TicketOrder) {
+            return null;
+        }
+
+        return [
+            'reference' => $order->reference,
+            'quantity' => $order->quantity,
+            'total_amount' => $order->total_amount,
+            'status' => $order->status->value,
+            'status_label' => $order->status->label(),
+        ];
     }
 }

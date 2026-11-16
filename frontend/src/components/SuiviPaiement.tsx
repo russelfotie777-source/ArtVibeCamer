@@ -13,9 +13,15 @@ import { Bouton } from "@/components/ui/Bouton";
 import { Champ, Saisie } from "@/components/ui/Champ";
 import { BASE_PUBLIQUE } from "@/lib/config";
 import { fcfa } from "@/lib/format";
-import type { ResumeCandidatPaiement, Transaction } from "@/lib/types";
+import type { ResumeCandidatPaiement, ResumeCommandePaiement, Transaction } from "@/lib/types";
 
-type Reponse = { data: Transaction; meta?: { candidate: ResumeCandidatPaiement | null } };
+type Reponse = {
+  data: Transaction;
+  meta?: {
+    candidate?: ResumeCandidatPaiement | null;
+    ticket_order?: ResumeCommandePaiement | null;
+  };
+};
 
 const DUREE_MAX = 3 * 60 * 1000;
 
@@ -37,14 +43,17 @@ function cadence(ecouleMs: number): number {
 export function SuiviPaiement({
   initiale,
   candidatInitial,
+  commandeInitiale = null,
 }: {
   initiale: Transaction;
   candidatInitial: ResumeCandidatPaiement | null;
+  commandeInitiale?: ResumeCommandePaiement | null;
 }) {
   const router = useRouter();
 
   const [transaction, setTransaction] = useState(initiale);
   const [candidat, setCandidat] = useState(candidatInitial);
+  const [commande, setCommande] = useState(commandeInitiale);
   const [abandonne, setAbandonne] = useState(false);
   const [relance, setRelance] = useState(false);
   const [erreurRelance, setErreurRelance] = useState<string | null>(null);
@@ -88,6 +97,7 @@ export function SuiviPaiement({
       const charge = (await reponse.json()) as Reponse;
       setTransaction(charge.data);
       if (charge.meta?.candidate) setCandidat(charge.meta.candidate);
+      if (charge.meta?.ticket_order) setCommande(charge.meta.ticket_order);
     } catch {
       // Coupure passagere : la prochaine interrogation reprendra.
     }
@@ -185,6 +195,7 @@ export function SuiviPaiement({
   }
 
   const estVote = transaction.type === "vote";
+  const estBillet = transaction.type === "ticket";
 
   /* --- Paiement encaisse ------------------------------------------- */
   if (transaction.status === "succeeded") {
@@ -193,7 +204,11 @@ export function SuiviPaiement({
         <div className="border-b border-bordure p-6">
           <p className="text-sm font-semibold text-succes">Paiement reçu</p>
           <h1 className="mt-2 text-4xl tracking-affiche">
-            {estVote ? "Vos voix sont comptées" : "Votre inscription est enregistrée"}
+            {estVote
+              ? "Vos voix sont comptées"
+              : estBillet
+              ? "Vos billets sont disponibles"
+              : "Votre inscription est enregistrée"}
           </h1>
         </div>
 
@@ -221,7 +236,18 @@ export function SuiviPaiement({
               </div>
             ) : null}
           </div>
-        ) : !estVote && candidat?.candidate_number ? (
+        ) : estBillet && commande ? (
+          <div className="border-b border-bordure p-6">
+            <p className="text-sm text-discret">Commande confirmée</p>
+            <p className="montant mt-1 text-3xl tracking-affiche text-accent">
+              {commande.quantity} {commande.quantity > 1 ? "billets réservés" : "billet réservé"}
+            </p>
+            <p className="mt-2 text-sm text-discret">
+              Référence commande{" "}
+              <span className="chiffre text-fort">{commande.reference}</span>
+            </p>
+          </div>
+        ) : !estVote && !estBillet && candidat?.candidate_number ? (
           <div className="border-b border-bordure p-6">
             <p className="text-sm text-discret">Votre numéro de candidat</p>
             <p className="montant mt-1 text-5xl tracking-affiche text-accent">
@@ -241,6 +267,12 @@ export function SuiviPaiement({
               <dd className="chiffre text-fort">{candidat.vote_quantity}</dd>
             </div>
           ) : null}
+          {estBillet && commande ? (
+            <div className="flex items-baseline justify-between gap-4 px-6 py-3">
+              <dt className="text-discret">Nombre de places</dt>
+              <dd className="chiffre text-fort">{commande.quantity}</dd>
+            </div>
+          ) : null}
           <div className="flex items-baseline justify-between gap-4 px-6 py-3">
             <dt className="text-discret">Montant réglé</dt>
             <dd className="montant text-lg">{fcfa(transaction.amount)}</dd>
@@ -258,7 +290,7 @@ export function SuiviPaiement({
         </dl>
 
         <div className="p-6">
-          {estVote ? null : (
+          {!estVote && !estBillet ? (
             <>
               <h2 className="text-lg">La suite</h2>
               <p className="mt-2 text-sm">
@@ -268,9 +300,18 @@ export function SuiviPaiement({
                 en cas de question.
               </p>
             </>
-          )}
+          ) : null}
 
-          <div className={`flex flex-wrap items-center gap-4 ${estVote ? "" : "mt-6"}`}>
+          <div className={`flex flex-wrap items-center gap-4 ${estVote || estBillet ? "" : "mt-6"}`}>
+            {estBillet && commande?.reference ? (
+              <Link
+                href={`/billets/${commande.reference}`}
+                className="appui inline-flex h-10 items-center rounded-controle bg-accent px-4 text-sm font-semibold text-sur-accent hover:bg-accent-survol"
+              >
+                Afficher mes billets & QR codes
+              </Link>
+            ) : null}
+
             {/*
               Lien direct vers l'API plutot qu'un appel depuis le navigateur :
               le PDF arrive en piece jointe, le navigateur le telecharge ou
@@ -293,10 +334,10 @@ export function SuiviPaiement({
             ) : null}
 
             <Link
-              href={estVote ? "/resultats" : "/"}
+              href={estVote ? "/resultats" : estBillet ? "/billetterie" : "/"}
               className="text-sm text-lien underline decoration-1 underline-offset-4"
             >
-              {estVote ? "Voir le classement" : "Revenir à l’accueil"}
+              {estVote ? "Voir le classement" : estBillet ? "Billetterie" : "Revenir à l’accueil"}
             </Link>
           </div>
         </div>
@@ -318,11 +359,13 @@ export function SuiviPaiement({
               : "La transaction a été interrompue avant la validation."}{" "}
             {estVote
               ? "Aucune voix n’a été débitée ni comptée."
-              : "Votre dossier est conservé : renvoyez la demande de paiement, sans ressaisir le formulaire."}
+              : estBillet
+              ? "Aucun billet n’a été réservé ni débité."
+              : "Votre dossier est conservé : renvoyez la demande de paiement, sans ressaisir le formulaire."}
           </p>
         </div>
 
-        {/* La relance n'existe que pour une inscription : un vote se refait depuis la fiche. */}
+        {/* La relance n'existe que pour une inscription : un vote ou billet se refait depuis la fiche. */}
         {estVote ? (
           <div className="flex flex-wrap items-center gap-4 p-6">
             {candidat?.slug ? (
@@ -344,6 +387,21 @@ export function SuiviPaiement({
               className="text-sm text-lien underline decoration-1 underline-offset-4"
             >
               Voir les résultats
+            </Link>
+          </div>
+        ) : estBillet ? (
+          <div className="flex flex-wrap items-center gap-4 p-6">
+            <Link
+              href="/billetterie"
+              className="appui inline-flex h-10 items-center rounded-controle bg-accent px-4 text-sm font-semibold text-sur-accent hover:bg-accent-survol"
+            >
+              Retourner à la billetterie
+            </Link>
+            <Link
+              href="/"
+              className="text-sm text-lien underline decoration-1 underline-offset-4"
+            >
+              Revenir à l’accueil
             </Link>
           </div>
         ) : (
@@ -443,6 +501,8 @@ export function SuiviPaiement({
               {instructions ??
                 (estVote
                   ? "Une demande de paiement est arrivée sur votre téléphone. Saisissez votre code secret Mobile Money pour valider vos voix. Cette page se met à jour toute seule."
+                  : estBillet
+                  ? "Une demande de paiement est arrivée sur votre téléphone. Saisissez votre code secret Mobile Money pour recevoir vos billets. Cette page se met à jour toute seule."
                   : "Une demande de paiement est arrivée sur votre téléphone. Saisissez votre code secret Mobile Money pour la valider. Cette page se met à jour toute seule.")}
             </p>
             <p className="mt-4 text-sm text-discret">
