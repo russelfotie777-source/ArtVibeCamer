@@ -45,7 +45,7 @@ avoir a reconstituer le contexte.
 | Achat de voix | Fait | Fait |
 | Resultats publics | Fait | Fait |
 | Tableau de bord, candidats, paiements et exports | Fait | Fait |
-| Billetterie et QR codes | Fait | A faire |
+| Billetterie et QR codes | Fait | Fait |
 | Controle des billets a l'entree | Fait | A faire |
 | Categories, tarifs, reglages et moderation des votes | Fait | A faire dans le back-office |
 
@@ -729,6 +729,15 @@ Mise en place et validation du parcours complet de vote et de la page de resulta
 - **Page publique de resultats (`/resultats`)** : consommation de `GET /api/v1/results`, ecran d'attente soigné en cas de 403 / `results_public: false`, masquage du decompte exact si `show_vote_counts: false`, podium avec estrades stylisees pour les 3 premiers et tableau des rangs suivants par categorie.
 - **Navigation** : ajout du lien direct vers `/resultats` dans `NavSite.tsx`.
 - **Qualite et tests** : 71 tests PHPUnit valides (287 assertions), verification TypeScript sans erreur (`npx tsc --noEmit`), ESLint et Pint au vert.
+
+### Billetterie publique et retrait des billets (16 novembre 2026)
+
+Mise en place et validation du module de billetterie publique et d'emission des e-billets conformement a la Phase 3 :
+- **Page billetterie (`/billetterie`)** : consommation de `GET /api/v1/ticket-types` (Standard, VIP, VVIP), selecteur de quantites par pas avec verification des jauges et plafonds par commande, formulaire acheteur (nom, telephone Mobile Money, email facultatif), soumission securisee vers `POST /api/v1/ticket-orders` et redirection vers `/paiement/[reference]`.
+- **Suivi de paiement de billetterie** : enrichissement de `PaymentController::show` et `recu()` pour supporter `TransactionType::Ticket` avec retour de `ticket_order` dans les metadonnees, affichage du recapitulatif des places et bouton d'acces immediat aux billets des confirmation.
+- **Page de retrait des e-billets (`/billets/[reference]`)** : consommation de `GET /api/v1/ticket-orders/{reference}`, generation dynamique et autonome de QR codes nets via les jetons `qr_token` de chaque billet individuel, affichage du code de secours dictable court (`AVC-T-XXXXXX`) en cas d'ecran illisible, vue optimisee pour l'impression papier et les scans d'entree nocturnes (`@media print` avec bouton `BoutonImprimer`).
+- **Navigation** : ajout du lien vers `/billetterie` dans `NavSite.tsx`.
+- **Qualite et tests** : 72 tests PHPUnit au vert (292 assertions), nouveau test de verification du suivi de paiement billetterie, validation TypeScript et ESLint a zero erreur.
 
 ## Decisions prises, et pourquoi
 
