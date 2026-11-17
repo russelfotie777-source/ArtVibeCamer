@@ -46,7 +46,7 @@ avoir a reconstituer le contexte.
 | Resultats publics | Fait | Fait |
 | Tableau de bord, candidats, paiements et exports | Fait | Fait |
 | Billetterie et QR codes | Fait | Fait |
-| Controle des billets a l'entree | Fait | A faire |
+| Controle des billets a l'entree | Fait | Fait |
 | Categories, tarifs, reglages et moderation des votes | Fait | A faire dans le back-office |
 
 Le parcours public en production couvre donc l'inscription et les fiches des
@@ -738,6 +738,18 @@ Mise en place et validation du module de billetterie publique et d'emission des 
 - **Page de retrait des e-billets (`/billets/[reference]`)** : consommation de `GET /api/v1/ticket-orders/{reference}`, generation dynamique et autonome de QR codes nets via les jetons `qr_token` de chaque billet individuel, affichage du code de secours dictable court (`AVC-T-XXXXXX`) en cas d'ecran illisible, vue optimisee pour l'impression papier et les scans d'entree nocturnes (`@media print` avec bouton `BoutonImprimer`).
 - **Navigation** : ajout du lien vers `/billetterie` dans `NavSite.tsx`.
 - **Qualite et tests** : 72 tests PHPUnit au vert (292 assertions), nouveau test de verification du suivi de paiement billetterie, validation TypeScript et ESLint a zero erreur.
+
+### Interface mobile de controle a l'entree (scan) (17 novembre 2026)
+
+Mise en place et validation de l'interface mobile de scan et de controle d'entree conformement a la Phase 4 :
+- **Page de scan d'acces (`/admin/scan`)** : interface dediee aux agents de securite et equipes d'accueil (`capabilities.scan: true` pour super_admin, admin et scanner). Redirection automatique des comptes au profil purement scanner vers cette page.
+- **Scanner camera en direct** : integration de `html5-qrcode` avec ciblage prioritaire de la camera dorsale (`facingMode: "environment"`), gestion des autorisations et extinction propre lors des demontages.
+- **Saisie de secours dictable** : champ texte avec passage automatique en majuscules pour traiter les billets presentes sur des ecrans casses ou des impressions froissees via leur code court (`AVC-T-XXXXXX`).
+- **Retour visuel immediat plein ecran** : verdict visuel a fort contraste recouvrant tout l'ecran pour une lisibilite immediate de nuit ou en plein soleil : vert eclatant en cas d'entree autorisee (`granted: true`), rouge vif en cas de refus (billet deja utilise, commande impayee, code inconnu ou contrefait) avec rappel du nom du porteur et du type de place. Fermeture tactile ou temporisee a 3,2 secondes.
+- **Signaux audio et haptiques** : synthese directe de sons d'entree par l'API Web Audio (carillon aigu pour acces valide, double bip grave pour rejet) sans aucun chargement de fichier externe audio lourd, completee de vibrations haptiques sur smartphone (`navigator.vibrate`).
+- **Compteurs et statistiques d'entree en temps reel** : consommation de `GET /api/v1/admin/scan/stats` avec jauge de progression (entrees scannees, billets restants a entrer, taux d'entree et alertes de rejets), selecteur de porte memorise localement (`localStorage`) et journal des scans recents.
+- **Navigation d'administration** : mise a jour de `NavAdmin.tsx` et `app/admin/layout.tsx` pour adapter dynamiquement la navigation selon les habilitations (`capabilities.back_office` et `capabilities.scan`).
+- **Qualite et tests** : 72 tests PHPUnit au vert (292 assertions), verification TypeScript (`npx tsc --noEmit`) et lint ESLint a zero erreur.
 
 ## Decisions prises, et pourquoi
 

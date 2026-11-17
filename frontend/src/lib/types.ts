@@ -370,4 +370,42 @@ export type ResumeCommandePaiement = {
   status_label: string;
 };
 
+export type BilletScanne = {
+  code: string;
+  holder_name: string | null;
+  type: string | null;
+  status: string;
+  used_at: string | null;
+  scan_count: number;
+};
+
+export type ReponseScan = {
+  granted: boolean;
+  result: "accepted" | "already_used" | "not_found" | "cancelled" | "order_unpaid";
+  message: string;
+  ticket: BilletScanne | null;
+};
+
+export type JournalScanRecent = {
+  code: string;
+  result: string;
+  result_label: string;
+  gate: string | null;
+  agent: string | null;
+  scanned_at: string | null;
+};
+
+export type ReponseStatsScan = {
+  entrance: {
+    tickets_issued: number;
+    checked_in: number;
+    remaining: number;
+    rate: number;
+    rejected_scans: number;
+    last_hour: number;
+  };
+  recent: JournalScanRecent[];
+};
+
+
 

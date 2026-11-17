@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { envoyerAdmin, ErreurApi } from "@/lib/api";
+import { envoyerAdmin, ErreurApi, lireAdmin } from "@/lib/api";
 import { fermerSession } from "@/lib/session";
+import type { ReponseScan, ReponseStatsScan } from "@/lib/types";
 
 export type Retour = { succes?: string; erreur?: string };
 
@@ -97,5 +98,45 @@ export async function verifierPaiement(
     return { succes: reponse.message };
   } catch (erreur) {
     return { erreur: lire(erreur, "La vérification a échoué.") };
+  }
+}
+
+// Controle d'un billet a l'entree : accepte le jeton QR ou le code court de secours.
+export async function scannerBillet(
+  code: string,
+  gate?: string | null,
+): Promise<ReponseScan> {
+  try {
+    return await envoyerAdmin<ReponseScan>("/admin/scan", {
+      methode: "POST",
+      corps: {
+        code: code.trim(),
+        gate: gate?.trim() || null,
+      },
+    });
+  } catch (erreur) {
+    if (erreur instanceof ErreurApi) {
+      return {
+        granted: false,
+        result: "not_found",
+        message: erreur.message || "Billet inconnu ou non reconnu.",
+        ticket: null,
+      };
+    }
+    return {
+      granted: false,
+      result: "not_found",
+      message: "Impossible de joindre le serveur de contrôle.",
+      ticket: null,
+    };
+  }
+}
+
+// Chargement des statistiques de scan en direct et de l'historique recent.
+export async function chargerStatsScan(): Promise<ReponseStatsScan | null> {
+  try {
+    return await lireAdmin<ReponseStatsScan>("/admin/scan/stats");
+  } catch {
+    return null;
   }
 }

@@ -29,18 +29,17 @@ export default async function LayoutAdmin({
   }
 
   /*
-   * Un agent de scan n'a acces qu'au controle a l'entree : il n'a rien a voir
-   * des recettes ni des coordonnees des candidats.
+   * Si l'utilisateur n'a aucun droit (ni back-office ni controle d'entree),
+   * l'acces est refuse.
    */
-  if (!utilisateur.capabilities.back_office) {
+  if (!utilisateur.capabilities.back_office && !utilisateur.capabilities.scan) {
     return (
       <main className="terrain-sombre flex min-h-dvh items-center px-4 py-16">
         <div className="mx-auto w-full max-w-md">
           <h1 className="text-4xl tracking-affiche">Accès réservé</h1>
           <p className="mt-4">
-            Votre compte «&nbsp;{utilisateur.role_label}&nbsp;» donne accès au
-            contrôle des billets à l’entrée, pas au suivi de
-            l’événement.
+            Votre compte «&nbsp;{utilisateur.role_label}&nbsp;» ne dispose pas
+            des droits requis pour cet espace.
           </p>
           <div className="mt-6 -ml-3">
             <BoutonDeconnexion />
@@ -59,14 +58,14 @@ export default async function LayoutAdmin({
     <div className="terrain-clair flex min-h-dvh flex-col bg-coque lg:flex-row">
       <aside className="terrain-sombre flex flex-col border-bordure lg:sticky lg:top-0 lg:h-dvh lg:w-60 lg:shrink-0 lg:border-r">
         <div className="flex h-16 items-center justify-between gap-4 px-4">
-          <LogoEvenement hauteur={40} href="/admin" />
+          <LogoEvenement hauteur={40} href={utilisateur.capabilities.back_office ? "/admin" : "/admin/scan"} />
           <div className="lg:hidden">
             <BoutonDeconnexion />
           </div>
         </div>
 
         <div className="px-2 pb-2 lg:flex-1 lg:pt-4">
-          <NavAdmin />
+          <NavAdmin utilisateur={utilisateur} />
         </div>
 
         <div className="hidden border-t border-bordure p-4 lg:block">

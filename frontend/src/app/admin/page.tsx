@@ -1,12 +1,18 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { lireAdmin, parametres } from "@/lib/api";
 import { dateHeure, fcfa, nombre } from "@/lib/format";
 import { StatutCandidatBadge } from "@/components/ui/Statut";
-import type { Candidat, Page, TableauDeBord } from "@/lib/types";
+import type { Candidat, Page, TableauDeBord, Utilisateur } from "@/lib/types";
 
 export const metadata = { title: "Tableau de bord" };
 
 export default async function PageTableauDeBord() {
+  const me = await lireAdmin<{ user: Utilisateur }>("/admin/me");
+  if (!me.user.capabilities.back_office && me.user.capabilities.scan) {
+    redirect("/admin/scan");
+  }
+
   const [bord, aValider] = await Promise.all([
     lireAdmin<TableauDeBord>("/admin/dashboard"),
     lireAdmin<Page<Candidat>>(
