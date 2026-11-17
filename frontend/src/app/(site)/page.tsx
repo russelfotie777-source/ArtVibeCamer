@@ -91,6 +91,7 @@ export default async function Accueil() {
                       {mot}
                     </span>
                   </span>{" "}
+                  {i === 3 || i === 6 ? <br className="hidden sm:inline" /> : null}
                 </Fragment>
               ))}
             </h1>
@@ -130,11 +131,6 @@ export default async function Accueil() {
               {actionPrincipale ? (
                 <LienBouton href={actionPrincipale.href} taille="grand">
                   {actionPrincipale.libelle}
-                </LienBouton>
-              ) : null}
-              {ouvertes.length > 0 && candidats.length > 0 ? (
-                <LienBouton href="/candidats" ton="secondaire" taille="grand">
-                  Voir les candidats
                 </LienBouton>
               ) : null}
             </div>

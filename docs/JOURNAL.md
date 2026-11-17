@@ -751,6 +751,14 @@ Mise en place et validation de l'interface mobile de scan et de controle d'entre
 - **Navigation d'administration** : mise a jour de `NavAdmin.tsx` et `app/admin/layout.tsx` pour adapter dynamiquement la navigation selon les habilitations (`capabilities.back_office` et `capabilities.scan`).
 - **Qualite et tests** : 72 tests PHPUnit au vert (292 assertions), verification TypeScript (`npx tsc --noEmit`) et lint ESLint a zero erreur.
 
+### Alignement typographique et disposition sur la production (17 novembre 2026)
+
+Mise en conformite stricte du rendu local avec la version en production (`artvibecamer.com`) :
+- **Autonomie typographique de Bricolage Grotesque** : integration directe des fichiers WOFF2 (`bricolage-latin.woff2`, `bricolage-latin-ext.woff2`, `bricolage-vietnamese.woff2`) dans `public/fonts/` et configuration double via `next/font/local` dans `layout.tsx` et `@font-face` dans `globals.css`. Cela elimine definitivement toute dependance vers Google Fonts en local et assure l'application de la chasse resserree (`"wdth" 85`).
+- **Disposition exacte du titre Hero** : calage strict du titre principal sur 3 lignes majestueuses identiques a la production ("La culture, les talents / et l'art camerounais / sur une seule scene.").
+- **Alignement du Hero et de la navigation** : conservation du bouton principal unique "Inscrire mon talent" sur la scene d'accueil et alignement des liens d'en-tete (`Candidats`, `S'inscrire`, `Organisation`) conformement a l'experience utilisateur en ligne.
+- **Qualite** : TypeScript et ESLint a zero erreur.
+
 ## Decisions prises, et pourquoi
 
 Le raisonnement complet est dans [ARCHITECTURE.md](ARCHITECTURE.md). En

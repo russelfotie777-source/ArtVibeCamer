@@ -1,19 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 /*
- * Une seule famille. Bricolage Grotesque a un dessin legerement irregulier,
- * presque taille, qui fait echo a la broderie du toghu. Son axe de taille
- * optique (opsz, 12 a 96) lui donne une coupe de texte sobre a 14 px et une
- * coupe d'affiche serree a 96 px : elle tient les deux roles sans seconde
- * fonte. Son axe de chasse (wdth) ne sert qu'au titre d'accueil.
+ * Une seule famille. Bricolage Grotesque est chargee en local depuis
+ * public/fonts/ pour garantir un rendu 100% identique a la production,
+ * sans dependance externe reseau.
  */
-const bricolage = Bricolage_Grotesque({
+const bricolage = localFont({
+  src: [
+    {
+      path: "../../../public/fonts/bricolage-latin.woff2",
+      weight: "200 800",
+      style: "normal",
+    },
+    {
+      path: "../../../public/fonts/bricolage-latin-ext.woff2",
+      weight: "200 800",
+      style: "normal",
+    },
+  ],
   variable: "--font-bricolage",
-  subsets: ["latin"],
   display: "swap",
-  axes: ["opsz", "wdth"],
 });
 
 export const metadata: Metadata = {
