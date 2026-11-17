@@ -4,18 +4,18 @@ import "./globals.css";
 
 /*
  * Une seule famille. Bricolage Grotesque est chargee en local depuis
- * public/fonts/ pour garantir un rendu 100% identique a la production,
+ * fonts/ pour garantir un rendu 100% identique a la production,
  * sans dependance externe reseau.
  */
 const bricolage = localFont({
   src: [
     {
-      path: "../../../public/fonts/bricolage-latin.woff2",
+      path: "./fonts/bricolage-latin.woff2",
       weight: "200 800",
       style: "normal",
     },
     {
-      path: "../../../public/fonts/bricolage-latin-ext.woff2",
+      path: "./fonts/bricolage-latin-ext.woff2",
       weight: "200 800",
       style: "normal",
     },
