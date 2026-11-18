@@ -769,6 +769,13 @@ Mise en place et validation des interfaces de pilotage du back-office conformeme
 - **Navigation** : enrichissement de `NavAdmin.tsx` pour integrer les nouvelles sections avec filtrage automatique selon les habilitations du compte connecte.
 - **Qualite et tests** : 72 tests PHPUnit au vert (292 assertions), validation Pint PSR-12, TypeScript et ESLint a zero erreur.
 
+### Resolution du listing des votes et enrichissement du menu public (18 novembre 2026)
+
+Correctif d'affichage de la moderation des votes et amelioration de la navigation publique :
+- **Eager loading complet du candidat** : correction dans `VoteController::index` du `with(['candidate'])` afin d'inclure l'attribut `registration_type` requis par `CandidateResource`, et securisation null-safe (`?->`) dans `CandidateResource`. L'API `GET /api/v1/admin/votes` repond desormais avec code 200 et la totalite des votes enregistres.
+- **Enrichissement de la navigation publique** : reintegration dans `NavSite.tsx` des liens directs vers `Resultats` (`/resultats`) et `Billetterie` (`/billetterie`) aux cotes de `Candidats`, `S'inscrire` et `Organisation` pour une meilleure experience de navigation des visiteurs.
+- **Qualite et tests** : 72 tests PHPUnit au vert, TypeScript et ESLint a zero erreur.
+
 ## Decisions prises, et pourquoi
 
 Le raisonnement complet est dans [ARCHITECTURE.md](ARCHITECTURE.md). En

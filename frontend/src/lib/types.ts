@@ -410,6 +410,7 @@ export type ReponseStatsScan = {
 // Types dedies a la moderation des votes et la gestion du back-office.
 export type VoteAdmin = {
   id: number;
+  reference?: string;
   candidate_id: number;
   candidate?: {
     id: number;
@@ -424,6 +425,7 @@ export type VoteAdmin = {
   quantity: number;
   unit_price: number;
   amount: number;
+  total_amount?: number;
   voter_phone: string;
   ip_address: string | null;
   fingerprint: string | null;

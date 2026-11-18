@@ -259,7 +259,7 @@ export function GestionVotes({
                       <tr key={v.id} className="hover:bg-coque/60 transition-colors">
                         <td className="px-4 py-3">
                           <span className="font-mono text-xs font-semibold text-fort">
-                            #{v.id}
+                            #{v.id ?? v.reference}
                           </span>
                           <div className="text-xs text-discret">
                             {new Date(v.created_at).toLocaleDateString("fr-FR", {
@@ -288,7 +288,7 @@ export function GestionVotes({
                         </td>
 
                         <td className="px-4 py-3 text-right tabular-nums text-texte">
-                          {fcfa(v.amount)}
+                          {fcfa(v.amount ?? v.total_amount ?? 0)}
                         </td>
 
                         <td className="px-4 py-3">
@@ -561,7 +561,7 @@ export function GestionVotes({
               </div>
               <div>
                 <span className="font-semibold text-discret">Montant payé :</span>{" "}
-                <span className="text-texte">{fcfa(voteAAnnuler.amount)}</span>
+                <span className="text-texte">{fcfa(voteAAnnuler.amount ?? voteAAnnuler.total_amount ?? 0)}</span>
               </div>
               <div>
                 <span className="font-semibold text-discret">Téléphone :</span>{" "}

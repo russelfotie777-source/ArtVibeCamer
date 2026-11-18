@@ -17,7 +17,7 @@ class VoteController extends Controller
     public function index(Request $request)
     {
         $votes = Vote::query()
-            ->with(['candidate:id,candidate_number,stage_name,first_name,last_name,slug,category_id', 'transaction'])
+            ->with(['candidate', 'transaction'])
             ->when($request->filled('candidate_id'), fn ($q) => $q->where('candidate_id', $request->integer('candidate_id')))
             ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->integer('category_id')))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
@@ -87,4 +87,3 @@ class VoteController extends Controller
         ]);
     }
 }
-

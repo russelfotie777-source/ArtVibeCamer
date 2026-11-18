@@ -15,6 +15,7 @@ class VoteResource extends JsonResource
             'reference' => $this->reference,
             'quantity' => $this->quantity,
             'unit_price' => $this->unit_price,
+            'amount' => $this->total_amount,
             'total_amount' => $this->total_amount,
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
@@ -36,4 +37,3 @@ class VoteResource extends JsonResource
         ];
     }
 }
-
