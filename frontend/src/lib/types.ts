@@ -407,5 +407,109 @@ export type ReponseStatsScan = {
   recent: JournalScanRecent[];
 };
 
+// Types dedies a la moderation des votes et la gestion du back-office.
+export type VoteAdmin = {
+  id: number;
+  candidate_id: number;
+  candidate?: {
+    id: number;
+    candidate_number: string;
+    stage_name: string | null;
+    first_name: string;
+    last_name: string;
+    slug: string;
+    category_id: number;
+  } | null;
+  category_id: number;
+  quantity: number;
+  unit_price: number;
+  amount: number;
+  voter_phone: string;
+  ip_address: string | null;
+  fingerprint: string | null;
+  status: "pending" | "confirmed" | "cancelled";
+  status_label: string;
+  is_suspicious?: boolean;
+  cancelled_at: string | null;
+  cancellation_reason: string | null;
+  cancelled_by: number | null;
+  created_at: string;
+  transaction?: {
+    id: number;
+    reference: string;
+    status: string;
+    operator: string;
+  } | null;
+};
+
+export type LotsSuspectsResponse = {
+  threshold: number;
+  by_ip: {
+    ip_address: string;
+    orders: number;
+    votes: number;
+  }[];
+  by_fingerprint: {
+    fingerprint: string;
+    orders: number;
+    votes: number;
+  }[];
+};
+
+export type CategorieAdmin = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  tagline: string | null;
+  cover_image: string | null;
+  registration_fee: number;
+  group_fee: number | null;
+  allows_group: boolean;
+  max_group_members: number | null;
+  vote_price: number;
+  candidates_count: number;
+  votes_count: number;
+  max_candidates: number | null;
+  is_active: boolean;
+  is_registration_open: boolean;
+  is_voting_open: boolean;
+  registration_opens_at: string | null;
+  registration_closes_at: string | null;
+  voting_opens_at: string | null;
+  voting_closes_at: string | null;
+  display_order: number;
+  created_at: string | null;
+};
+
+export type TypeBilletAdmin = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  price: number;
+  quantity_total: number | null;
+  quantity_sold: number;
+  quantity_reserved: number;
+  available_quantity: number | null;
+  max_per_order?: number;
+  is_active: boolean;
+  is_on_sale: boolean;
+  is_sold_out: boolean;
+  sales_opens_at: string | null;
+  sales_closes_at: string | null;
+  display_order: number;
+};
+
+export type ReglageItem = {
+  key: string;
+  value: string | null;
+  type: "string" | "boolean" | "integer" | "datetime";
+  group: string;
+  label: string;
+  is_public: boolean;
+};
+
+
 
 

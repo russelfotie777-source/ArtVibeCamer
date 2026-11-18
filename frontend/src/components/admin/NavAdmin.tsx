@@ -7,6 +7,10 @@ import type { Utilisateur } from "@/lib/types";
 const tousLesLiens = [
   { href: "/admin", libelle: "Tableau de bord", backOfficeOnly: true },
   { href: "/admin/candidats", libelle: "Candidats", backOfficeOnly: true },
+  { href: "/admin/votes", libelle: "Modération votes", backOfficeOnly: true },
+  { href: "/admin/categories", libelle: "Catégories & Tarifs", backOfficeOnly: true },
+  { href: "/admin/billetterie", libelle: "Billetterie & Jauges", backOfficeOnly: true },
+  { href: "/admin/reglages", libelle: "Réglages", backOfficeOnly: true },
   { href: "/admin/paiements", libelle: "Paiements", backOfficeOnly: true },
   { href: "/admin/scan", libelle: "Contrôle d’accès", scanOnly: true },
 ];

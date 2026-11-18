@@ -37,7 +37,7 @@ class CategoryController extends Controller
 
         $category->update($data);
 
-        // Un changement de tarif est tracé : il modifie ce que paieront les
+        // Un changement de tarif est trace : il modifie ce que paieront les
         // prochains inscrits et votants.
         Audit::log('category.updated', $category, "Categorie « {$category->name} » modifiee", [
             'before' => $before,
@@ -77,6 +77,7 @@ class CategoryController extends Controller
 
             // Montants entiers en FCFA : jamais de decimale sur du XAF.
             'registration_fee' => [$category ? 'sometimes' : 'required', 'integer', 'min:0', 'max:1000000'],
+            'group_fee' => ['nullable', 'integer', 'min:0', 'max:5000000'],
             'vote_price' => [$category ? 'sometimes' : 'required', 'integer', 'min:1', 'max:100000'],
 
             'max_candidates' => ['nullable', 'integer', 'min:1', 'max:10000'],

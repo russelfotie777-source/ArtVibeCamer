@@ -47,7 +47,7 @@ avoir a reconstituer le contexte.
 | Tableau de bord, candidats, paiements et exports | Fait | Fait |
 | Billetterie et QR codes | Fait | Fait |
 | Controle des billets a l'entree | Fait | Fait |
-| Categories, tarifs, reglages et moderation des votes | Fait | A faire dans le back-office |
+| Categories, tarifs, reglages et moderation des votes | Fait | Fait |
 
 Le parcours public en production couvre donc l'inscription et les fiches des
 candidats ; l'interface d'achat de voix est livree et son ouverture reste
@@ -758,6 +758,16 @@ Mise en conformite stricte du rendu local avec la version en production (`artvib
 - **Disposition exacte du titre Hero** : calage strict du titre principal sur 3 lignes majestueuses identiques a la production ("La culture, les talents / et l'art camerounais / sur une seule scene.").
 - **Alignement du Hero et de la navigation** : conservation du bouton principal unique "Inscrire mon talent" sur la scene d'accueil et alignement des liens d'en-tete (`Candidats`, `S'inscrire`, `Organisation`) conformement a l'experience utilisateur en ligne.
 - **Qualite** : TypeScript et ESLint a zero erreur.
+
+### Completion du back-office (18 novembre 2026)
+
+Mise en place et validation des interfaces de pilotage du back-office conformement a la Phase 5 :
+- **Moderation des votes (`/admin/votes`)** : listing complet avec filtres par categorie, statut, telephone du votant et adresse IP. Onglet dedie aux « Lots suspects » (`/api/v1/admin/votes/suspicious`) avec seuil de declenchement configurable, table de concentration par IP et par empreinte de navigateur. Modal d'annulation securise avec saisie obligatoire du motif et retrait atomique des voix du candidat sous verrou.
+- **Gestion des categories et tarifs (`/admin/categories`)** : fiches des disciplines avec vue synthetique des tarifs (individuel, groupe, prix unitaire de la voix), des echeances de cloture des inscriptions et des votes, et compteurs denormalises. Modal de modification avec verification des montants en entiers de FCFA et controle des autorisations (`capabilities.manage`).
+- **Gestion des jauges de billetterie (`/admin/billetterie`)** : tableau de bord de billetterie affichant en temps reel les billets vendus, les places reservees en cours de confirmation, les places disponibles restantes et les recettes cumulees. Jauges visuelles de progression et formulaire d'ajustement empechant d'abaisser la jauge en-dessous des places deja engagees.
+- **Reglages globaux de l'evenement (`/admin/reglages`)** : interrupteurs temps reel (inscriptions ouvertes, votes ouverts, billetterie active, affichage des resultats et decompte exact des voix, validation automatique des dossiers). Formulaire de modification des coordonnees officielles, lieux de castings et slogan principal.
+- **Navigation** : enrichissement de `NavAdmin.tsx` pour integrer les nouvelles sections avec filtrage automatique selon les habilitations du compte connecte.
+- **Qualite et tests** : 72 tests PHPUnit au vert (292 assertions), validation Pint PSR-12, TypeScript et ESLint a zero erreur.
 
 ## Decisions prises, et pourquoi
 
