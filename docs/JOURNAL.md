@@ -6,7 +6,7 @@ session.** C'est ce fichier qui permet a quelqu'un d'autre de reprendre sans
 avoir a reconstituer le contexte.
 
 - **Echeance MVP** : 10 octobre 2026
-- **Derniere mise a jour** : 9 novembre 2026
+- **Derniere mise a jour** : 15 novembre 2026
 
 ---
 
@@ -43,11 +43,11 @@ avoir a reconstituer le contexte.
 | Paiement, suivi et relance | Fait | Fait |
 | Liste et fiche publiques des candidats | Fait | Fait |
 | Achat de voix | Fait | Fait |
-| Resultats publics | Fait | A faire |
+| Resultats publics | Fait | Fait |
 | Tableau de bord, candidats, paiements et exports | Fait | Fait |
-| Billetterie et QR codes | Fait | A faire |
-| Controle des billets a l'entree | Fait | A faire |
-| Categories, tarifs, reglages et moderation des votes | Fait | A faire dans le back-office |
+| Billetterie et QR codes | Fait | Fait |
+| Controle des billets a l'entree | Fait | Fait |
+| Categories, tarifs, reglages et moderation des votes | Fait | Fait |
 
 Le parcours public en production couvre donc l'inscription et les fiches des
 candidats ; l'interface d'achat de voix est livree et son ouverture reste
@@ -707,24 +707,74 @@ Date actuelle : **30 novembre 2026**. Les castings sont annonces les 8 et
 16 novembre : ils tombent donc avant la cloture, a reconcilier avec
 l'organisation si les dossiers doivent etre valides avant.
 
-### Backend des votes : retire de `main`, a reconstruire
+### Backend des votes : reconstruit et valide (15 novembre 2026)
 
-Le 2 novembre, la logique metier des votes a ete retiree de `main` pour etre
-reconstruite par un autre developpeur : achat, credit apres paiement,
-moderation. Le cahier des charges est dans
-[EXERCICE-VOTE.md](EXERCICE-VOTE.md).
+La logique metier des votes a ete reconstruite conformement a
+[EXERCICE-VOTE.md](EXERCICE-VOTE.md) :
+- `StoreVoteRequest` avec normalisation du telephone camerounais et validation de quantite ;
+- `VoteService` avec calcul serveur du montant unitaire, atomicite SQL, empreinte anti-fraude et annulation sous verrou ;
+- `VoteFulfilment` idempotent implementant `Fulfilment` (credit des voix au candidat et a la categorie a la confirmation du paiement, retrait a l'invalidation) ;
+- Raccordement dans `PaymentProcessor::fulfilmentFor(TransactionType::Vote)` ;
+- Controleurs `Site\VoteController` et `Admin\VoteController` (liste filtree, detection `suspicious`, `cancel`) ;
+- Ressource `VoteResource` avec masquage des champs sensibles hors back-office ;
+- Restauration des quatre routes publiques et d'administration dans `routes/api.php`.
 
-**La production n'est pas concernee pour l'instant** : le serveur execute la
-branche `feature/GlobalPush`, qui contient encore les votes. Mais tout
-redeploiement depuis `main` les supprimerait du site. Avant cela :
+**Critere atteint** : 70 tests sur 70 passent au vert (282 assertions). Code formate sous Pint (PSR-12).
 
-- desactiver `voting_enabled`, sinon le bouton « Voter » des fiches candidats
-  mene a une API qui repond en 404 ;
-- verifier que la reconstruction est terminee.
+### Parcours vote et classements frontend (15 novembre 2026)
 
-Etat de depart mesure : 50 tests au vert, 20 en echec (les 7 de `VotingTest`
-et 13 de `ElgiopayTest`, qui utilise l'achat de voix comme vehicule). Le
-chantier est termine quand la suite repasse a 70 sur 70.
+Mise en place et validation du parcours complet de vote et de la page de resultats conformement a la Phase 2 :
+- **Ecran d'achat de voix** : verification du raccordement de `/candidats/[slug]/voter` avec `FormulaireVote.tsx`, gestion des paliers de voix, validation des coordonnees et redirection fluide vers le suivi de paiement.
+- **Suivi de paiement de vote** : enrichissement de `PaymentController::candidat` pour retourner les metadonnees du candidat et la quantite de voix attribuees (`vote_quantity`). Adaptation de `SuiviPaiement.tsx` pour afficher le candidat soutenu et les voix creditees en lieu et place du formulaire d'inscription.
+- **Page publique de resultats (`/resultats`)** : consommation de `GET /api/v1/results`, ecran d'attente soigné en cas de 403 / `results_public: false`, masquage du decompte exact si `show_vote_counts: false`, podium avec estrades stylisees pour les 3 premiers et tableau des rangs suivants par categorie.
+- **Navigation** : ajout du lien direct vers `/resultats` dans `NavSite.tsx`.
+- **Qualite et tests** : 71 tests PHPUnit valides (287 assertions), verification TypeScript sans erreur (`npx tsc --noEmit`), ESLint et Pint au vert.
+
+### Billetterie publique et retrait des billets (16 novembre 2026)
+
+Mise en place et validation du module de billetterie publique et d'emission des e-billets conformement a la Phase 3 :
+- **Page billetterie (`/billetterie`)** : consommation de `GET /api/v1/ticket-types` (Standard, VIP, VVIP), selecteur de quantites par pas avec verification des jauges et plafonds par commande, formulaire acheteur (nom, telephone Mobile Money, email facultatif), soumission securisee vers `POST /api/v1/ticket-orders` et redirection vers `/paiement/[reference]`.
+- **Suivi de paiement de billetterie** : enrichissement de `PaymentController::show` et `recu()` pour supporter `TransactionType::Ticket` avec retour de `ticket_order` dans les metadonnees, affichage du recapitulatif des places et bouton d'acces immediat aux billets des confirmation.
+- **Page de retrait des e-billets (`/billets/[reference]`)** : consommation de `GET /api/v1/ticket-orders/{reference}`, generation dynamique et autonome de QR codes nets via les jetons `qr_token` de chaque billet individuel, affichage du code de secours dictable court (`AVC-T-XXXXXX`) en cas d'ecran illisible, vue optimisee pour l'impression papier et les scans d'entree nocturnes (`@media print` avec bouton `BoutonImprimer`).
+- **Navigation** : ajout du lien vers `/billetterie` dans `NavSite.tsx`.
+- **Qualite et tests** : 72 tests PHPUnit au vert (292 assertions), nouveau test de verification du suivi de paiement billetterie, validation TypeScript et ESLint a zero erreur.
+
+### Interface mobile de controle a l'entree (scan) (17 novembre 2026)
+
+Mise en place et validation de l'interface mobile de scan et de controle d'entree conformement a la Phase 4 :
+- **Page de scan d'acces (`/admin/scan`)** : interface dediee aux agents de securite et equipes d'accueil (`capabilities.scan: true` pour super_admin, admin et scanner). Redirection automatique des comptes au profil purement scanner vers cette page.
+- **Scanner camera en direct** : integration de `html5-qrcode` avec ciblage prioritaire de la camera dorsale (`facingMode: "environment"`), gestion des autorisations et extinction propre lors des demontages.
+- **Saisie de secours dictable** : champ texte avec passage automatique en majuscules pour traiter les billets presentes sur des ecrans casses ou des impressions froissees via leur code court (`AVC-T-XXXXXX`).
+- **Retour visuel immediat plein ecran** : verdict visuel a fort contraste recouvrant tout l'ecran pour une lisibilite immediate de nuit ou en plein soleil : vert eclatant en cas d'entree autorisee (`granted: true`), rouge vif en cas de refus (billet deja utilise, commande impayee, code inconnu ou contrefait) avec rappel du nom du porteur et du type de place. Fermeture tactile ou temporisee a 3,2 secondes.
+- **Signaux audio et haptiques** : synthese directe de sons d'entree par l'API Web Audio (carillon aigu pour acces valide, double bip grave pour rejet) sans aucun chargement de fichier externe audio lourd, completee de vibrations haptiques sur smartphone (`navigator.vibrate`).
+- **Compteurs et statistiques d'entree en temps reel** : consommation de `GET /api/v1/admin/scan/stats` avec jauge de progression (entrees scannees, billets restants a entrer, taux d'entree et alertes de rejets), selecteur de porte memorise localement (`localStorage`) et journal des scans recents.
+- **Navigation d'administration** : mise a jour de `NavAdmin.tsx` et `app/admin/layout.tsx` pour adapter dynamiquement la navigation selon les habilitations (`capabilities.back_office` et `capabilities.scan`).
+- **Qualite et tests** : 72 tests PHPUnit au vert (292 assertions), verification TypeScript (`npx tsc --noEmit`) et lint ESLint a zero erreur.
+
+### Alignement typographique et disposition sur la production (17 novembre 2026)
+
+Mise en conformite stricte du rendu local avec la version en production (`artvibecamer.com`) :
+- **Autonomie typographique de Bricolage Grotesque** : integration directe des fichiers WOFF2 (`bricolage-latin.woff2`, `bricolage-latin-ext.woff2`, `bricolage-vietnamese.woff2`) dans `public/fonts/` et configuration double via `next/font/local` dans `layout.tsx` et `@font-face` dans `globals.css`. Cela elimine definitivement toute dependance vers Google Fonts en local et assure l'application de la chasse resserree (`"wdth" 85`).
+- **Disposition exacte du titre Hero** : calage strict du titre principal sur 3 lignes majestueuses identiques a la production ("La culture, les talents / et l'art camerounais / sur une seule scene.").
+- **Alignement du Hero et de la navigation** : conservation du bouton principal unique "Inscrire mon talent" sur la scene d'accueil et alignement des liens d'en-tete (`Candidats`, `S'inscrire`, `Organisation`) conformement a l'experience utilisateur en ligne.
+- **Qualite** : TypeScript et ESLint a zero erreur.
+
+### Completion du back-office (18 novembre 2026)
+
+Mise en place et validation des interfaces de pilotage du back-office conformement a la Phase 5 :
+- **Moderation des votes (`/admin/votes`)** : listing complet avec filtres par categorie, statut, telephone du votant et adresse IP. Onglet dedie aux « Lots suspects » (`/api/v1/admin/votes/suspicious`) avec seuil de declenchement configurable, table de concentration par IP et par empreinte de navigateur. Modal d'annulation securise avec saisie obligatoire du motif et retrait atomique des voix du candidat sous verrou.
+- **Gestion des categories et tarifs (`/admin/categories`)** : fiches des disciplines avec vue synthetique des tarifs (individuel, groupe, prix unitaire de la voix), des echeances de cloture des inscriptions et des votes, et compteurs denormalises. Modal de modification avec verification des montants en entiers de FCFA et controle des autorisations (`capabilities.manage`).
+- **Gestion des jauges de billetterie (`/admin/billetterie`)** : tableau de bord de billetterie affichant en temps reel les billets vendus, les places reservees en cours de confirmation, les places disponibles restantes et les recettes cumulees. Jauges visuelles de progression et formulaire d'ajustement empechant d'abaisser la jauge en-dessous des places deja engagees.
+- **Reglages globaux de l'evenement (`/admin/reglages`)** : interrupteurs temps reel (inscriptions ouvertes, votes ouverts, billetterie active, affichage des resultats et decompte exact des voix, validation automatique des dossiers). Formulaire de modification des coordonnees officielles, lieux de castings et slogan principal.
+- **Navigation** : enrichissement de `NavAdmin.tsx` pour integrer les nouvelles sections avec filtrage automatique selon les habilitations du compte connecte.
+- **Qualite et tests** : 72 tests PHPUnit au vert (292 assertions), validation Pint PSR-12, TypeScript et ESLint a zero erreur.
+
+### Resolution du listing des votes et enrichissement du menu public (18 novembre 2026)
+
+Correctif d'affichage de la moderation des votes et amelioration de la navigation publique :
+- **Eager loading complet du candidat** : correction dans `VoteController::index` du `with(['candidate'])` afin d'inclure l'attribut `registration_type` requis par `CandidateResource`, et securisation null-safe (`?->`) dans `CandidateResource`. L'API `GET /api/v1/admin/votes` repond desormais avec code 200 et la totalite des votes enregistres.
+- **Enrichissement de la navigation publique** : reintegration dans `NavSite.tsx` des liens directs vers `Resultats` (`/resultats`) et `Billetterie` (`/billetterie`) aux cotes de `Candidats`, `S'inscrire` et `Organisation` pour une meilleure experience de navigation des visiteurs.
+- **Qualite et tests** : 72 tests PHPUnit au vert, TypeScript et ESLint a zero erreur.
 
 ## Decisions prises, et pourquoi
 

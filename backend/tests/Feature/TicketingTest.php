@@ -159,4 +159,24 @@ class TicketingTest extends TestCase
             ->assertJsonMissingPath('data.0.quantity_total')
             ->assertJsonMissingPath('data.0.quantity_sold');
     }
+
+    public function test_le_suivi_d_un_paiement_de_billetterie_retourne_la_commande(): void
+    {
+        $type = $this->makeTicketType();
+
+        $response = $this->postJson('/api/v1/ticket-orders', [
+            'items' => [['ticket_type_id' => $type->id, 'quantity' => 2]],
+            'buyer_name' => 'Samuel Etoo',
+            'buyer_phone' => '677112233',
+        ])->assertCreated();
+
+        $reference = $response->json('transaction.reference');
+        $orderReference = $response->json('order.reference');
+
+        $this->getJson("/api/v1/payments/{$reference}")
+            ->assertOk()
+            ->assertJsonPath('data.reference', $reference)
+            ->assertJsonPath('meta.ticket_order.reference', $orderReference)
+            ->assertJsonPath('meta.ticket_order.quantity', 2);
+    }
 }

@@ -12,7 +12,10 @@
     "cf:deploy": "opennextjs-cloudflare deploy"
   },
   "dependencies": {
+    "@types/qrcode": "^1.5.6",
+    "html5-qrcode": "^2.3.8",
     "next": "16.3.8",
+    "qrcode": "^1.5.4",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "^0.0.1"

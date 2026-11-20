@@ -8,7 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\TransactionResource;
 use App\Models\Candidate;
 use App\Models\Setting;
+use App\Models\TicketOrder;
 use App\Models\Transaction;
+use App\Models\Vote;
 use App\Services\Payments\PaymentProcessor;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,7 +41,10 @@ class PaymentController extends Controller
         }
 
         return TransactionResource::make($transaction)->additional([
-            'meta' => ['candidate' => $this->candidat($transaction)],
+            'meta' => [
+                'candidate' => $this->candidat($transaction),
+                'ticket_order' => $this->ticketOrder($transaction),
+            ],
         ]);
     }
 
@@ -55,7 +60,13 @@ class PaymentController extends Controller
     {
         abort_unless($transaction->status === TransactionStatus::Succeeded, 404);
 
-        $candidat = $transaction->type === TransactionType::Registration
+        $candidat = match ($transaction->type) {
+            TransactionType::Registration => $transaction->payable,
+            TransactionType::Vote => $transaction->payable?->candidate,
+            default => null,
+        };
+
+        $order = $transaction->type === TransactionType::Ticket
             ? $transaction->payable
             : null;
 
@@ -67,23 +78,25 @@ class PaymentController extends Controller
          */
         $pdf = Pdf::setOption(['isFontSubsettingEnabled' => true])
             ->loadView('recus.paiement', [
-            'transaction' => $transaction,
-            'evenement' => Setting::get('event_name', config('app.name')),
-            'sousTitre' => Setting::get('event_tagline'),
-            'lieu' => collect([Setting::get('event_venue'), Setting::get('event_city')])
-                ->filter()->implode(', ') ?: null,
-            'contactEmail' => Setting::get('contact_email'),
-            'contactTelephone' => Setting::get('contact_phone'),
-            'designation' => $this->designation($transaction),
-            'precision' => $candidat?->candidate_number
-                ? 'Candidat n° '.$candidat->candidate_number
-                : null,
-            'montant' => $transaction->formattedAmount(),
-            'payeur' => $transaction->payer_name ?: 'Non renseigné',
-            'payeLe' => $transaction->paid_at?->timezone(config('app.timezone'))
-                ->translatedFormat('j F Y à H\\hi') ?? '—',
-            'emisLe' => now()->timezone(config('app.timezone'))->translatedFormat('j F Y'),
-        ]);
+                'transaction' => $transaction,
+                'evenement' => Setting::get('event_name', config('app.name')),
+                'sousTitre' => Setting::get('event_tagline'),
+                'lieu' => collect([Setting::get('event_venue'), Setting::get('event_city')])
+                    ->filter()->implode(', ') ?: null,
+                'contactEmail' => Setting::get('contact_email'),
+                'contactTelephone' => Setting::get('contact_phone'),
+                'designation' => $this->designation($transaction),
+                'precision' => match ($transaction->type) {
+                    TransactionType::Registration => $candidat?->candidate_number ? 'Candidat n° '.$candidat->candidate_number : null,
+                    TransactionType::Vote => $candidat?->candidate_number ? 'Vote pour le candidat n° '.$candidat->candidate_number : null,
+                    TransactionType::Ticket => $order?->reference ? 'Commande n° '.$order->reference : null,
+                },
+                'montant' => $transaction->formattedAmount(),
+                'payeur' => $transaction->payer_name ?: 'Non renseigné',
+                'payeLe' => $transaction->paid_at?->timezone(config('app.timezone'))
+                    ->translatedFormat('j F Y à H\\hi') ?? '—',
+                'emisLe' => now()->timezone(config('app.timezone'))->translatedFormat('j F Y'),
+            ]);
 
         /*
          * Nom de fichier bati sur la reference : un payeur qui telecharge
@@ -110,34 +123,77 @@ class PaymentController extends Controller
     }
 
     /**
-     * Resume du candidat pour une transaction d'inscription, afin que le
-     * candidat voie son numero des la confirmation du paiement.
-     *
-     * Divulgation acceptable : la reference de transaction est aleatoire et
-     * n'est connue que de lui. On s'en tient malgre tout au strict
-     * necessaire, sans coordonnees personnelles.
+     * Resume du candidat pour une transaction d'inscription ou de vote, afin que le
+     * payeur voie les details sans divulguer de donnees personnelles.
      */
     private function candidat(Transaction $transaction): ?array
     {
-        if ($transaction->type !== TransactionType::Registration) {
+        if ($transaction->type === TransactionType::Registration) {
+            $candidate = $transaction->payable;
+
+            if (! $candidate instanceof Candidate) {
+                return null;
+            }
+
+            return [
+                'candidate_number' => $candidate->candidate_number,
+                'display_name' => $candidate->display_name,
+                'slug' => $candidate->slug,
+                'status' => $candidate->status->value,
+                'status_label' => $candidate->status->label(),
+                'category' => $candidate->loadMissing('category')->category?->name,
+                'registration_type_label' => $candidate->registration_type->label(),
+                'members_count' => $candidate->members_count,
+            ];
+        }
+
+        if ($transaction->type === TransactionType::Vote) {
+            $vote = $transaction->payable;
+
+            if (! $vote instanceof Vote) {
+                return null;
+            }
+
+            $candidate = $vote->candidate;
+
+            return [
+                'candidate_number' => $candidate?->candidate_number,
+                'display_name' => $candidate?->display_name,
+                'slug' => $candidate?->slug,
+                'status' => $candidate?->status?->value,
+                'status_label' => $candidate?->status?->label(),
+                'category' => $candidate?->loadMissing('category')->category?->name,
+                'registration_type_label' => $candidate?->registration_type?->label(),
+                'members_count' => $candidate?->members_count,
+                'vote_quantity' => $vote->quantity,
+            ];
+        }
+
+        return null;
+    }
+
+    /**
+     * Resume de la commande de billets pour une transaction de billetterie,
+     * afin de guider le client vers ses e-billets des la validation.
+     */
+    private function ticketOrder(Transaction $transaction): ?array
+    {
+        if ($transaction->type !== TransactionType::Ticket) {
             return null;
         }
 
-        $candidate = $transaction->payable;
+        $order = $transaction->payable;
 
-        if (! $candidate instanceof Candidate) {
+        if (! $order instanceof TicketOrder) {
             return null;
         }
 
         return [
-            'candidate_number' => $candidate->candidate_number,
-            'display_name' => $candidate->display_name,
-            'slug' => $candidate->slug,
-            'status' => $candidate->status->value,
-            'status_label' => $candidate->status->label(),
-            'category' => $candidate->loadMissing('category')->category?->name,
-            'registration_type_label' => $candidate->registration_type->label(),
-            'members_count' => $candidate->members_count,
+            'reference' => $order->reference,
+            'quantity' => $order->quantity,
+            'total_amount' => $order->total_amount,
+            'status' => $order->status->value,
+            'status_label' => $order->status->label(),
         ];
     }
 }

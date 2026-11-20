@@ -148,4 +148,23 @@ class VotingTest extends TestCase
         $this->assertSame(0, $category->fresh()->votes_count);
         $this->assertSame(VoteStatus::Cancelled, $vote->fresh()->status);
     }
+
+    public function test_le_suivi_d_un_paiement_de_vote_retourne_les_informations_du_candidat(): void
+    {
+        $category = $this->makeCategory();
+        $candidate = $this->makeCandidate($category);
+
+        $response = $this->postJson("/api/v1/candidates/{$candidate->slug}/votes", [
+            'quantity' => 10,
+            'voter_phone' => '699887766',
+        ])->assertCreated();
+
+        $reference = $response->json('transaction.reference');
+
+        $this->getJson("/api/v1/payments/{$reference}")
+            ->assertOk()
+            ->assertJsonPath('data.reference', $reference)
+            ->assertJsonPath('meta.candidate.display_name', $candidate->display_name)
+            ->assertJsonPath('meta.candidate.vote_quantity', 10);
+    }
 }

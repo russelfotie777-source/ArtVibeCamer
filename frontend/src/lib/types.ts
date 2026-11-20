@@ -269,3 +269,249 @@ export type Page<T> = {
 };
 
 export type Enveloppe<T> = { data: T };
+
+export type LigneClassement = {
+  position: number;
+  candidate_number: string | null;
+  name: string;
+  slug: string;
+  photo_url: string | null;
+  votes_count: number | null;
+};
+
+export type ResultatCategorie = {
+  category: {
+    id: number;
+    name: string;
+    slug: string;
+    candidates_count: number;
+    votes_count: number | null;
+  };
+  ranking: LigneClassement[];
+};
+
+export type ReponseResultats = {
+  data: ResultatCategorie[];
+  meta: {
+    show_vote_counts: boolean;
+    updated_at: string;
+  };
+};
+
+export type ResumeCandidatPaiement = {
+  candidate_number: string | null;
+  display_name: string;
+  slug: string;
+  status: string;
+  status_label: string;
+  category: string | null;
+  registration_type_label?: string | null;
+  members_count?: number;
+  vote_quantity?: number | null;
+};
+
+export type TypeBillet = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  price: number;
+  is_on_sale: boolean;
+  is_sold_out: boolean;
+  max_purchasable: number;
+  display_order: number;
+};
+
+export type BilletIndividuel = {
+  code: string;
+  holder_name: string | null;
+  status: string;
+  status_label: string;
+  type?: TypeBillet | null;
+  used_at: string | null;
+  qr_token?: string | null;
+};
+
+export type LigneCommandeBillet = {
+  ticket_type: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+};
+
+export type CommandeBillets = {
+  reference: string;
+  buyer_name: string;
+  quantity: number;
+  total_amount: number;
+  formatted_total: string;
+  status: string;
+  status_label: string;
+  paid_at: string | null;
+  expires_at: string | null;
+  created_at: string | null;
+  items?: LigneCommandeBillet[];
+  tickets?: BilletIndividuel[];
+  transaction?: Transaction | null;
+};
+
+export type ReponseCommandeBillets = {
+  message: string;
+  order: CommandeBillets;
+  transaction: Transaction;
+  payment: Paiement;
+};
+
+export type ResumeCommandePaiement = {
+  reference: string;
+  quantity: number;
+  total_amount: number;
+  status: string;
+  status_label: string;
+};
+
+export type BilletScanne = {
+  code: string;
+  holder_name: string | null;
+  type: string | null;
+  status: string;
+  used_at: string | null;
+  scan_count: number;
+};
+
+export type ReponseScan = {
+  granted: boolean;
+  result: "accepted" | "already_used" | "not_found" | "cancelled" | "order_unpaid";
+  message: string;
+  ticket: BilletScanne | null;
+};
+
+export type JournalScanRecent = {
+  code: string;
+  result: string;
+  result_label: string;
+  gate: string | null;
+  agent: string | null;
+  scanned_at: string | null;
+};
+
+export type ReponseStatsScan = {
+  entrance: {
+    tickets_issued: number;
+    checked_in: number;
+    remaining: number;
+    rate: number;
+    rejected_scans: number;
+    last_hour: number;
+  };
+  recent: JournalScanRecent[];
+};
+
+// Types dedies a la moderation des votes et la gestion du back-office.
+export type VoteAdmin = {
+  id: number;
+  reference?: string;
+  candidate_id: number;
+  candidate?: {
+    id: number;
+    candidate_number: string;
+    stage_name: string | null;
+    first_name: string;
+    last_name: string;
+    slug: string;
+    category_id: number;
+  } | null;
+  category_id: number;
+  quantity: number;
+  unit_price: number;
+  amount: number;
+  total_amount?: number;
+  voter_phone: string;
+  ip_address: string | null;
+  fingerprint: string | null;
+  status: "pending" | "confirmed" | "cancelled";
+  status_label: string;
+  is_suspicious?: boolean;
+  cancelled_at: string | null;
+  cancellation_reason: string | null;
+  cancelled_by: number | null;
+  created_at: string;
+  transaction?: {
+    id: number;
+    reference: string;
+    status: string;
+    operator: string;
+  } | null;
+};
+
+export type LotsSuspectsResponse = {
+  threshold: number;
+  by_ip: {
+    ip_address: string;
+    orders: number;
+    votes: number;
+  }[];
+  by_fingerprint: {
+    fingerprint: string;
+    orders: number;
+    votes: number;
+  }[];
+};
+
+export type CategorieAdmin = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  tagline: string | null;
+  cover_image: string | null;
+  registration_fee: number;
+  group_fee: number | null;
+  allows_group: boolean;
+  max_group_members: number | null;
+  vote_price: number;
+  candidates_count: number;
+  votes_count: number;
+  max_candidates: number | null;
+  is_active: boolean;
+  is_registration_open: boolean;
+  is_voting_open: boolean;
+  registration_opens_at: string | null;
+  registration_closes_at: string | null;
+  voting_opens_at: string | null;
+  voting_closes_at: string | null;
+  display_order: number;
+  created_at: string | null;
+};
+
+export type TypeBilletAdmin = {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+  price: number;
+  quantity_total: number | null;
+  quantity_sold: number;
+  quantity_reserved: number;
+  available_quantity: number | null;
+  max_per_order?: number;
+  is_active: boolean;
+  is_on_sale: boolean;
+  is_sold_out: boolean;
+  sales_opens_at: string | null;
+  sales_closes_at: string | null;
+  display_order: number;
+};
+
+export type ReglageItem = {
+  key: string;
+  value: string | null;
+  type: "string" | "boolean" | "integer" | "datetime";
+  group: string;
+  label: string;
+  is_public: boolean;
+};
+
+
+
+

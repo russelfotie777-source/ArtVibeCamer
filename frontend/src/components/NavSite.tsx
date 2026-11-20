@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 
 const liens = [
   { href: "/candidats", libelle: "Candidats", toujours: true },
+  { href: "/resultats", libelle: "Résultats", toujours: true },
+  { href: "/billetterie", libelle: "Billetterie", toujours: true },
   { href: "/inscription", libelle: "S’inscrire", toujours: true },
   // Reserve a l'equipe : il cede sa place sur telephone, ou le logo et les
-  // deux liens publics remplissent deja la largeur.
+  // liens publics remplissent deja la largeur.
   { href: "/admin", libelle: "Organisation", toujours: false },
 ];
 

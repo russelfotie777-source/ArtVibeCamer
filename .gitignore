@@ -27,6 +27,8 @@
 /.idea
 /.vscode
 /.fleet
+/.tools
+/.composer
 *.swp
 *.swo
 
